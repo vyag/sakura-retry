@@ -3,11 +3,10 @@ package com.github.yag.retry
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Proxy
 import java.time.Duration
-import java.time.Period
 
 class Retry(private val retryPolicy: RetryPolicy, private val backOffPolicy: BackOffPolicy, private  val errorHandler: ErrorHandler = DefaultErrorHandler()) {
 
-    fun <T> call(msg: String = "call", body: () -> T) : T {
+    fun <T> call(name: String = "call", body: () -> T) : T {
         var retryCount = 0
         val startTime = System.nanoTime()
 
@@ -16,7 +15,7 @@ class Retry(private val retryPolicy: RetryPolicy, private val backOffPolicy: Bac
                 retryPolicy.check()
                 val result =  body()
                 if (retryCount > 0) {
-                    LOG.debug("Finally {} success after {} retries.", msg, retryCount)
+                    LOG.debug("Finally {} success after {} retries.", name, retryCount)
                 }
                 return result
             } catch (t: Throwable) {
@@ -27,7 +26,7 @@ class Retry(private val retryPolicy: RetryPolicy, private val backOffPolicy: Bac
                     retryCount++
                     continue
                 }
-                LOG.warn("Give up {} after {} retries, error: {}.", msg, retryCount, t.toString())
+                LOG.warn("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
                 throw t
             }
         }
