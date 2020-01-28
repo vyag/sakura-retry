@@ -14,7 +14,7 @@ class RetryProxyTest {
             DefaultErrorHandler()
         )
         val rawFoo = Foo(10)
-        var foo = retry.proxy(IFoo::class.java, rawFoo)
+        val foo = retry.proxy(IFoo::class.java, rawFoo)
         foo.bar()
         assertEquals(11, rawFoo.counter)
     }
@@ -26,7 +26,7 @@ class RetryProxyTest {
             ExponentialBackOffPolicy(1, 10),
             DefaultErrorHandler()
         )
-        var rawFoo = Foo(11)
+        val rawFoo = Foo(11)
         val foo = retry.proxy(IFoo::class.java, rawFoo)
         assertFailsWith(IllegalStateException::class) {
             foo.bar()

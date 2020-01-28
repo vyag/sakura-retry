@@ -27,7 +27,7 @@ class RetryCallTest {
             ExponentialBackOffPolicy(1, 10),
             DefaultErrorHandler()
         )
-        var foo = Foo(10)
+        val foo = Foo(10)
         retry.call {
             foo.bar()
         }
@@ -41,7 +41,7 @@ class RetryCallTest {
             ExponentialBackOffPolicy(1, 10),
             DefaultErrorHandler()
         )
-        var foo = Foo(11)
+        val foo = Foo(11)
         assertFailsWith(IllegalStateException::class) {
             retry.call {
                 foo.bar()

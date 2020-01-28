@@ -8,6 +8,6 @@ interface RetryPolicy {
     fun check() {
     }
 
-    fun allowRetry(retryCount: Int, duration: Duration, error: Throwable) : Boolean
+    fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean
 
 }

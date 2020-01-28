@@ -1,6 +1,6 @@
 package com.github.yag.retry
 
-class Foo(val errorCount: Int) : IFoo {
+class Foo(private val errorCount: Int) : IFoo {
 
     var counter = 0
 
