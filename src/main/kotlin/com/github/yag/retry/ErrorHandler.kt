@@ -4,6 +4,6 @@ import java.time.Duration
 
 interface ErrorHandler {
 
-    fun handle(retryCount: Int, duration: Duration, error: Throwable)
+    fun handle(retryCount: Int, duration: Duration, error: Throwable, allowRetry: Boolean, backOffDuration: Duration)
 
 }

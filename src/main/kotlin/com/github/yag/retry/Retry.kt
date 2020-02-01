@@ -24,9 +24,12 @@ class Retry(
                 return result
             } catch (t: Throwable) {
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
-                errorHandler.handle(retryCount, duration, t)
-                if (retryPolicy.allowRetry(retryCount, duration, t)) {
-                    backOffPolicy.backOff(retryCount, duration, t)
+                val allowRetry = retryPolicy.allowRetry(retryCount, duration, t)
+                val backOff = if (allowRetry) backOffPolicy.backOff(retryCount, duration, t) else Duration.ZERO
+
+                errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
+                if (allowRetry) {
+                    Thread.sleep(backOff.toMillis())
                     retryCount++
                     continue
                 }

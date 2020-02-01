@@ -4,7 +4,7 @@ import java.time.Duration
 
 interface BackOffPolicy {
 
-    fun backOff(retryCount: Int, duration: Duration, error: Throwable): Long
+    fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration
 
 }
 

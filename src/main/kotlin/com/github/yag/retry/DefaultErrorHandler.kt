@@ -7,11 +7,15 @@ import java.time.Duration
 open class DefaultErrorHandler @JvmOverloads constructor(@Value private val logSuppressTimeMs: Long = 0) :
     ErrorHandler {
 
-    override fun handle(retryCount: Int, duration: Duration, error: Throwable) {
+    override fun handle(retryCount: Int, duration: Duration, error: Throwable, allowRetry: Boolean, backOffDuration: Duration) {
         if (duration.toMillis() > logSuppressTimeMs || isUnexpected(error)) {
-            LOG.warn("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, duration, error)
+            if (allowRetry) {
+                LOG.warn("Invocation failed, retryCount: {}, duration: {}ms, will retry in {}ms.", retryCount, duration.toMillis(), backOffDuration.toMillis(), error)
+            } else {
+                LOG.warn("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, duration.toMillis(), error)
+            }
         } else if (LOG.isDebugEnabled) {
-            LOG.debug("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, duration, error)
+            LOG.debug("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, duration.toMillis(), error)
         }
     }
 
