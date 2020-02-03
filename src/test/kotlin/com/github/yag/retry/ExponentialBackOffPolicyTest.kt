@@ -19,27 +19,28 @@
 
 package com.github.yag.retry
 
-import com.github.yag.config.Value
 import java.time.Duration
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
-class ExponentialBackOffPolicy @JvmOverloads constructor(
-    @Value var baseIntervalMs: Long = 1000,
-    @Value var maxIntervalMs: Long = 10000
-) : BackOffPolicy {
+class ExponentialBackOffPolicyTest {
 
-    override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
-        var value = baseIntervalMs
-        for (i in 0 until retryCount) {
-            if (value < Long.MAX_VALUE / 2) {
-                value = value shl 1
-            } else {
-                value = Long.MAX_VALUE
-                break
-            }
-            if (value > maxIntervalMs)
-                break
+    private val duration = Duration.ZERO
+
+    private val error = Exception()
+
+    @Test
+    fun testMaxInterval() {
+        val backOff = ExponentialBackOffPolicy(1, 5)
+        listOf(0 to 1, 1 to 2, 2 to 4, 3 to 5, 4 to 5).forEach {
+            assertEquals(it.second, backOff.backOff(it.first, duration, error).toMillis().toInt())
         }
-        value = minOf(value, maxIntervalMs)
-        return Duration.ofMillis(value)
+    }
+
+    @Test
+    fun testOverflow() {
+        val backOff = ExponentialBackOffPolicy(Long.MAX_VALUE / 2 + 1, Long.MAX_VALUE / 2 + 2)
+        assertEquals(Long.MAX_VALUE / 2 + 1, backOff.backOff(0, duration, error).toMillis())
+        assertEquals(Long.MAX_VALUE / 2 + 2, backOff.backOff(1, duration, error).toMillis())
     }
 }
