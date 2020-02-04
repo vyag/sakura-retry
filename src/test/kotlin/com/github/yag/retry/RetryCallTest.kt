@@ -69,4 +69,13 @@ class RetryCallTest {
         assertEquals(11, foo.counter)
     }
 
+    @Test
+    fun testNoRetry() {
+        val foo = Foo(1)
+        assertFailsWith(java.lang.IllegalStateException::class) {
+            Retry.NONE.call {
+                foo.bar()
+            }
+        }
+    }
 }

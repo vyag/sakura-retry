@@ -68,5 +68,10 @@ class Retry(
 
     companion object {
         private val LOG = LoggerFactory.getLogger(Retry::class.java)
+
+        @JvmStatic
+        val NONE = of(0, 0)
+
+        fun of(maxRetries: Int, backOffIntervalMs: Long) = Retry(CountDownRetryPolicy(maxRetries, Long.MAX_VALUE), IntervalBackOffPolicy(backOffIntervalMs))
     }
 }
