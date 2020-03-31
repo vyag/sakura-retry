@@ -20,12 +20,16 @@ package com.github.yag.retry
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Proxy
 import java.time.Duration
+import kotlin.random.Random
 
 class Retry(
     private val retryPolicy: RetryPolicy,
     private val backOffPolicy: BackOffPolicy,
-    private val errorHandler: ErrorHandler = DefaultErrorHandler()
+    private val errorHandler: ErrorHandler = DefaultErrorHandler(),
+    private val backoffRandomRange: Double = 0.1
 ) {
+
+    private val random = Random(System.currentTimeMillis())
 
     fun <T> call(name: String = "call", body: () -> T): T {
         var retryCount = 0
@@ -43,10 +47,14 @@ class Retry(
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
                 val allowRetry = retryPolicy.allowRetry(retryCount, duration, t)
                 val backOff = if (allowRetry) backOffPolicy.backOff(retryCount, duration, t) else Duration.ZERO
+                val finalBackOff = if (backoffRandomRange == 0.0)
+                    backOff
+                else
+                    Duration.ofNanos(backOff.toNanos() * random.nextDouble(1 - backoffRandomRange, 1 + backoffRandomRange).toLong())
 
                 errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
                 if (allowRetry) {
-                    Thread.sleep(backOff.toMillis(), backOff.toNanosPart())
+                    Thread.sleep(finalBackOff.toMillis(), finalBackOff.toNanosPart() % 1_000_000)
                     retryCount++
                     continue
                 }
