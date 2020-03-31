@@ -54,7 +54,7 @@ class Retry(
 
                 errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
                 if (allowRetry) {
-                    Thread.sleep(finalBackOff.toMillis(), finalBackOff.toNanosPart() % 1_000_000)
+                    Thread.sleep(finalBackOff.toMillis(), (finalBackOff.toNanos() % 1_000_000).toInt())
                     retryCount++
                     continue
                 }
