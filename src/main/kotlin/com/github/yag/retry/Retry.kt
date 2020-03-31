@@ -46,7 +46,7 @@ class Retry(
 
                 errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
                 if (allowRetry) {
-                    Thread.sleep(backOff.toMillis())
+                    Thread.sleep(backOff.toMillis(), backOff.toNanosPart())
                     retryCount++
                     continue
                 }
