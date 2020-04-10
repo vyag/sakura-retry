@@ -25,8 +25,11 @@ class CountDownRetryPolicy @JvmOverloads constructor(
     @Value var maxTimeElapsedMs: Long = Long.MAX_VALUE
 ) : RetryPolicy {
 
+    /**
+     * Return true if retryCount less than maxRetries and duration less than maxTimeElapsed and error is not java.lang.InterruptedException.
+     */
     override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
-        return retryCount < maxRetries && duration.toMillis() < maxTimeElapsedMs
+        return retryCount < maxRetries && duration.toMillis() < maxTimeElapsedMs && error !is InterruptedException
     }
 
 }
