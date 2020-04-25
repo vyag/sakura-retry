@@ -59,7 +59,7 @@ class Retry(
                 errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
                 if (allowRetry) {
                     try {
-                        Thread.sleep(finalBackOff.toMillis(), (finalBackOff.toNanos() % 1_000_000).toInt())
+                        Thread.sleep(finalBackOff.toMillis(), (finalBackOff.toNanos() % 1e6).toInt())
                     } catch (e: InterruptedException) {
                         throw t
                     }
