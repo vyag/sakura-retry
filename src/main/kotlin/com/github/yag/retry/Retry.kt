@@ -66,7 +66,7 @@ class Retry(
                     retryCount++
                     continue
                 }
-                LOG.warn("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
+                LOG.info("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
                 throw t
             }
         }
