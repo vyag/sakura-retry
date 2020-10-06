@@ -20,6 +20,8 @@ package com.github.yag.retry
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Proxy
 import java.time.Duration
+import java.util.concurrent.TimeUnit
+import kotlin.math.max
 import kotlin.random.Random
 
 class Retry(
@@ -86,6 +88,19 @@ class Retry(
         @JvmStatic
         val NONE = of(0, 0)
 
-        fun of(maxRetries: Int, backOffIntervalMs: Long) = Retry(CountDownRetryPolicy(maxRetries, Long.MAX_VALUE), IntervalBackOffPolicy(backOffIntervalMs))
+        fun of(maxRetries: Int, backOffIntervalMs: Long = 1000) =
+            Retry(CountDownRetryPolicy(maxRetries, Long.MAX_VALUE), IntervalBackOffPolicy(backOffIntervalMs))
+
+        fun duration(
+            duration: Long,
+            unit: TimeUnit = TimeUnit.MILLISECONDS
+        ) : Retry {
+            val durationMs = TimeUnit.MILLISECONDS.convert(duration, unit)
+            val baseInterval = max(1, duration / 100)
+            val maxInterval = max(baseInterval, duration / 10)
+
+            return Retry(CountDownRetryPolicy(Int.MAX_VALUE, durationMs), ExponentialBackOffPolicy(baseInterval, maxInterval))
+        }
+
     }
 }
