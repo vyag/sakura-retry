@@ -86,20 +86,21 @@ class Retry(
         private val LOG = LoggerFactory.getLogger(Retry::class.java)
 
         @JvmStatic
-        val NONE = of(0, 0)
+        val NONE = max(0, Duration.ZERO)
 
-        fun of(maxRetries: Int, backOffIntervalMs: Long = 1000) =
-            Retry(CountDownRetryPolicy(maxRetries, Long.MAX_VALUE), IntervalBackOffPolicy(backOffIntervalMs))
+        @JvmStatic
+        val ALWAYS = duration(Duration.ofMillis(Long.MAX_VALUE))
 
+        @JvmStatic
+        fun max(maxRetries: Int, backOffInterval: Duration = Duration.ofMillis(Long.MAX_VALUE)) =
+            Retry(CountDownRetryPolicy(maxRetries, Long.MAX_VALUE), IntervalBackOffPolicy(backOffInterval.toMillis()))
+
+        @JvmStatic
         fun duration(
-            duration: Long,
-            unit: TimeUnit = TimeUnit.MILLISECONDS
+            duration: Duration,
+            backOffInterval: Duration = Duration.ofSeconds(1)
         ) : Retry {
-            val durationMs = TimeUnit.MILLISECONDS.convert(duration, unit)
-            val baseInterval = max(1, duration / 100)
-            val maxInterval = max(baseInterval, duration / 10)
-
-            return Retry(CountDownRetryPolicy(Int.MAX_VALUE, durationMs), ExponentialBackOffPolicy(baseInterval, maxInterval))
+            return Retry(CountDownRetryPolicy(Int.MAX_VALUE, duration.toMillis()), IntervalBackOffPolicy(backOffInterval.toMillis()))
         }
 
     }

@@ -25,11 +25,7 @@ class RetryCallTest {
 
     @Test
     fun testNoError() {
-        val retry = Retry(
-            CountDownRetryPolicy(),
-            ExponentialBackOffPolicy(),
-            DefaultErrorHandler()
-        )
+        val retry = Retry.NONE
         var count = 0
         retry.call {
             count++
@@ -39,11 +35,7 @@ class RetryCallTest {
 
     @Test
     fun testRetrySuccess() {
-        val retry = Retry(
-            CountDownRetryPolicy(10, 3000),
-            ExponentialBackOffPolicy(1, 10),
-            DefaultErrorHandler()
-        )
+        val retry = Retry.ALWAYS
         val foo = Foo(10)
         retry.call {
             foo.bar()
@@ -59,7 +51,7 @@ class RetryCallTest {
             DefaultErrorHandler()
         )
         val foo = Foo(11)
-        assertFailsWith(IllegalStateException::class) {
+        assertFailsWith<IllegalStateException> {
             retry.call {
                 foo.bar()
             }
@@ -70,7 +62,7 @@ class RetryCallTest {
     @Test
     fun testNoRetry() {
         val foo = Foo(1)
-        assertFailsWith(java.lang.IllegalStateException::class) {
+        assertFailsWith<IllegalStateException> {
             Retry.NONE.call {
                 foo.bar()
             }
