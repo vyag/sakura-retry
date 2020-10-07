@@ -25,14 +25,16 @@ open class DefaultErrorHandler @JvmOverloads constructor(@Value private val logS
     ErrorHandler {
 
     override fun handle(retryCount: Int, duration: Duration, error: Throwable, allowRetry: Boolean, backOffDuration: Duration) {
-        if (duration.toMillis() > logSuppressTimeMs || isUnexpected(error)) {
+        val durationMs = duration.toMillis()
+        if (durationMs > logSuppressTimeMs || isUnexpected(error)) {
             if (allowRetry) {
-                LOG.warn("Invocation failed, retryCount: {}, duration: {}ms, will retry in {}ms.", retryCount, duration.toMillis(), backOffDuration.toMillis(), error)
+                LOG.info("Invocation failed, retryCount: {}, duration: {}ms, will retry in {}ms.", retryCount,
+                    durationMs, backOffDuration.toMillis(), error)
             } else {
-                LOG.warn("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, duration.toMillis(), error)
+                LOG.info("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, durationMs, error)
             }
-        } else if (LOG.isDebugEnabled) {
-            LOG.debug("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, duration.toMillis(), error)
+        } else {
+            LOG.info("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, durationMs, error)
         }
     }
 
