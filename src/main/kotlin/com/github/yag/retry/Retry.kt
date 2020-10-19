@@ -17,11 +17,10 @@
 
 package com.github.yag.retry
 
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Proxy
 import java.time.Duration
-import java.util.concurrent.TimeUnit
-import kotlin.math.max
 import kotlin.random.Random
 
 class Retry(
@@ -71,6 +70,52 @@ class Retry(
                 LOG.debug("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
                 throw t
             }
+        }
+    }
+
+    fun <T> callAsync(name: String = "call", scope: CoroutineScope = GlobalScope, body: () -> T) : Deferred<T> {
+        return scope.async {
+            var retryCount = 0
+            val startTime = System.nanoTime()
+
+            var result: T
+            while (true) {
+                try {
+                    retryPolicy.check()
+                    result = body()
+                    if (retryCount > 0) {
+                        LOG.debug("Finally {} success after {} retries.", name, retryCount)
+                    }
+                    break
+                } catch (t: Throwable) {
+                    if (t is InterruptedException) {
+                        throw t
+                    }
+
+                    val duration = Duration.ofNanos(System.nanoTime() - startTime)
+                    val allowRetry = retryPolicy.allowRetry(retryCount, duration, t)
+                    val backOff = if (allowRetry) backOffPolicy.backOff(retryCount, duration, t) else Duration.ZERO
+                    val finalBackOff = if (backoffRandomRange == 0.0)
+                        backOff
+                    else
+                        Duration.ofNanos(
+                            backOff.toNanos() * random.nextDouble(
+                                1 - backoffRandomRange,
+                                1 + backoffRandomRange
+                            ).toLong()
+                        )
+
+                    errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
+                    if (allowRetry) {
+                        delay(finalBackOff.toMillis())
+                        retryCount++
+                        continue
+                    }
+                    LOG.debug("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
+                    throw t
+                }
+            }
+            result
         }
     }
 
