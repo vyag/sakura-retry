@@ -137,7 +137,7 @@ class Retry(
         val ALWAYS = duration(Duration.ofMillis(Long.MAX_VALUE))
 
         @JvmStatic
-        fun max(maxRetries: Int, backOffInterval: Duration = Duration.ofMillis(Long.MAX_VALUE)) =
+        fun max(maxRetries: Int, backOffInterval: Duration = Duration.ofSeconds(1)) =
             Retry(CountDownRetryPolicy(maxRetries, Long.MAX_VALUE), IntervalBackOffPolicy(backOffInterval.toMillis()))
 
         @JvmStatic
