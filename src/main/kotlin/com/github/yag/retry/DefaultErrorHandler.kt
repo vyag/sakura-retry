@@ -34,7 +34,7 @@ open class DefaultErrorHandler @JvmOverloads constructor(@Value private val logS
                 LOG.info("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, durationMs, error)
             }
         } else {
-            LOG.info("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, durationMs, error)
+            LOG.debug("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, durationMs, error)
         }
     }
 
