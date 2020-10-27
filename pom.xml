@@ -103,8 +103,28 @@
         </dependency>
         <dependency>
             <groupId>com.github.marks-yag</groupId>
-            <artifactId>config-core</artifactId>
-            <version>0.9.3</version>
+            <artifactId>config-annotation</artifactId>
+            <version>0.11.0</version>
+        </dependency>
+        <!-- logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.25</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.1.2</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.1.2</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlinx</groupId>
