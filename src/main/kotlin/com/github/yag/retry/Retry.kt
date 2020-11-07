@@ -67,7 +67,7 @@ class Retry(
                     try {
                         Thread.sleep(finalBackOff.toMillis(), (finalBackOff.toNanos() % 1e6).toInt())
                     } catch (e: InterruptedException) {
-                        throw t
+                        throw e
                     }
                     if (checker.check()) {
                         retryCount++
