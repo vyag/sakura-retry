@@ -20,6 +20,7 @@ package com.github.yag.retry
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Proxy
 import java.time.Duration
+import java.util.concurrent.Callable
 import kotlin.random.Random
 
 class Retry(
@@ -31,6 +32,11 @@ class Retry(
 ) {
 
     private val random = Random(System.currentTimeMillis())
+
+    @JvmOverloads
+    fun <T> call(name: String = "call", body: Callable<T>) : T {
+        return call(name, body::call)
+    }
 
     fun <T> call(name: String = "call", body: () -> T): T {
         var retryCount = 0
@@ -74,6 +80,7 @@ class Retry(
         }
     }
 
+    @JvmOverloads
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
         @Suppress("UNCHECKED_CAST")
         return (Proxy.newProxyInstance(
