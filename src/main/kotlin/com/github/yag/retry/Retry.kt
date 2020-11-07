@@ -26,6 +26,7 @@ class Retry(
     private val retryPolicy: RetryPolicy,
     private val backOffPolicy: BackOffPolicy,
     private val errorHandler: ErrorHandler = DefaultErrorHandler(),
+    private val checker: Checker = Checker.TRUE,
     private val backoffRandomRange: Double = 0.1
 ) {
 
@@ -37,7 +38,6 @@ class Retry(
 
         while (true) {
             try {
-                retryPolicy.check()
                 val result = body()
                 if (retryCount > 0) {
                     LOG.debug("Finally {} success after {} retries.", name, retryCount)
@@ -49,7 +49,7 @@ class Retry(
                 }
 
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
-                val allowRetry = retryPolicy.allowRetry(retryCount, duration, t)
+                val allowRetry = retryPolicy.allowRetry(retryCount, duration, t) && checker.check()
                 val backOff = if (allowRetry) backOffPolicy.backOff(retryCount, duration, t) else Duration.ZERO
                 val finalBackOff = if (backoffRandomRange == 0.0)
                     backOff
@@ -63,8 +63,10 @@ class Retry(
                     } catch (e: InterruptedException) {
                         throw t
                     }
-                    retryCount++
-                    continue
+                    if (checker.check()) {
+                        retryCount++
+                        continue
+                    }
                 }
                 LOG.debug("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
                 throw t

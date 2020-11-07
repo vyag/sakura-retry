@@ -17,10 +17,17 @@
 
 package com.github.yag.retry
 
-import java.time.Duration
+interface Checker {
 
-interface RetryPolicy {
+    fun check() : Boolean
 
-    fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean
+    companion object {
+
+        val TRUE = object: Checker {
+            override fun check(): Boolean {
+                return true
+            }
+        }
+    }
 
 }
