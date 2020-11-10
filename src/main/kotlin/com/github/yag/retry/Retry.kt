@@ -24,8 +24,8 @@ import java.util.concurrent.Callable
 import kotlin.random.Random
 
 class Retry(
-    private val retryPolicy: RetryPolicy,
-    private val backOffPolicy: BackOffPolicy,
+    private val retryPolicy: RetryPolicy = CountDownRetryPolicy(),
+    private val backOffPolicy: BackOffPolicy = IntervalBackOffPolicy(),
     private val errorHandler: ErrorHandler = DefaultErrorHandler(),
     private val checker: Checker = Checker.TRUE,
     private val backoffRandomRange: Double = 0.1
