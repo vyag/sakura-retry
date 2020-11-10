@@ -24,11 +24,11 @@ import java.util.concurrent.Callable
 import kotlin.random.Random
 
 class Retry(
-    private val retryPolicy: RetryPolicy = CountDownRetryPolicy(),
-    private val backOffPolicy: BackOffPolicy = IntervalBackOffPolicy(),
-    private val errorHandler: ErrorHandler = DefaultErrorHandler(),
-    private val checker: Checker = Checker.TRUE,
-    private val backoffRandomRange: Double = 0.1
+    internal var retryPolicy: RetryPolicy = CountDownRetryPolicy(),
+    internal var backOffPolicy: BackOffPolicy = IntervalBackOffPolicy(),
+    internal var errorHandler: ErrorHandler = DefaultErrorHandler(),
+    internal var checker: Checker = Checker.TRUE,
+    internal var backOffRandomRange: Double = 0.1
 ) {
 
     private val random = Random(System.currentTimeMillis())
@@ -57,10 +57,10 @@ class Retry(
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
                 val allowRetry = retryPolicy.allowRetry(retryCount, duration, t) && checker.check()
                 val backOff = if (allowRetry) backOffPolicy.backOff(retryCount, duration, t) else Duration.ZERO
-                val finalBackOff = if (backoffRandomRange == 0.0)
+                val finalBackOff = if (backOffRandomRange == 0.0)
                     backOff
                 else
-                    Duration.ofNanos(backOff.toNanos() * random.nextDouble(1 - backoffRandomRange, 1 + backoffRandomRange).toLong())
+                    Duration.ofNanos(backOff.toNanos() * random.nextDouble(1 - backOffRandomRange, 1 + backOffRandomRange).toLong())
 
                 errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
                 if (allowRetry) {
