@@ -31,8 +31,6 @@ class Retry(
     internal var backOffRandomRange: Double = 0.1
 ) {
 
-    private val random = Random(System.currentTimeMillis())
-
     @JvmOverloads
     fun <T> call(name: String = "call", body: Callable<T>) : T {
         return call(name, body::call)
@@ -57,10 +55,7 @@ class Retry(
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
                 val allowRetry = retryPolicy.allowRetry(retryCount, duration, t) && checker.check()
                 val backOff = if (allowRetry) backOffPolicy.backOff(retryCount, duration, t) else Duration.ZERO
-                val finalBackOff = if (backOffRandomRange == 0.0)
-                    backOff
-                else
-                    Duration.ofNanos(backOff.toNanos() * random.nextDouble(1 - backOffRandomRange, 1 + backOffRandomRange).toLong())
+                val finalBackOff = random(backOff, backOffRandomRange)
 
                 errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
                 if (allowRetry) {
@@ -80,6 +75,7 @@ class Retry(
         }
     }
 
+
     @JvmOverloads
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
         @Suppress("UNCHECKED_CAST")
@@ -90,7 +86,10 @@ class Retry(
     }
 
     companion object {
+
         private val LOG = LoggerFactory.getLogger(Retry::class.java)
+
+        private val random = Random(System.currentTimeMillis())
 
         @JvmStatic
         val NONE = max(0, Duration.ZERO)
@@ -110,5 +109,16 @@ class Retry(
             return Retry(CountDownRetryPolicy(Int.MAX_VALUE, duration.toMillis()), IntervalBackOffPolicy(backOffInterval.toMillis()))
         }
 
+
+        internal fun random(backOff: Duration, randomRange: Double): Duration {
+            return if (randomRange == 0.0) {
+                backOff
+            } else {
+                val scale = random.nextDouble(1 - randomRange, 1 + randomRange)
+                Duration.ofNanos(
+                    (backOff.toNanos() * scale).toLong()
+                )
+            }
+        }
     }
 }
