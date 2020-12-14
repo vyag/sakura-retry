@@ -17,17 +17,22 @@
 
 package com.github.yag.retry
 
+import java.io.IOException
+
 class Foo(private val errorCount: Int) : IFoo {
 
     var counter = 0
 
     override fun bar() {
-        check(++counter > errorCount)
+        if(++counter <= errorCount) {
+            throw IOException()
+        }
     }
 }
 
 interface IFoo {
 
+    @Throws(IOException::class)
     fun bar()
 
 }

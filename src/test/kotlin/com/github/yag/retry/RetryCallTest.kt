@@ -17,6 +17,7 @@
 
 package com.github.yag.retry
 
+import java.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -51,7 +52,7 @@ class RetryCallTest {
             DefaultErrorHandler()
         )
         val foo = Foo(11)
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<IOException> {
             retry.call {
                 foo.bar()
             }
@@ -62,7 +63,7 @@ class RetryCallTest {
     @Test
     fun testNoRetry() {
         val foo = Foo(1)
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<IOException> {
             Retry.NONE.call {
                 foo.bar()
             }

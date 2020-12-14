@@ -28,7 +28,9 @@ class Retry(
     internal var backOffPolicy: BackOffPolicy = IntervalBackOffPolicy(),
     internal var errorHandler: ErrorHandler = DefaultErrorHandler(),
     internal var checker: Checker = Checker.TRUE,
-    internal var backOffRandomRange: Double = 0.1
+    internal var backOffRandomRange: Double = 0.1,
+    internal var abortOnRuntimeException: Boolean = true,
+    internal var abortOnError: Boolean = true
 ) {
 
     @JvmOverloads
@@ -49,6 +51,14 @@ class Retry(
                 return result
             } catch (t: Throwable) {
                 if (t is InterruptedException) {
+                    throw t
+                }
+
+                if(abortOnRuntimeException && t is RuntimeException) {
+                    throw t
+                }
+
+                if (abortOnError && t is Error) {
                     throw t
                 }
 

@@ -17,6 +17,7 @@
 
 package com.github.yag.retry
 
+import java.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -45,7 +46,7 @@ class RetryProxyTest {
         )
         val rawFoo = Foo(11)
         val foo = retry.proxy(IFoo::class.java, rawFoo)
-        assertFailsWith(IllegalStateException::class) {
+        assertFailsWith(IOException::class) {
             foo.bar()
         }
         assertEquals(11, rawFoo.counter)
