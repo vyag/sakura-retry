@@ -19,11 +19,11 @@ package com.github.yag.retry
 
 interface Checker {
 
-    fun check() : Boolean
+    fun check(): Boolean
 
     companion object {
 
-        val TRUE = object: Checker {
+        val TRUE = object : Checker {
             override fun check(): Boolean {
                 return true
             }

@@ -24,7 +24,7 @@ class Foo(private val errorCount: Int) : IFoo {
     var counter = 0
 
     override fun bar() {
-        if(++counter <= errorCount) {
+        if (++counter <= errorCount) {
             throw IOException()
         }
     }

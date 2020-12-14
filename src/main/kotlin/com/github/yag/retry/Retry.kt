@@ -34,7 +34,7 @@ class Retry(
 ) {
 
     @JvmOverloads
-    fun <T> call(name: String = "call", body: Callable<T>) : T {
+    fun <T> call(name: String = "call", body: Callable<T>): T {
         return call(name, body::call)
     }
 
@@ -54,7 +54,7 @@ class Retry(
                     throw t
                 }
 
-                if(abortOnRuntimeException && t is RuntimeException) {
+                if (abortOnRuntimeException && t is RuntimeException) {
                     throw t
                 }
 
@@ -115,8 +115,11 @@ class Retry(
         fun duration(
             duration: Duration,
             backOffInterval: Duration = Duration.ofSeconds(1)
-        ) : Retry {
-            return Retry(CountDownRetryPolicy(Int.MAX_VALUE, duration.toMillis()), IntervalBackOffPolicy(backOffInterval.toMillis()))
+        ): Retry {
+            return Retry(
+                CountDownRetryPolicy(Int.MAX_VALUE, duration.toMillis()),
+                IntervalBackOffPolicy(backOffInterval.toMillis())
+            )
         }
 
 

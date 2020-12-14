@@ -23,4 +23,20 @@ interface RetryPolicy {
 
     fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean
 
+    infix fun and(policy: RetryPolicy): RetryPolicy {
+        return object : RetryPolicy {
+            override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
+                return allowRetry(retryCount, duration, error) && policy.allowRetry(retryCount, duration, error)
+            }
+        }
+    }
+
+    infix fun or(policy: RetryPolicy): RetryPolicy {
+        return object : RetryPolicy {
+            override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
+                return allowRetry(retryCount, duration, error) || policy.allowRetry(retryCount, duration, error)
+            }
+        }
+    }
+
 }

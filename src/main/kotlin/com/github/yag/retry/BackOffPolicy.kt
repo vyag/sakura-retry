@@ -24,4 +24,3 @@ interface BackOffPolicy {
     fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration
 
 }
-

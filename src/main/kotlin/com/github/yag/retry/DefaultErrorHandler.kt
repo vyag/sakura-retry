@@ -24,7 +24,13 @@ import java.time.Duration
 open class DefaultErrorHandler @JvmOverloads constructor(@Value private val logSuppressTimeMs: Long = 0) :
     ErrorHandler {
 
-    override fun handle(retryCount: Int, duration: Duration, error: Throwable, allowRetry: Boolean, backOffDuration: Duration) {
+    override fun handle(
+        retryCount: Int,
+        duration: Duration,
+        error: Throwable,
+        allowRetry: Boolean,
+        backOffDuration: Duration
+    ) {
         val printStack = isStacktraceRequired(error)
         val durationMs = duration.toMillis()
         if (isUnexpected(error)) {
