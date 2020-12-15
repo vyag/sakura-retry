@@ -46,11 +46,11 @@ class RetryCallTest {
 
     @Test
     fun testRetryFailed() {
-        val retry = Retry(
-            CountDownRetryPolicy(10, 3000),
-            ExponentialBackOffPolicy(1, 10),
-            DefaultErrorHandler()
-        )
+        val retry = RetryBuilder()
+            .retryPolicy(CountDownRetryPolicy(10, 3000))
+            .backOffPolicy(ExponentialBackOffPolicy(1, 10))
+            .errorHandler(DefaultErrorHandler())
+            .build()
         val foo = Foo(11)
         assertFailsWith<IOException> {
             retry.call {

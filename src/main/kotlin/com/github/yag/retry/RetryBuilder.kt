@@ -41,12 +41,8 @@ class RetryBuilder {
         prototype.backOffRandomRange = backOffRandomRange
     }
 
-    fun abortOnRuntimeException(abortOnRuntimeException: Boolean) = apply {
-        prototype.abortOnRuntimeException = abortOnRuntimeException
-    }
-
-    fun abortOnError(abortOnError: Boolean) = apply {
-        prototype.abortOnError = abortOnError
+    fun abortOn(abortOn: Set<Class<out Throwable>>) = apply {
+        prototype.abortOn = abortOn
     }
 
     fun build() = prototype

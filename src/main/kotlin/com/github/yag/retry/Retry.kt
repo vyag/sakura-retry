@@ -29,8 +29,11 @@ class Retry(
     internal var errorHandler: ErrorHandler = DefaultErrorHandler(),
     internal var checker: Checker = Checker.TRUE,
     internal var backOffRandomRange: Double = 0.1,
-    internal var abortOnRuntimeException: Boolean = true,
-    internal var abortOnError: Boolean = true
+    internal var abortOn: Set<Class<out Throwable>> = setOf(
+        InterruptedException::class.java,
+        RuntimeException::class.java,
+        Error::class.java
+    )
 ) {
 
     @JvmOverloads
@@ -50,15 +53,7 @@ class Retry(
                 }
                 return result
             } catch (t: Throwable) {
-                if (t is InterruptedException) {
-                    throw t
-                }
-
-                if (abortOnRuntimeException && t is RuntimeException) {
-                    throw t
-                }
-
-                if (abortOnError && t is Error) {
+                if (abortOn.any { it.isInstance(t) }) {
                     throw t
                 }
 
