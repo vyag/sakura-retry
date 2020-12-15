@@ -97,10 +97,10 @@ class Retry(
         private val random = Random(System.currentTimeMillis())
 
         @JvmStatic
-        val NONE = max(0, Duration.ZERO)
+        val NONE = RetryBuilder().retryPolicy(RetryPolicy.NONE).build()
 
         @JvmStatic
-        val ALWAYS = duration(Duration.ofMillis(Long.MAX_VALUE))
+        val ALWAYS = RetryBuilder().retryPolicy(RetryPolicy.ALWAYS).build()
 
         @JvmStatic
         fun max(maxRetries: Int, backOffInterval: Duration = Duration.ofSeconds(1)) =
@@ -116,7 +116,6 @@ class Retry(
                 IntervalBackOffPolicy(backOffInterval.toMillis())
             )
         }
-
 
         internal fun random(backOff: Duration, randomRange: Double): Duration {
             return if (randomRange == 0.0) {

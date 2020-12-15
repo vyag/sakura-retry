@@ -26,7 +26,7 @@ interface RetryPolicy {
     infix fun and(policy: RetryPolicy): RetryPolicy {
         return object : RetryPolicy {
             override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
-                return allowRetry(retryCount, duration, error) && policy.allowRetry(retryCount, duration, error)
+                return this@RetryPolicy.allowRetry(retryCount, duration, error) && policy.allowRetry(retryCount, duration, error)
             }
         }
     }
@@ -34,7 +34,24 @@ interface RetryPolicy {
     infix fun or(policy: RetryPolicy): RetryPolicy {
         return object : RetryPolicy {
             override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
-                return allowRetry(retryCount, duration, error) || policy.allowRetry(retryCount, duration, error)
+                return this@RetryPolicy.allowRetry(retryCount, duration, error) || policy.allowRetry(retryCount, duration, error)
+            }
+        }
+    }
+
+    companion object {
+
+        @JvmStatic
+        val ALWAYS = object : RetryPolicy {
+            override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
+                return true
+            }
+        }
+
+        @JvmStatic
+        val NONE = object : RetryPolicy {
+            override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
+                return false
             }
         }
     }
