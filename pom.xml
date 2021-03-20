@@ -37,8 +37,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.4.10</kotlin.version>
         <kotlin.code.style>official</kotlin.code.style>
-        <junit.version>4.12</junit.version>
-        <punner.version>0.9.16</punner.version>
+        <junit.version>5.7.1</junit.version>
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -97,7 +96,7 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-test-junit</artifactId>
+            <artifactId>kotlin-test-junit5</artifactId>
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
@@ -128,8 +127,15 @@
         </dependency>
 
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
@@ -166,31 +172,26 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.20</version>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>1.6.3</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.pitest</groupId>
+                        <artifactId>pitest-junit5-plugin</artifactId>
+                        <version>0.12</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
-                    <skip>true</skip>
+                    <targetClasses>
+                        <param>com.github.yag.retry.*</param>
+                    </targetClasses>
+                    <avoidCallsTo>
+                        <avoidCallsTo>kotlin.jvm.internal</avoidCallsTo>
+                        <avoidCallsTo>kotlinx.coroutines</avoidCallsTo>
+                        <avoidCallsTo>org.slf4j</avoidCallsTo>
+                    </avoidCallsTo>
                 </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>com.github.marks-yag</groupId>
-                <artifactId>punner-maven-plugin</artifactId>
-                <version>${punner.version}</version>
-                <configuration>
-                    <overrideDefault>true</overrideDefault>
-                    <parallelLevel>1c</parallelLevel>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
