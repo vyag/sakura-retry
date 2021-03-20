@@ -38,16 +38,12 @@ class Retry(
 
     @JvmOverloads
     fun <T> call(name: String = "call", body: Callable<T>): T {
-        return call(name, body::call)
-    }
-
-    fun <T> call(name: String = "call", body: () -> T): T {
         var retryCount = 0
         val startTime = System.nanoTime()
 
         while (true) {
             try {
-                val result = body()
+                val result = body.call()
                 if (retryCount > 0) {
                     LOG.debug("Finally {} success after {} retries.", name, retryCount)
                 }

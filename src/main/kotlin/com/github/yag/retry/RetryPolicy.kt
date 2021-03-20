@@ -19,41 +19,29 @@ package com.github.yag.retry
 
 import java.time.Duration
 
-interface RetryPolicy {
+fun interface RetryPolicy {
 
     fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean
 
     infix fun and(policy: RetryPolicy): RetryPolicy {
-        return object : RetryPolicy {
-            override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
-                return this@RetryPolicy.allowRetry(retryCount, duration, error) && policy.allowRetry(retryCount, duration, error)
-            }
+        return RetryPolicy { retryCount, duration, error ->
+            this@RetryPolicy.allowRetry(retryCount, duration, error) && policy.allowRetry(retryCount, duration, error)
         }
     }
 
     infix fun or(policy: RetryPolicy): RetryPolicy {
-        return object : RetryPolicy {
-            override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
-                return this@RetryPolicy.allowRetry(retryCount, duration, error) || policy.allowRetry(retryCount, duration, error)
-            }
+        return RetryPolicy { retryCount, duration, error ->
+            this@RetryPolicy.allowRetry(retryCount, duration, error) || policy.allowRetry(retryCount, duration, error)
         }
     }
 
     companion object {
 
         @JvmStatic
-        val ALWAYS = object : RetryPolicy {
-            override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
-                return true
-            }
-        }
+        val ALWAYS = RetryPolicy { _, _, _ -> true }
 
         @JvmStatic
-        val NONE = object : RetryPolicy {
-            override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
-                return false
-            }
-        }
+        val NONE = RetryPolicy { _, _, _ -> false }
     }
 
 }
