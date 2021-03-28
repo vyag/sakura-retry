@@ -17,12 +17,27 @@
 
 package com.github.yag.retry
 
+import org.mockito.Mockito
 import java.io.IOException
+import java.util.concurrent.Callable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class RetryProxyTest {
+
+    @Test
+    fun testNoError() {
+        val retry = Retry(
+            CountDownRetryPolicy(10, 3000),
+            ExponentialBackOffPolicy(1, 10),
+            DefaultErrorHandler()
+        )
+        val mock = Mockito.mock(Callable::class.java)
+        val foo = retry.proxy(Callable::class.java, mock)
+        foo.call()
+        Mockito.verify(mock, Mockito.times(1)).call()
+    }
 
     @Test
     fun testRetrySuccess() {
@@ -31,10 +46,14 @@ class RetryProxyTest {
             ExponentialBackOffPolicy(1, 10),
             DefaultErrorHandler()
         )
-        val rawFoo = Foo(10)
-        val foo = retry.proxy(IFoo::class.java, rawFoo)
-        foo.bar()
-        assertEquals(11, rawFoo.counter)
+        val mock = Mockito.mock(Callable::class.java)
+        Mockito.doThrow(*Array(9) {
+            IOException()
+        }).doReturn("done").`when`(mock).call()
+
+        val foo = retry.proxy(Callable::class.java, mock)
+        assertEquals("done", foo.call())
+        Mockito.verify(mock, Mockito.times(10)).call()
     }
 
     @Test
@@ -44,12 +63,14 @@ class RetryProxyTest {
             ExponentialBackOffPolicy(1, 10),
             DefaultErrorHandler()
         )
-        val rawFoo = Foo(11)
-        val foo = retry.proxy(IFoo::class.java, rawFoo)
+        val mock = Mockito.mock(Callable::class.java)
+        Mockito.doThrow(IOException()).`when`(mock).call()
+
+        val foo = retry.proxy(Callable::class.java, mock)
         assertFailsWith(IOException::class) {
-            foo.bar()
+            foo.call()
         }
-        assertEquals(11, rawFoo.counter)
+        Mockito.verify(mock, Mockito.times(11)).call()
     }
 
 }

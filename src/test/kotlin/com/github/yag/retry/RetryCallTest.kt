@@ -17,7 +17,9 @@
 
 package com.github.yag.retry
 
+import org.mockito.Mockito
 import java.io.IOException
+import java.util.concurrent.Callable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -27,21 +29,29 @@ class RetryCallTest {
     @Test
     fun testNoError() {
         val retry = Retry.NONE
-        var count = 0
+        var mock = Mockito.mock(Callable::class.java)
         retry.call {
-            count++
+            mock.call()
         }
-        assertEquals(1, count)
+        Mockito.verify(mock, Mockito.times(1)).call()
     }
 
     @Test
     fun testRetrySuccess() {
-        val retry = Retry.ALWAYS
-        val foo = Foo(10)
-        retry.call {
-            foo.bar()
-        }
-        assertEquals(11, foo.counter)
+        val retry = Retry(
+            CountDownRetryPolicy(10, 3000),
+            ExponentialBackOffPolicy(1, 10),
+            DefaultErrorHandler()
+        )
+        val mock = Mockito.mock(Callable::class.java)
+        Mockito.doThrow(*Array(10) {
+            IOException()
+        }).doReturn("done").`when`(mock).call()
+
+        assertEquals("done", retry.call {
+            mock.call()
+        })
+        Mockito.verify(mock, Mockito.times(11)).call()
     }
 
     @Test
@@ -51,22 +61,15 @@ class RetryCallTest {
             .backOffPolicy(ExponentialBackOffPolicy(1, 10))
             .errorHandler(DefaultErrorHandler())
             .build()
-        val foo = Foo(11)
+        val mock = Mockito.mock(Callable::class.java)
+        Mockito.doThrow(IOException()).`when`(mock).call()
+
         assertFailsWith<IOException> {
             retry.call {
-                foo.bar()
+                mock.call()
             }
         }
-        assertEquals(11, foo.counter)
+        Mockito.verify(mock, Mockito.times(11)).call()
     }
 
-    @Test
-    fun testNoRetry() {
-        val foo = Foo(1)
-        assertFailsWith<IOException> {
-            Retry.NONE.call {
-                foo.bar()
-            }
-        }
-    }
 }
