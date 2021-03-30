@@ -25,8 +25,16 @@ class RetryBuilder {
         prototype.retryPolicy = retryPolicy
     }
 
+    fun max(retries: Int) = apply {
+        prototype.retryPolicy = CountDownRetryPolicy(retries)
+    }
+
     fun backOffPolicy(backOffPolicy: BackOffPolicy) = apply {
         prototype.backOffPolicy = backOffPolicy
+    }
+
+    fun backOff(minMs: Long, maxMs: Long = minMs) = apply {
+        prototype.backOffPolicy = IntervalBackOffPolicy(minMs, maxMs)
     }
 
     fun errorHandler(errorHandler: ErrorHandler) = apply {
