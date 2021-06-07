@@ -27,11 +27,11 @@
         </layout>
     </appender>
 
-    <logger name="com.github.yag" level="${log.level}" additivity="false">
+    <logger name="retry" level="${log.level:-DEBUG}" additivity="false">
         <appender-ref ref="STDOUT"/>
     </logger>
 
-    <root level="WARN">
+    <root level="${root.log.level:-DEBUG}">
         <appender-ref ref="STDOUT"/>
     </root>
 </configuration>
