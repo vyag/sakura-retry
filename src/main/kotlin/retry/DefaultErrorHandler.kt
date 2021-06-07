@@ -17,7 +17,7 @@
 
 package retry
 
-import com.github.yag.config.Value
+import config.Value
 import org.slf4j.LoggerFactory
 import java.time.Duration
 

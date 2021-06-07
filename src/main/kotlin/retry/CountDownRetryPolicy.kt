@@ -17,7 +17,7 @@
 
 package retry
 
-import com.github.yag.config.Value
+import config.Value
 import java.time.Duration
 
 class CountDownRetryPolicy @JvmOverloads constructor(
