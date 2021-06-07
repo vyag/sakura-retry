@@ -56,11 +56,11 @@ class RetryCallTest {
 
     @Test
     fun testRetryFailed() {
-        val retry = RetryBuilder()
-            .retryPolicy(CountDownRetryPolicy(10, 3000))
-            .backOffPolicy(ExponentialBackOffPolicy(1, 10))
-            .errorHandler(DefaultErrorHandler())
-            .build()
+        val retry = Retry(
+            retryPolicy = CountDownRetryPolicy(10, 3000),
+            backOffPolicy = ExponentialBackOffPolicy(1, 10),
+            errorHandler = DefaultErrorHandler()
+        )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 

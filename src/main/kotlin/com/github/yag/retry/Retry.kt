@@ -21,15 +21,13 @@ import org.slf4j.LoggerFactory
 import java.lang.reflect.Proxy
 import java.time.Duration
 import java.util.concurrent.Callable
-import kotlin.random.Random
 
-class Retry(
-    internal var retryPolicy: RetryPolicy = CountDownRetryPolicy(),
-    internal var backOffPolicy: BackOffPolicy = IntervalBackOffPolicy(),
-    internal var errorHandler: ErrorHandler = DefaultErrorHandler(),
-    internal var checker: Checker = Checker.TRUE,
-    internal var backOffRandomRange: Double = 0.1,
-    internal var abortOn: Set<Class<out Throwable>> = setOf(
+class Retry @JvmOverloads constructor(
+    var retryPolicy: RetryPolicy = CountDownRetryPolicy(),
+    var backOffPolicy: BackOffPolicy = IntervalBackOffPolicy(),
+    var errorHandler: ErrorHandler = DefaultErrorHandler(),
+    var checker: Checker = Checker.TRUE,
+    var abortOn: Set<Class<out Throwable>> = setOf(
         InterruptedException::class.java,
         RuntimeException::class.java,
         Error::class.java
@@ -56,12 +54,11 @@ class Retry(
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
                 val allowRetry = retryPolicy.allowRetry(retryCount, duration, t) && checker.check()
                 val backOff = if (allowRetry) backOffPolicy.backOff(retryCount, duration, t) else Duration.ZERO
-                val finalBackOff = random(backOff, backOffRandomRange)
 
                 errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
                 if (allowRetry) {
                     try {
-                        Thread.sleep(finalBackOff.toMillis(), (finalBackOff.toNanos() % 1e6).toInt())
+                        Thread.sleep(backOff.toMillis(), (backOff.toNanos() % 1e6).toInt())
                     } catch (e: InterruptedException) {
                         throw e
                     }
@@ -90,38 +87,11 @@ class Retry(
 
         private val LOG = LoggerFactory.getLogger(Retry::class.java)
 
-        private val random = Random(System.currentTimeMillis())
+        @JvmStatic
+        val NONE = Retry(retryPolicy = RetryPolicy.NONE)
 
         @JvmStatic
-        val NONE = RetryBuilder().retryPolicy(RetryPolicy.NONE).build()
+        val ALWAYS = Retry(retryPolicy = RetryPolicy.ALWAYS)
 
-        @JvmStatic
-        val ALWAYS = RetryBuilder().retryPolicy(RetryPolicy.ALWAYS).build()
-
-        @JvmStatic
-        fun max(maxRetries: Int, backOffInterval: Duration = Duration.ofSeconds(1)) =
-            Retry(CountDownRetryPolicy(maxRetries, Long.MAX_VALUE), IntervalBackOffPolicy(backOffInterval.toMillis()))
-
-        @JvmStatic
-        fun duration(
-            duration: Duration,
-            backOffInterval: Duration = Duration.ofSeconds(1)
-        ): Retry {
-            return Retry(
-                CountDownRetryPolicy(Int.MAX_VALUE, duration.toMillis()),
-                IntervalBackOffPolicy(backOffInterval.toMillis())
-            )
-        }
-
-        internal fun random(backOff: Duration, randomRange: Double): Duration {
-            return if (randomRange == 0.0) {
-                backOff
-            } else {
-                val scale = random.nextDouble(1 - randomRange, 1 + randomRange)
-                Duration.ofNanos(
-                    (backOff.toNanos() * scale).toLong()
-                )
-            }
-        }
     }
 }
