@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package com.github.yag.retry
+package retry
 
 import org.mockito.Mockito
 import java.io.IOException
@@ -24,18 +24,15 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class RetryProxyTest {
+class RetryCallTest {
 
     @Test
     fun testNoError() {
-        val retry = Retry(
-            CountDownRetryPolicy(10, 3000),
-            ExponentialBackOffPolicy(1, 10),
-            DefaultErrorHandler()
-        )
-        val mock = Mockito.mock(Callable::class.java)
-        val foo = retry.proxy(Callable::class.java, mock)
-        foo.call()
+        val retry = Retry.NONE
+        var mock = Mockito.mock(Callable::class.java)
+        retry.call {
+            mock.call()
+        }
         Mockito.verify(mock, Mockito.times(1)).call()
     }
 
@@ -47,28 +44,30 @@ class RetryProxyTest {
             DefaultErrorHandler()
         )
         val mock = Mockito.mock(Callable::class.java)
-        Mockito.doThrow(*Array(9) {
+        Mockito.doThrow(*Array(10) {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        val foo = retry.proxy(Callable::class.java, mock)
-        assertEquals("done", foo.call())
-        Mockito.verify(mock, Mockito.times(10)).call()
+        assertEquals("done", retry.call {
+            mock.call()
+        })
+        Mockito.verify(mock, Mockito.times(11)).call()
     }
 
     @Test
     fun testRetryFailed() {
         val retry = Retry(
-            CountDownRetryPolicy(10, 3000),
-            ExponentialBackOffPolicy(1, 10),
-            DefaultErrorHandler()
+            retryPolicy = CountDownRetryPolicy(10, 3000),
+            backOffPolicy = ExponentialBackOffPolicy(1, 10),
+            errorHandler = DefaultErrorHandler()
         )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 
-        val foo = retry.proxy(Callable::class.java, mock)
-        assertFailsWith(IOException::class) {
-            foo.call()
+        assertFailsWith<IOException> {
+            retry.call {
+                mock.call()
+            }
         }
         Mockito.verify(mock, Mockito.times(11)).call()
     }

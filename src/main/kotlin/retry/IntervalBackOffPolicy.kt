@@ -15,26 +15,17 @@
  * under the License.
  */
 
-package com.github.yag.retry
+package retry
 
-import java.io.IOException
+import com.github.yag.config.Value
 import java.time.Duration
-import kotlin.test.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.random.Random
 
-class RetryPolicyTest {
+class IntervalBackOffPolicy @JvmOverloads constructor(@Value var intervalMs: Long = 1000, @Value var maxIntervalMs: Long = intervalMs) : BackOffPolicy {
 
-    @Test
-    fun testLogicOperator() {
-        assertFalse {
-            val policy = RetryPolicy.NONE and RetryPolicy.ALWAYS
-            policy.allowRetry(1, Duration.ZERO, IOException())
-        }
+    private val random = Random(System.currentTimeMillis())
 
-        assertTrue {
-            val policy = RetryPolicy.NONE or RetryPolicy.ALWAYS
-            policy.allowRetry(Int.MAX_VALUE, Duration.ofDays(1), IOException())
-        }
+    override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
+        return Duration.ofMillis(random.nextLong(intervalMs, maxIntervalMs + 1))
     }
 }

@@ -15,21 +15,19 @@
  * under the License.
  */
 
-package com.github.yag.retry
+package retry
 
-import com.github.yag.config.Value
-import java.time.Duration
+interface Checker {
 
-class CountDownRetryPolicy @JvmOverloads constructor(
-    @Value var maxRetries: Int = Integer.MAX_VALUE,
-    @Value var maxTimeElapsedMs: Long = Long.MAX_VALUE
-) : RetryPolicy {
+    fun check(): Boolean
 
-    /**
-     * Return true if retryCount less than maxRetries and duration less than maxTimeElapsed.
-     */
-    override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
-        return retryCount < maxRetries && duration.toMillis() < maxTimeElapsedMs
+    companion object {
+
+        val TRUE = object : Checker {
+            override fun check(): Boolean {
+                return true
+            }
+        }
     }
 
 }

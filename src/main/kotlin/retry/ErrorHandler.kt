@@ -15,12 +15,12 @@
  * under the License.
  */
 
-package com.github.yag.retry
+package retry
 
 import java.time.Duration
 
-interface BackOffPolicy {
+fun interface ErrorHandler {
 
-    fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration
+    fun handle(retryCount: Int, duration: Duration, error: Throwable, allowRetry: Boolean, backOffDuration: Duration)
 
 }

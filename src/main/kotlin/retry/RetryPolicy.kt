@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package com.github.yag.retry
+package retry
 
 import java.time.Duration
 

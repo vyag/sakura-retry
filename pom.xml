@@ -191,7 +191,7 @@
                 </dependencies>
                 <configuration>
                     <targetClasses>
-                        <param>com.github.yag.retry.*</param>
+                        <param>retry.*</param>
                     </targetClasses>
                     <avoidCallsTo>
                         <avoidCallsTo>kotlin.jvm.internal</avoidCallsTo>

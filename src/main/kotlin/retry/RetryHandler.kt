@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package com.github.yag.retry
+package retry
 
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.InvocationTargetException

@@ -15,17 +15,12 @@
  * under the License.
  */
 
-package com.github.yag.retry
+package retry
 
-import com.github.yag.config.Value
 import java.time.Duration
-import kotlin.random.Random
 
-class IntervalBackOffPolicy @JvmOverloads constructor(@Value var intervalMs: Long = 1000, @Value var maxIntervalMs: Long = intervalMs) : BackOffPolicy {
+interface BackOffPolicy {
 
-    private val random = Random(System.currentTimeMillis())
+    fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration
 
-    override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
-        return Duration.ofMillis(random.nextLong(intervalMs, maxIntervalMs + 1))
-    }
 }

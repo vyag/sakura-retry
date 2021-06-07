@@ -15,19 +15,26 @@
  * under the License.
  */
 
-package com.github.yag.retry
+package retry
 
-interface Checker {
+import java.io.IOException
+import java.time.Duration
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
-    fun check(): Boolean
+class RetryPolicyTest {
 
-    companion object {
+    @Test
+    fun testLogicOperator() {
+        assertFalse {
+            val policy = RetryPolicy.NONE and RetryPolicy.ALWAYS
+            policy.allowRetry(1, Duration.ZERO, IOException())
+        }
 
-        val TRUE = object : Checker {
-            override fun check(): Boolean {
-                return true
-            }
+        assertTrue {
+            val policy = RetryPolicy.NONE or RetryPolicy.ALWAYS
+            policy.allowRetry(Int.MAX_VALUE, Duration.ofDays(1), IOException())
         }
     }
-
 }

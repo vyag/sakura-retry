@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package com.github.yag.retry
+package retry
 
 import com.github.yag.config.Value
 import org.slf4j.LoggerFactory
