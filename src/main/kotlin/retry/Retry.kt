@@ -27,7 +27,7 @@ class Retry @JvmOverloads constructor(
     var backOffPolicy: BackOffPolicy = IntervalBackOffPolicy(),
     var errorHandler: ErrorHandler = DefaultErrorHandler(),
     var checker: Checker = Checker.TRUE,
-    var abortOn: Set<Class<out Throwable>> = setOf(
+    var abortOn: MutableSet<Class<out Throwable>> = mutableSetOf(
         InterruptedException::class.java,
         RuntimeException::class.java,
         Error::class.java
