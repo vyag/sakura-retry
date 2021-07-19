@@ -22,19 +22,22 @@ import java.lang.reflect.Proxy
 import java.time.Duration
 import java.util.concurrent.Callable
 
-class Retry @JvmOverloads constructor(
-    var retryPolicy: RetryPolicy = CountDownRetryPolicy(),
-    var backOffPolicy: BackOffPolicy = IntervalBackOffPolicy(),
-    var errorHandler: ErrorHandler = DefaultErrorHandler(),
-    var checker: Checker = Checker.TRUE,
-    var abortOn: MutableSet<Class<out Throwable>> = mutableSetOf(
+class Retry {
+
+    var retryPolicy: RetryPolicy = CountDownRetryPolicy()
+
+    var backOffPolicy: BackOffPolicy = IntervalBackOffPolicy()
+
+    var errorHandler: ErrorHandler = DefaultErrorHandler()
+
+    var checker: Checker = Checker.TRUE
+
+    var abortOn: Set<Class<out Throwable>> = setOf(
         InterruptedException::class.java,
         RuntimeException::class.java,
         Error::class.java
     )
-) {
 
-    @JvmOverloads
     fun <T> call(name: String = "call", body: Callable<T>): T {
         var retryCount = 0
         val startTime = System.nanoTime()
@@ -73,8 +76,6 @@ class Retry @JvmOverloads constructor(
         }
     }
 
-
-    @JvmOverloads
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
         @Suppress("UNCHECKED_CAST")
         return (Proxy.newProxyInstance(
@@ -87,11 +88,13 @@ class Retry @JvmOverloads constructor(
 
         private val LOG = LoggerFactory.getLogger(Retry::class.java)
 
-        @JvmStatic
-        val NONE = Retry(retryPolicy = RetryPolicy.NONE)
+        val NONE = Retry().apply {
+            retryPolicy = RetryPolicy.NONE
+        }
 
-        @JvmStatic
-        val ALWAYS = Retry(retryPolicy = RetryPolicy.ALWAYS)
-
+        val ALWAYS = Retry().apply {
+            retryPolicy = RetryPolicy.ALWAYS
+            abortOn = emptySet()
+        }
     }
 }
