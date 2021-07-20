@@ -38,6 +38,8 @@ class Retry {
         Error::class.java
     )
 
+    var doNotAbortOn: Set<Class<out Throwable>> = emptySet()
+
     fun <T> call(name: String = "call", body: Callable<T>): T {
         var retryCount = 0
         val startTime = System.nanoTime()
@@ -50,7 +52,7 @@ class Retry {
                 }
                 return result
             } catch (t: Throwable) {
-                if (abortOn.any { it.isInstance(t) }) {
+                if (abortOn.any { it.isInstance(t) } && !doNotAbortOn.any { it.isInstance(t) }) {
                     throw t
                 }
 
