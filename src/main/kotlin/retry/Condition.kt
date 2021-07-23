@@ -21,22 +21,22 @@ import java.time.Duration
 
 fun interface Condition {
 
-    fun allow(retryCount: Int, duration: Duration, error: Throwable): Boolean
+    fun match(retryCount: Int, duration: Duration, error: Throwable): Boolean
 
     infix fun and(policy: Condition): Condition {
         return Condition { retryCount, duration, error ->
-            this@Condition.allow(retryCount, duration, error) && policy.allow(retryCount, duration, error)
+            this@Condition.match(retryCount, duration, error) && policy.match(retryCount, duration, error)
         }
     }
 
     infix fun or(policy: Condition): Condition {
         return Condition { retryCount, duration, error ->
-            this@Condition.allow(retryCount, duration, error) || policy.allow(retryCount, duration, error)
+            this@Condition.match(retryCount, duration, error) || policy.match(retryCount, duration, error)
         }
     }
 
     operator fun not() : Condition {
-        return Condition { retryCount, duration, error -> !this@Condition.allow(retryCount, duration, error) }
+        return Condition { retryCount, duration, error -> !this@Condition.match(retryCount, duration, error) }
     }
 
     companion object {

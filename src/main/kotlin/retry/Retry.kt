@@ -47,7 +47,7 @@ class Retry {
                 return result
             } catch (t: Throwable) {
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
-                val allowRetry = condition.allow(retryCount, duration, t)
+                val allowRetry = condition.match(retryCount, duration, t)
                 val backOff = if (allowRetry) backOff.backOff(retryCount, duration, t) else Duration.ZERO
 
                 errorErrorHandler.handle(retryCount, duration, t, allowRetry, backOff)
@@ -57,7 +57,7 @@ class Retry {
                     } catch (e: InterruptedException) {
                         throw e
                     }
-                    if (condition.allow(retryCount, duration, t)) {
+                    if (condition.match(retryCount, duration, t)) {
                         retryCount++
                         continue
                     }
@@ -69,7 +69,7 @@ class Retry {
     }
 
     private fun allowRetry(retryCount: Int, duration: Duration, t: Throwable) =
-        abortCondition.and(retryCondition).allow(retryCount, duration, t)
+        abortCondition.and(retryCondition).match(retryCount, duration, t)
 
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
         @Suppress("UNCHECKED_CAST")

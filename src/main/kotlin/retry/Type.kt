@@ -23,7 +23,7 @@ class Type(private val errors: Set<Class<out Throwable>>) : Condition {
 
     constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
 
-    override fun allow(retryCount: Int, duration: Duration, error: Throwable): Boolean {
+    override fun match(retryCount: Int, duration: Duration, error: Throwable): Boolean {
         return errors.contains(error.javaClass) || errors.any { it.isInstance(error) }
     }
 }

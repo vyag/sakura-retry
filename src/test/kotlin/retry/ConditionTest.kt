@@ -29,17 +29,17 @@ class ConditionTest {
     fun testLogicOperator() {
         assertFalse {
             val policy = Condition.NONE and Condition.ALWAYS
-            policy.allow(1, Duration.ZERO, IOException())
+            policy.match(1, Duration.ZERO, IOException())
         }
 
         assertTrue {
             val policy = Condition.NONE or Condition.ALWAYS
-            policy.allow(Int.MAX_VALUE, Duration.ofDays(1), IOException())
+            policy.match(Int.MAX_VALUE, Duration.ofDays(1), IOException())
         }
 
         assertTrue {
             val policy = !Condition.NONE
-            policy.allow(Int.MAX_VALUE, Duration.ofDays(1), IOException())
+            policy.match(Int.MAX_VALUE, Duration.ofDays(1), IOException())
         }
     }
 }

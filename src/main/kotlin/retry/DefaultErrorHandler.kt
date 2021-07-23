@@ -20,8 +20,12 @@ package retry
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
-open class DefaultErrorHandler @JvmOverloads constructor(private val logSuppressTimeMs: Long = 0) :
-    ErrorHandler {
+class DefaultErrorHandler(
+    private val logSuppressTimeMs: Long = 0,
+    private val unexpectedErrorCondition: Condition = Condition.NONE,
+    private val printStackCondition: Condition = Condition.ALWAYS,
+    private val callback: (Throwable) -> Unit = {}
+) : ErrorHandler {
 
     override fun handle(
         retryCount: Int,
@@ -30,9 +34,10 @@ open class DefaultErrorHandler @JvmOverloads constructor(private val logSuppress
         allowRetry: Boolean,
         backOffDuration: Duration
     ) {
-        val printStack = isStacktraceRequired(error)
+        callback(error)
+        val printStack = printStackCondition.match(retryCount, duration, error)
         val durationMs = duration.toMillis()
-        if (isUnexpected(error)) {
+        if (unexpectedErrorCondition.match(retryCount, duration, error)) {
             if (printStack) {
                 LOG.warn("Unexpected invocation failed, retryCount: {}, duration: {}ms.", retryCount, durationMs, error)
             } else {
@@ -62,10 +67,6 @@ open class DefaultErrorHandler @JvmOverloads constructor(private val logSuppress
             }
         }
     }
-
-    open fun isUnexpected(t: Throwable) = false
-
-    open fun isStacktraceRequired(t: Throwable) = true
 
     companion object {
         private val LOG = LoggerFactory.getLogger(DefaultErrorHandler::class.java)

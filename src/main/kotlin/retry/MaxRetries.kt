@@ -21,7 +21,7 @@ import java.time.Duration
 
 class MaxRetries(private var maxRetries: Int = Integer.MAX_VALUE,) : Condition {
 
-    override fun allow(retryCount: Int, duration: Duration, error: Throwable): Boolean {
+    override fun match(retryCount: Int, duration: Duration, error: Throwable): Boolean {
         return retryCount < maxRetries
     }
 }

@@ -19,9 +19,9 @@ package retry
 
 import java.time.Duration
 
-class Exponential @JvmOverloads constructor(
-    var baseIntervalMs: Long = 1000,
-    var maxIntervalMs: Long = 10000
+class Exponential(
+    private var baseIntervalMs: Long = 1000,
+    private var maxIntervalMs: Long = 10000
 ) : BackOff {
 
     override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
