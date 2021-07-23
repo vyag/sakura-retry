@@ -19,13 +19,10 @@ package retry
 
 import config.Value
 import java.time.Duration
-import kotlin.random.Random
 
-class IntervalBackOffPolicy @JvmOverloads constructor(@Value var intervalMs: Long = 1000, @Value var maxIntervalMs: Long = intervalMs) : BackOffPolicy {
+class MaxTimeElapsed(@Value var maxTimeElapsedMs: Long = Long.MAX_VALUE) : Condition {
 
-    private val random = Random(System.currentTimeMillis())
-
-    override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
-        return Duration.ofMillis(random.nextLong(intervalMs, maxIntervalMs + 1))
+    override fun allow(retryCount: Int, duration: Duration, error: Throwable): Boolean {
+        return duration.toMillis() < maxTimeElapsedMs
     }
 }

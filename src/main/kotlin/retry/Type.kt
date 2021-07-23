@@ -17,10 +17,14 @@
 
 package retry
 
+import config.Value
 import java.time.Duration
 
-interface BackOffPolicy {
+class Type(@Value val errors: Set<Class<out Throwable>>) : Condition {
 
-    fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration
+    constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
 
+    override fun allow(retryCount: Int, duration: Duration, error: Throwable): Boolean {
+        return errors.contains(error.javaClass) || errors.any { it.isInstance(error) }
+    }
 }

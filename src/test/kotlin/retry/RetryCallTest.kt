@@ -39,9 +39,8 @@ class RetryCallTest {
     @Test
     fun testRetrySuccess() {
         val retry = Retry().apply {
-            retryPolicy = CountDownRetryPolicy(10, 3000)
-            backOffPolicy = ExponentialBackOffPolicy(1, 10)
-            errorHandler = DefaultErrorHandler()
+            retryCondition = MaxRetries(10)
+            backOff = BackOff.NONE
         }
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(10) {
@@ -57,9 +56,8 @@ class RetryCallTest {
     @Test
     fun testRetryFailed() {
         val retry = Retry().apply {
-            retryPolicy = CountDownRetryPolicy(10, 3000)
-            backOffPolicy = ExponentialBackOffPolicy(1, 10)
-            errorHandler = DefaultErrorHandler()
+            retryCondition = MaxRetries(10)
+            backOff = BackOff.NONE
         }
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()

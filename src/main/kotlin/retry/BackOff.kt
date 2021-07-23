@@ -17,19 +17,23 @@
 
 package retry
 
-import config.Value
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 
-class CountDownRetryPolicy @JvmOverloads constructor(
-    @Value var maxRetries: Int = Integer.MAX_VALUE,
-    @Value var maxTimeElapsedMs: Long = Long.MAX_VALUE
-) : RetryPolicy {
+interface BackOff {
 
-    /**
-     * Return true if retryCount less than maxRetries and duration less than maxTimeElapsed.
-     */
-    override fun allowRetry(retryCount: Int, duration: Duration, error: Throwable): Boolean {
-        return retryCount < maxRetries && duration.toMillis() < maxTimeElapsedMs
+    fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration
+
+    companion object {
+        @JvmStatic
+        val NONE = object: BackOff {
+            override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
+                return Duration.ZERO
+            }
+        }
+
+        @JvmStatic
+        fun duration(time: Long, unit: TimeUnit = TimeUnit.MILLISECONDS) = Interval(unit.toMillis(time))
     }
 
 }

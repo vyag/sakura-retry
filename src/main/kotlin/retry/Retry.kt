@@ -24,25 +24,19 @@ import java.util.concurrent.Callable
 
 class Retry {
 
-    var retryPolicy: RetryPolicy = CountDownRetryPolicy()
+    var retryCondition: Condition = Condition.ALWAYS
 
-    var backOffPolicy: BackOffPolicy = IntervalBackOffPolicy()
+    var abortCondition = Type(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
 
-    var errorHandler: ErrorHandler = DefaultErrorHandler()
+    var backOff: BackOff = Interval()
 
-    var checker: Checker = Checker.TRUE
-
-    var abortOn: Set<Class<out Throwable>> = setOf(
-        InterruptedException::class.java,
-        RuntimeException::class.java,
-        Error::class.java
-    )
-
-    var doNotAbortOn: Set<Class<out Throwable>> = emptySet()
+    var errorErrorHandler: ErrorHandler = DefaultErrorHandler()
 
     fun <T> call(name: String = "call", body: Callable<T>): T {
         var retryCount = 0
         val startTime = System.nanoTime()
+
+        val condition = !abortCondition and retryCondition
 
         while (true) {
             try {
@@ -52,22 +46,18 @@ class Retry {
                 }
                 return result
             } catch (t: Throwable) {
-                if (abortOn.any { it.isInstance(t) } && !doNotAbortOn.any { it.isInstance(t) }) {
-                    throw t
-                }
-
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
-                val allowRetry = retryPolicy.allowRetry(retryCount, duration, t) && checker.check()
-                val backOff = if (allowRetry) backOffPolicy.backOff(retryCount, duration, t) else Duration.ZERO
+                val allowRetry = condition.allow(retryCount, duration, t)
+                val backOff = if (allowRetry) backOff.backOff(retryCount, duration, t) else Duration.ZERO
 
-                errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
+                errorErrorHandler.handle(retryCount, duration, t, allowRetry, backOff)
                 if (allowRetry) {
                     try {
                         Thread.sleep(backOff.toMillis(), (backOff.toNanos() % 1e6).toInt())
                     } catch (e: InterruptedException) {
                         throw e
                     }
-                    if (checker.check()) {
+                    if (condition.allow(retryCount, duration, t)) {
                         retryCount++
                         continue
                     }
@@ -77,6 +67,9 @@ class Retry {
             }
         }
     }
+
+    private fun allowRetry(retryCount: Int, duration: Duration, t: Throwable) =
+        abortCondition.and(retryCondition).allow(retryCount, duration, t)
 
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
         @Suppress("UNCHECKED_CAST")
@@ -91,12 +84,7 @@ class Retry {
         private val LOG = LoggerFactory.getLogger(Retry::class.java)
 
         val NONE = Retry().apply {
-            retryPolicy = RetryPolicy.NONE
-        }
-
-        val ALWAYS = Retry().apply {
-            retryPolicy = RetryPolicy.ALWAYS
-            abortOn = emptySet()
+            retryCondition = Condition.NONE
         }
     }
 }

@@ -17,17 +17,15 @@
 
 package retry
 
-interface Checker {
+import config.Value
+import java.time.Duration
+import kotlin.random.Random
 
-    fun check(): Boolean
+class Interval @JvmOverloads constructor(@Value var intervalMs: Long = 1000, @Value var maxIntervalMs: Long = intervalMs) : BackOff {
 
-    companion object {
+    private val random = Random(System.currentTimeMillis())
 
-        val TRUE = object : Checker {
-            override fun check(): Boolean {
-                return true
-            }
-        }
+    override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
+        return Duration.ofMillis(random.nextLong(intervalMs, maxIntervalMs + 1))
     }
-
 }
