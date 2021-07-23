@@ -21,9 +21,8 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 
 class DefaultErrorHandler(
-    private val logSuppressTimeMs: Long = 0,
-    private val unexpectedErrorCondition: Condition = Condition.NONE,
-    private val printStackCondition: Condition = Condition.ALWAYS,
+    private val log: Condition = Condition.ALWAYS,
+    private val printStack: Condition = Condition.ALWAYS,
     private val callback: (Throwable) -> Unit = {}
 ) : ErrorHandler {
 
@@ -35,34 +34,20 @@ class DefaultErrorHandler(
         backOffDuration: Duration
     ) {
         callback(error)
-        val printStack = printStackCondition.match(retryCount, duration, error)
         val durationMs = duration.toMillis()
-        if (unexpectedErrorCondition.match(retryCount, duration, error)) {
-            if (printStack) {
-                LOG.warn("Unexpected invocation failed, retryCount: {}, duration: {}ms.", retryCount, durationMs, error)
-            } else {
-                LOG.warn("Unexpected invocation failed: $error retryCount: {}, duration: {}ms.", retryCount, durationMs)
-            }
-        } else {
-            if (durationMs > logSuppressTimeMs) {
+
+        if (log.match(retryCount, duration, error)) {
+            if (printStack.match(retryCount, duration, error)) {
                 if (allowRetry) {
-                    if (printStack) {
-                        LOG.info(
-                            "Invocation failed, retryCount: {}, duration: {}ms, will retry in {}ms.", retryCount,
-                            durationMs, backOffDuration.toMillis(), error
-                        )
-                    } else {
-                        LOG.info(
-                            "Invocation failed: $error retryCount: {}, duration: {}ms, will retry in {}ms.", retryCount,
-                            durationMs, backOffDuration.toMillis()
-                        )
-                    }
+                    LOG.info("Invocation failed, retryCount: {}, duration: {}ms, will retry in {}ms.", retryCount, durationMs, backOffDuration.toMillis(), error)
                 } else {
-                    if (printStack) {
-                        LOG.info("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, durationMs, error)
-                    } else {
-                        LOG.info("Invocation failed: $error retryCount: {}, duration: {}ms.", retryCount, durationMs)
-                    }
+                    LOG.info("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, durationMs, error)
+                }
+            } else {
+                if (allowRetry) {
+                    LOG.info("Invocation failed: $error retryCount: {}, duration: {}ms, will retry in {}ms.", retryCount, durationMs, backOffDuration.toMillis())
+                } else {
+                    LOG.info("Invocation failed: $error retryCount: {}, duration: {}ms.", retryCount, durationMs)
                 }
             }
         }
