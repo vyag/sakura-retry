@@ -68,9 +68,6 @@ class Retry {
         }
     }
 
-    private fun allowRetry(retryCount: Int, duration: Duration, t: Throwable) =
-        abortCondition.and(retryCondition).match(retryCount, duration, t)
-
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
         @Suppress("UNCHECKED_CAST")
         return (Proxy.newProxyInstance(
