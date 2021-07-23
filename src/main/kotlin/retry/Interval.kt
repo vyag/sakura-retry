@@ -17,11 +17,10 @@
 
 package retry
 
-import config.Value
 import java.time.Duration
 import kotlin.random.Random
 
-class Interval @JvmOverloads constructor(@Value var intervalMs: Long = 1000, @Value var maxIntervalMs: Long = intervalMs) : BackOff {
+class Interval @JvmOverloads constructor(private var intervalMs: Long = 1000, private var maxIntervalMs: Long = intervalMs) : BackOff {
 
     private val random = Random(System.currentTimeMillis())
 

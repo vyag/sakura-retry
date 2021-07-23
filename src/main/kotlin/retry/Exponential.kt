@@ -17,12 +17,11 @@
 
 package retry
 
-import config.Value
 import java.time.Duration
 
 class Exponential @JvmOverloads constructor(
-    @Value var baseIntervalMs: Long = 1000,
-    @Value var maxIntervalMs: Long = 10000
+    var baseIntervalMs: Long = 1000,
+    var maxIntervalMs: Long = 10000
 ) : BackOff {
 
     override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {

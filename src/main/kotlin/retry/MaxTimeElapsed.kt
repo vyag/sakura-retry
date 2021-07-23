@@ -17,10 +17,9 @@
 
 package retry
 
-import config.Value
 import java.time.Duration
 
-class MaxTimeElapsed(@Value var maxTimeElapsedMs: Long = Long.MAX_VALUE) : Condition {
+class MaxTimeElapsed(var maxTimeElapsedMs: Long = Long.MAX_VALUE) : Condition {
 
     override fun allow(retryCount: Int, duration: Duration, error: Throwable): Boolean {
         return duration.toMillis() < maxTimeElapsedMs

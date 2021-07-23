@@ -17,10 +17,9 @@
 
 package retry
 
-import config.Value
 import java.time.Duration
 
-class MaxRetries(@Value var maxRetries: Int = Integer.MAX_VALUE,) : Condition {
+class MaxRetries(private var maxRetries: Int = Integer.MAX_VALUE,) : Condition {
 
     override fun allow(retryCount: Int, duration: Duration, error: Throwable): Boolean {
         return retryCount < maxRetries

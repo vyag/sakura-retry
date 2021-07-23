@@ -101,11 +101,6 @@
             <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.github.marks-yag</groupId>
-            <artifactId>config-annotation</artifactId>
-            <version>${config.version}</version>
-        </dependency>
         <!-- logging -->
         <dependency>
             <groupId>org.slf4j</groupId>

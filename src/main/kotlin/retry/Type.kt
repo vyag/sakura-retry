@@ -17,10 +17,9 @@
 
 package retry
 
-import config.Value
 import java.time.Duration
 
-class Type(@Value val errors: Set<Class<out Throwable>>) : Condition {
+class Type(private val errors: Set<Class<out Throwable>>) : Condition {
 
     constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
 
