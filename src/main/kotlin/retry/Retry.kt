@@ -51,11 +51,7 @@ class Retry {
 
                 errorHandler.handle(context, allowRetry, backOff)
                 if (allowRetry) {
-                    try {
-                        Thread.sleep(backOff.toMillis(), (backOff.toNanos() % 1e6).toInt())
-                    } catch (e: InterruptedException) {
-                        throw e
-                    }
+                    Thread.sleep(backOff.toMillis(), (backOff.toNanos() % 1e6).toInt())
                     if (condition.match(context)) {
                         retryCount++
                         continue
