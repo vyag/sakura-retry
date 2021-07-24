@@ -20,9 +20,9 @@ package retry
 import org.slf4j.LoggerFactory
 import java.time.Duration
 
-class DefaultErrorHandler(
-    private val log: Condition = Condition.TRUE,
-    private val stack: Condition = Condition.TRUE,
+data class DefaultErrorHandler(
+    val log: Condition = Condition.TRUE,
+    val stack: Condition = Condition.TRUE,
     private val callback: (Throwable) -> Unit = {}
 ) : ErrorHandler {
 

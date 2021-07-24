@@ -20,17 +20,13 @@ package retry
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
-interface BackOff {
+fun interface BackOff {
 
     fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration
 
     companion object {
         @JvmStatic
-        val NONE = object: BackOff {
-            override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
-                return Duration.ZERO
-            }
-        }
+        val NONE = BackOff { _, _, _ -> Duration.ZERO }
 
         @JvmStatic
         fun duration(time: Long, unit: TimeUnit = TimeUnit.MILLISECONDS) = Interval(unit.toMillis(time))

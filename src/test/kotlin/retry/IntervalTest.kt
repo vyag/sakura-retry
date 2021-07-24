@@ -17,18 +17,21 @@
 
 package retry
 
-import java.time.Duration
-import kotlin.random.Random
+import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 
-data class Interval @JvmOverloads constructor(val minIntervalMs: Long = 1000, val maxIntervalMs: Long = minIntervalMs) : BackOff {
+class IntervalTest {
 
-    internal val intervalMs = random.nextLong(minIntervalMs, maxIntervalMs + 1)
+    @Test
+    fun testRandom() {
+        Interval(1, 1).run {
+            assertEquals(1, intervalMs)
+        }
 
-    override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
-        return Duration.ofMillis(intervalMs)
-    }
-
-    companion object {
-        private val random = Random(System.currentTimeMillis())
+        Array(100) {
+            Interval(1, 3).intervalMs
+        }.toSet().run {
+            assertEquals(setOf<Long>(1, 2, 3), this)
+        }
     }
 }

@@ -19,7 +19,7 @@ package retry
 
 import java.time.Duration
 
-class Type(private val errors: Set<Class<out Throwable>>) : Condition {
+data class Type(val errors: Set<Class<out Throwable>>) : Condition {
 
     constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
 

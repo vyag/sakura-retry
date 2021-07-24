@@ -28,6 +28,19 @@ class ExponentialTest {
     private val error = Exception()
 
     @Test
+    fun testRandom() {
+        Exponential(1, 1).run {
+            assertEquals(1, initIntervalMs)
+        }
+
+        Array(100) {
+            Exponential(1, 3).initIntervalMs
+        }.toSet().run {
+            assertEquals(setOf<Long>(1, 2, 3), this)
+        }
+    }
+
+    @Test
     fun testMaxInterval() {
         val backOff = Exponential(1, maxIntervalMs = 5)
         listOf(0 to 1, 1 to 2, 2 to 4, 3 to 5, 4 to 5).forEach {

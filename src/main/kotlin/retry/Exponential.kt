@@ -20,13 +20,13 @@ package retry
 import java.time.Duration
 import kotlin.random.Random
 
-class Exponential @JvmOverloads constructor(
-    minInitIntervalMs: Long = 1000,
-    maxInitIntervalMs: Long = minInitIntervalMs,
-    private var maxIntervalMs: Long = 60000
+data class Exponential @JvmOverloads constructor(
+    val minInitIntervalMs: Long = 1000,
+    val maxInitIntervalMs: Long = minInitIntervalMs,
+    val maxIntervalMs: Long = 60000
 ) : BackOff {
 
-    private val initIntervalMs = random.nextLong(minInitIntervalMs, maxInitIntervalMs + 1)
+    internal val initIntervalMs = random.nextLong(minInitIntervalMs, maxInitIntervalMs + 1)
 
     override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
         var value = initIntervalMs
