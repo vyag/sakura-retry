@@ -17,11 +17,11 @@
 
 package retry
 
-import retry.Utils.toReadableString
 import java.time.Duration
 
-data class Context(var retryCount: Int, var duration: Duration, val error: Throwable) {
-    override fun toString(): String {
-        return "(retryCount=$retryCount, duration=${duration.toReadableString()}, error: $error)"
+internal object Utils {
+
+    fun Duration.toReadableString() : String {
+        return toString().substring(2).toLowerCase()
     }
 }

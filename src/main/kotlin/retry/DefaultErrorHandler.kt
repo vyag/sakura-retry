@@ -18,6 +18,7 @@
 package retry
 
 import org.slf4j.LoggerFactory
+import retry.Utils.toReadableString
 import java.time.Duration
 
 data class DefaultErrorHandler(
@@ -33,22 +34,19 @@ data class DefaultErrorHandler(
     ) {
         callback(context.error)
 
-        val durationMs = context.duration.toMillis()
-        if (log.match(context)) {
-            if (stack.match(context)) {
-                if (allowRetry) {
-                    LOG.info("Invocation failed, retryCount: {}, duration: {}ms, will retry in {}ms.", context.retryCount, durationMs, backOffDuration.toMillis(), context.error)
-                } else {
-                    LOG.info("Invocation failed, retryCount: {}, duration: {}ms, error: {}.", context.retryCount, durationMs, context.error)
-                }
-            } else {
-                if (allowRetry) {
-                    LOG.info("Invocation failed: retryCount: {}, duration: {}ms, will retry in {}ms.", context.retryCount, durationMs, backOffDuration.toMillis())
-                } else {
-                    LOG.info("Invocation failed: retryCount: {}, duration: {}ms, error: {}.", context.retryCount, durationMs, context.error)
-                }
-            }
+        if (!log.match(context)) {
+            return
         }
+
+        LOG.info(
+            "Invocation failed, context: {}, retry: {}, backOff: {}.",
+            *arrayListOf(context, allowRetry, backOffDuration.toReadableString()).let {
+                if (stack.match(context)){
+                    it.add(context.error)
+                }
+                it.toTypedArray()
+            }
+        )
     }
 
     companion object {
