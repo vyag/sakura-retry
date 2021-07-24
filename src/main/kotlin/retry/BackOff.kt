@@ -22,11 +22,11 @@ import java.util.concurrent.TimeUnit
 
 fun interface BackOff {
 
-    fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration
+    fun backOff(context: Context): Duration
 
     companion object {
         @JvmStatic
-        val NONE = BackOff { _, _, _ -> Duration.ZERO }
+        val NONE = BackOff { Duration.ZERO }
 
         @JvmStatic
         fun duration(time: Long, unit: TimeUnit = TimeUnit.MILLISECONDS) = Interval(unit.toMillis(time))

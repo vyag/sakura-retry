@@ -27,27 +27,25 @@ data class DefaultErrorHandler(
 ) : ErrorHandler {
 
     override fun handle(
-        retryCount: Int,
-        duration: Duration,
-        error: Throwable,
+        context: Context,
         allowRetry: Boolean,
         backOffDuration: Duration
     ) {
-        callback(error)
+        callback(context.error)
 
-        val durationMs = duration.toMillis()
-        if (log.match(retryCount, duration, error)) {
-            if (stack.match(retryCount, duration, error)) {
+        val durationMs = context.duration.toMillis()
+        if (log.match(context)) {
+            if (stack.match(context)) {
                 if (allowRetry) {
-                    LOG.info("Invocation failed, retryCount: {}, duration: {}ms, will retry in {}ms.", retryCount, durationMs, backOffDuration.toMillis(), error)
+                    LOG.info("Invocation failed, retryCount: {}, duration: {}ms, will retry in {}ms.", context.retryCount, durationMs, backOffDuration.toMillis(), context.error)
                 } else {
-                    LOG.info("Invocation failed, retryCount: {}, duration: {}ms.", retryCount, durationMs, error)
+                    LOG.info("Invocation failed, retryCount: {}, duration: {}ms, error: {}.", context.retryCount, durationMs, context.error)
                 }
             } else {
                 if (allowRetry) {
-                    LOG.info("Invocation failed: $error retryCount: {}, duration: {}ms, will retry in {}ms.", retryCount, durationMs, backOffDuration.toMillis())
+                    LOG.info("Invocation failed: retryCount: {}, duration: {}ms, will retry in {}ms.", context.retryCount, durationMs, backOffDuration.toMillis())
                 } else {
-                    LOG.info("Invocation failed: $error retryCount: {}, duration: {}ms.", retryCount, durationMs)
+                    LOG.info("Invocation failed: retryCount: {}, duration: {}ms, error: {}.", context.retryCount, durationMs, context.error)
                 }
             }
         }

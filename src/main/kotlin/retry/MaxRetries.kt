@@ -17,11 +17,9 @@
 
 package retry
 
-import java.time.Duration
-
 data class MaxRetries @JvmOverloads constructor(val maxRetries: Int = Int.MAX_VALUE) : Condition {
 
-    override fun match(retryCount: Int, duration: Duration, error: Throwable): Boolean {
-        return retryCount < maxRetries
+    override fun match(context: Context): Boolean {
+        return context.retryCount < maxRetries
     }
 }

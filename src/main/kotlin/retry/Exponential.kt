@@ -28,9 +28,9 @@ data class Exponential @JvmOverloads constructor(
 
     internal val initIntervalMs = random.nextLong(minInitIntervalMs, maxInitIntervalMs + 1)
 
-    override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
+    override fun backOff(context: Context): Duration {
         var value = initIntervalMs
-        for (i in 0 until retryCount) {
+        for (i in 0 until context.retryCount) {
             if (value < Long.MAX_VALUE / 2) {
                 value = value shl 1
             } else {

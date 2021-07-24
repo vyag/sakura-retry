@@ -28,18 +28,18 @@ class ConditionTest {
     @Test
     fun testLogicOperator() {
         assertFalse {
-            val policy = Condition.FALSE and Condition.TRUE
-            policy.match(1, Duration.ZERO, IOException())
+            val cond = Condition.FALSE and Condition.TRUE
+            cond.match(Context(1, Duration.ZERO, IOException()))
         }
 
         assertTrue {
-            val policy = Condition.FALSE or Condition.TRUE
-            policy.match(Int.MAX_VALUE, Duration.ofDays(1), IOException())
+            val cond = Condition.FALSE or Condition.TRUE
+            cond.match(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException()))
         }
 
         assertTrue {
-            val policy = !Condition.FALSE
-            policy.match(Int.MAX_VALUE, Duration.ofDays(1), IOException())
+            val cond = !Condition.FALSE
+            cond.match(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException()))
         }
     }
 }

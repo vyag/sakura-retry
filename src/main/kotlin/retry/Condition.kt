@@ -17,35 +17,33 @@
 
 package retry
 
-import java.time.Duration
-
 fun interface Condition {
 
-    fun match(retryCount: Int, duration: Duration, error: Throwable): Boolean
+    fun match(context: Context) : Boolean
 
     infix fun and(policy: Condition): Condition {
-        return Condition { retryCount, duration, error ->
-            this@Condition.match(retryCount, duration, error) && policy.match(retryCount, duration, error)
+        return Condition { context ->
+            this@Condition.match(context) && policy.match(context)
         }
     }
 
     infix fun or(policy: Condition): Condition {
-        return Condition { retryCount, duration, error ->
-            this@Condition.match(retryCount, duration, error) || policy.match(retryCount, duration, error)
+        return Condition { context ->
+            this@Condition.match(context) || policy.match(context)
         }
     }
 
     operator fun not() : Condition {
-        return Condition { retryCount, duration, error -> !this@Condition.match(retryCount, duration, error) }
+        return Condition { context -> !this@Condition.match(context) }
     }
 
     companion object {
 
         @JvmStatic
-        val TRUE = Condition { _, _, _ -> true }
+        val TRUE = Condition { true }
 
         @JvmStatic
-        val FALSE = Condition { _, _, _ -> false }
+        val FALSE = Condition { false }
     }
 
 }

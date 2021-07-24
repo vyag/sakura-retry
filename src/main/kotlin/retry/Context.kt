@@ -17,12 +17,6 @@
 
 package retry
 
-data class Type(val errors: Set<Class<out Throwable>>) : Condition {
+import java.time.Duration
 
-    constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
-
-    override fun match(context: Context): Boolean {
-        val error = context.error
-        return errors.contains(error.javaClass) || errors.any { it.isInstance(error) }
-    }
-}
+data class Context(var retryCount: Int, var duration: Duration, val error: Throwable)

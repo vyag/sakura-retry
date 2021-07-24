@@ -45,17 +45,18 @@ class Retry {
                 return result
             } catch (t: Throwable) {
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
-                val allowRetry = condition.match(retryCount, duration, t)
-                val backOff = if (allowRetry) backOff.backOff(retryCount, duration, t) else Duration.ZERO
+                val context = Context(retryCount, duration, t)
+                val allowRetry = condition.match(context)
+                val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
 
-                errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
+                errorHandler.handle(context, allowRetry, backOff)
                 if (allowRetry) {
                     try {
                         Thread.sleep(backOff.toMillis(), (backOff.toNanos() % 1e6).toInt())
                     } catch (e: InterruptedException) {
                         throw e
                     }
-                    if (condition.match(retryCount, duration, t)) {
+                    if (condition.match(context)) {
                         retryCount++
                         continue
                     }
