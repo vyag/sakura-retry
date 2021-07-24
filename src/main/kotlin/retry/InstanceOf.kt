@@ -17,7 +17,7 @@
 
 package retry
 
-data class Type(val errors: Set<Class<out Throwable>>) : Condition {
+data class InstanceOf(val errors: Set<Class<out Throwable>>) : Condition {
 
     constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
 

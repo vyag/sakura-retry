@@ -26,7 +26,7 @@ class Retry {
 
     var retryCondition: Condition = Condition.TRUE
 
-    var abortCondition: Condition = Type(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
+    var abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
 
     var backOff: BackOff = Interval()
 
