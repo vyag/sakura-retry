@@ -21,8 +21,8 @@ import org.slf4j.LoggerFactory
 import java.time.Duration
 
 class DefaultErrorHandler(
-    private val log: Condition = Condition.ALWAYS,
-    private val stack: Condition = Condition.ALWAYS,
+    private val log: Condition = Condition.TRUE,
+    private val stack: Condition = Condition.TRUE,
     private val callback: (Throwable) -> Unit = {}
 ) : ErrorHandler {
 

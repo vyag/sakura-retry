@@ -42,10 +42,10 @@ fun interface Condition {
     companion object {
 
         @JvmStatic
-        val ALWAYS = Condition { _, _, _ -> true }
+        val TRUE = Condition { _, _, _ -> true }
 
         @JvmStatic
-        val NONE = Condition { _, _, _ -> false }
+        val FALSE = Condition { _, _, _ -> false }
     }
 
 }

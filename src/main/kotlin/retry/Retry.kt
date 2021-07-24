@@ -24,7 +24,7 @@ import java.util.concurrent.Callable
 
 class Retry {
 
-    var retryCondition: Condition = Condition.ALWAYS
+    var retryCondition: Condition = Condition.TRUE
 
     var abortCondition: Condition = Type(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
 
@@ -78,8 +78,12 @@ class Retry {
 
         private val LOG = LoggerFactory.getLogger(Retry::class.java)
 
+        @JvmStatic
         val NONE = Retry().apply {
-            retryCondition = Condition.NONE
+            retryCondition = Condition.FALSE
         }
+
+        @JvmStatic
+        val ALWAYS = Retry()
     }
 }
