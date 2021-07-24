@@ -32,6 +32,10 @@ class Retry {
 
     var errorHandler: ErrorHandler = DefaultErrorHandler()
 
+    internal var sleeper = Sleeper {
+        Thread.sleep(it.toMillis(), (it.toNanos() % 1e6).toInt())
+    }
+
     fun <T> call(name: String = "call", body: Callable<T>): T {
         var retryCount = 0
         val startTime = System.nanoTime()
@@ -51,7 +55,7 @@ class Retry {
 
                 errorHandler.handle(context, allowRetry, backOff)
                 if (allowRetry) {
-                    Thread.sleep(backOff.toMillis(), (backOff.toNanos() % 1e6).toInt())
+                    sleeper.sleep(backOff)
                     if (condition.match(context)) {
                         retryCount++
                         continue

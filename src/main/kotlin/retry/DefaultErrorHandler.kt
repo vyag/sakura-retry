@@ -22,7 +22,7 @@ import java.time.Duration
 
 data class DefaultErrorHandler(
     val log: Condition = Condition.TRUE,
-    val stack: Condition = Condition.TRUE,
+    val stack: Condition = Condition.FALSE,
     private val callback: (Throwable) -> Unit = {}
 ) : ErrorHandler {
 

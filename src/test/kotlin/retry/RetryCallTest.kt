@@ -19,10 +19,12 @@ package retry
 
 import org.mockito.Mockito
 import java.io.IOException
+import java.time.Duration
 import java.util.concurrent.Callable
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class RetryCallTest {
 
@@ -68,6 +70,33 @@ class RetryCallTest {
             }
         }
         Mockito.verify(mock, Mockito.times(11)).call()
+    }
+
+    @Test
+    fun testRetryBackOff() {
+        var invocationCount = 0
+        var totalSleepMs = 0L
+        val fakeSleeper = Sleeper {
+            invocationCount++
+            totalSleepMs += it.toMillis()
+        }
+
+        val retry = Retry().apply {
+            retryCondition = MaxRetries(10)
+            backOff = Interval(1000)
+            sleeper = fakeSleeper
+        }
+        val mock = Mockito.mock(Callable::class.java)
+        Mockito.doThrow(IOException()).`when`(mock).call()
+
+        assertFailsWith<IOException> {
+            retry.call {
+                mock.call()
+            }
+        }
+        Mockito.verify(mock, Mockito.times(11)).call()
+        assertEquals(10, invocationCount)
+        assertEquals(10000, totalSleepMs)
     }
 
 }
