@@ -30,7 +30,7 @@ class Retry {
 
     var backOff: BackOff = Interval()
 
-    var errorErrorHandler: ErrorHandler = DefaultErrorHandler()
+    var errorHandler: ErrorHandler = DefaultErrorHandler()
 
     fun <T> call(name: String = "call", body: Callable<T>): T {
         var retryCount = 0
@@ -41,16 +41,14 @@ class Retry {
         while (true) {
             try {
                 val result = body.call()
-                if (retryCount > 0) {
-                    LOG.debug("Finally {} success after {} retries.", name, retryCount)
-                }
+                LOG.debug("Finally {} success after {} retries.", name, retryCount)
                 return result
             } catch (t: Throwable) {
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
                 val allowRetry = condition.match(retryCount, duration, t)
                 val backOff = if (allowRetry) backOff.backOff(retryCount, duration, t) else Duration.ZERO
 
-                errorErrorHandler.handle(retryCount, duration, t, allowRetry, backOff)
+                errorHandler.handle(retryCount, duration, t, allowRetry, backOff)
                 if (allowRetry) {
                     try {
                         Thread.sleep(backOff.toMillis(), (backOff.toNanos() % 1e6).toInt())

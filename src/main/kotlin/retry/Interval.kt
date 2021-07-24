@@ -20,11 +20,15 @@ package retry
 import java.time.Duration
 import kotlin.random.Random
 
-class Interval @JvmOverloads constructor(private var intervalMs: Long = 1000, private var maxIntervalMs: Long = intervalMs) : BackOff {
+class Interval @JvmOverloads constructor(minIntervalMs: Long = 1000, maxIntervalMs: Long = minIntervalMs) : BackOff {
 
-    private val random = Random(System.currentTimeMillis())
+    private val intervalMs = random.nextLong(minIntervalMs, maxIntervalMs + 1)
 
     override fun backOff(retryCount: Int, duration: Duration, error: Throwable): Duration {
-        return Duration.ofMillis(random.nextLong(intervalMs, maxIntervalMs + 1))
+        return Duration.ofMillis(intervalMs)
+    }
+
+    companion object {
+        private val random = Random(System.currentTimeMillis())
     }
 }

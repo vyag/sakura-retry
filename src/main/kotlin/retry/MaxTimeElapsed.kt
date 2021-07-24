@@ -19,7 +19,7 @@ package retry
 
 import java.time.Duration
 
-class MaxTimeElapsed(var maxTimeElapsedMs: Long = Long.MAX_VALUE) : Condition {
+class MaxTimeElapsed @JvmOverloads constructor(var maxTimeElapsedMs: Long = Long.MAX_VALUE) : Condition {
 
     override fun match(retryCount: Int, duration: Duration, error: Throwable): Boolean {
         return duration.toMillis() < maxTimeElapsedMs

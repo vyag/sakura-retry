@@ -29,7 +29,7 @@ class ExponentialTest {
 
     @Test
     fun testMaxInterval() {
-        val backOff = Exponential(1, 5)
+        val backOff = Exponential(1, maxIntervalMs = 5)
         listOf(0 to 1, 1 to 2, 2 to 4, 3 to 5, 4 to 5).forEach {
             assertEquals(it.second, backOff.backOff(it.first, duration, error).toMillis().toInt())
         }
@@ -37,7 +37,7 @@ class ExponentialTest {
 
     @Test
     fun testOverflow() {
-        val backOff = Exponential(Long.MAX_VALUE / 2 + 1, Long.MAX_VALUE / 2 + 2)
+        val backOff = Exponential(Long.MAX_VALUE / 2 + 1, maxIntervalMs = Long.MAX_VALUE / 2 + 2)
         assertEquals(Long.MAX_VALUE / 2 + 1, backOff.backOff(0, duration, error).toMillis())
         assertEquals(Long.MAX_VALUE / 2 + 2, backOff.backOff(1, duration, error).toMillis())
     }

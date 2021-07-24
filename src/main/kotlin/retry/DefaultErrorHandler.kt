@@ -22,7 +22,7 @@ import java.time.Duration
 
 class DefaultErrorHandler(
     private val log: Condition = Condition.ALWAYS,
-    private val printStack: Condition = Condition.ALWAYS,
+    private val stack: Condition = Condition.ALWAYS,
     private val callback: (Throwable) -> Unit = {}
 ) : ErrorHandler {
 
@@ -34,10 +34,10 @@ class DefaultErrorHandler(
         backOffDuration: Duration
     ) {
         callback(error)
-        val durationMs = duration.toMillis()
 
+        val durationMs = duration.toMillis()
         if (log.match(retryCount, duration, error)) {
-            if (printStack.match(retryCount, duration, error)) {
+            if (stack.match(retryCount, duration, error)) {
                 if (allowRetry) {
                     LOG.info("Invocation failed, retryCount: {}, duration: {}ms, will retry in {}ms.", retryCount, durationMs, backOffDuration.toMillis(), error)
                 } else {
