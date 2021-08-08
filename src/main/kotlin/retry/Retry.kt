@@ -21,6 +21,7 @@ import org.slf4j.LoggerFactory
 import java.lang.reflect.Proxy
 import java.time.Duration
 import java.util.concurrent.Callable
+import java.util.concurrent.TimeUnit
 
 class Retry {
 
@@ -36,6 +37,7 @@ class Retry {
         Thread.sleep(it.toMillis(), (it.toNanos() % 1e6).toInt())
     }
 
+    @JvmOverloads
     fun <T> call(name: String = "call", body: Callable<T>): T {
         var retryCount = 0
         val startTime = System.nanoTime()
@@ -85,6 +87,23 @@ class Retry {
         }
 
         @JvmStatic
-        val ALWAYS = Retry()
+        val ALWAYS = Retry().apply {
+            abortCondition = Condition.FALSE
+        }
+
+        @JvmStatic
+        fun eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10) : Retry {
+            return Retry().apply {
+                abortCondition = Condition.FALSE
+                errorHandler = DefaultErrorHandler(Condition.FALSE, Condition.TRUE)
+                retryCondition = MaxTimeElapsed(unit.toMillis(maxTimeElapsed))
+                backOff = Interval(backOffTimeMs)
+            }
+        }
+
+        @JvmStatic
+        fun <T> eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10, body: Callable<T>) : T {
+            return eventually(maxTimeElapsed, unit, backOffTimeMs).call(body = body)
+        }
     }
 }
