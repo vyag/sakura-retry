@@ -92,8 +92,15 @@ class Retry {
         }
 
         @JvmStatic
-        fun eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10) : Retry {
+        fun create(config: Retry.() -> Unit) : Retry {
             return Retry().apply {
+                config()
+            }
+        }
+
+        @JvmStatic
+        fun eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10) : Retry {
+            return create {
                 abortCondition = Condition.FALSE
                 errorHandler = DefaultErrorHandler(Condition.FALSE, Condition.TRUE)
                 retryCondition = MaxTimeElapsed(unit.toMillis(maxTimeElapsed))
