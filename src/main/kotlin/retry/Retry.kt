@@ -33,7 +33,7 @@ class Retry {
 
     var errorHandler: ErrorHandler = DefaultErrorHandler()
 
-    internal var sleeper = Sleeper {
+    internal var backOffExecutor = BackOffExecutor {
         Thread.sleep(it.toMillis(), (it.toNanos() % 1e6).toInt())
     }
 
@@ -57,7 +57,7 @@ class Retry {
 
                 errorHandler.handle(context, allowRetry, backOff)
                 if (allowRetry) {
-                    sleeper.sleep(backOff)
+                    backOffExecutor.backOff(backOff)
                     if (condition.match(context)) {
                         retryCount++
                         continue

@@ -19,8 +19,8 @@ package retry
 
 import java.time.Duration
 
-internal fun interface Sleeper {
+internal fun interface BackOffExecutor {
 
-    fun sleep(duration: Duration)
+    fun backOff(duration: Duration)
 
 }
