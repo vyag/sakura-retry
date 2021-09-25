@@ -92,7 +92,8 @@ class Retry {
         }
 
         @JvmStatic
-        fun create(config: Retry.() -> Unit) : Retry {
+        @JvmOverloads
+        fun create(config: Retry.() -> Unit = {}) : Retry {
             return Retry().apply {
                 config()
             }
