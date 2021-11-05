@@ -18,10 +18,11 @@
 package retry
 
 import java.time.Duration
+import java.util.*
 
 internal object Utils {
 
     fun Duration.toReadableString() : String {
-        return toString().substring(2).toLowerCase()
+        return toString().substring(2).lowercase(Locale.getDefault())
     }
 }
