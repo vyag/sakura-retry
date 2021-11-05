@@ -29,7 +29,7 @@ class RetryCallTest {
     @Test
     fun testNoError() {
         val retry = Retry.NONE
-        var mock = Mockito.mock(Callable::class.java)
+        val mock = Mockito.mock(Callable::class.java)
         retry.call {
             mock.call()
         }
