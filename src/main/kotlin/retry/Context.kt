@@ -17,7 +17,7 @@
 
 package retry
 
-import retry.Utils.toReadableString
+import retry.internal.Utils.toReadableString
 import java.time.Duration
 
 data class Context(var retryCount: Int, var duration: Duration, val error: Throwable) {

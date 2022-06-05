@@ -29,6 +29,7 @@ data class Interval @JvmOverloads constructor(val minIntervalMs: Long = 1000, va
     }
 
     companion object {
+        @JvmStatic
         private val random = Random(System.currentTimeMillis())
     }
 }

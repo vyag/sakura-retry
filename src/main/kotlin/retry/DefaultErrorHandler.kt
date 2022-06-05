@@ -18,7 +18,7 @@
 package retry
 
 import org.slf4j.LoggerFactory
-import retry.Utils.toReadableString
+import retry.internal.Utils.toReadableString
 import java.time.Duration
 
 data class DefaultErrorHandler(
