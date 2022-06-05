@@ -21,7 +21,10 @@ import org.slf4j.LoggerFactory
 import java.lang.reflect.Proxy
 import java.time.Duration
 import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 class Retry {
 
@@ -38,7 +41,7 @@ class Retry {
     }
 
     @JvmOverloads
-    fun <T> call(name: String = "call", body: Callable<T>): T {
+    fun <T> submit(name: String = "call", body: Callable<T>): T {
         var retryCount = 0
         val startTime = System.nanoTime()
 
@@ -67,6 +70,43 @@ class Retry {
                 throw t
             }
         }
+    }
+
+    @JvmOverloads
+    fun <T> submit(executor: ScheduledExecutorService, name: String = "call", body: Callable<T>): CompletableFuture<T> {
+        var retryCount = 0
+        val startTime = System.nanoTime()
+
+        val result = CompletableFuture<T>()
+
+        val condition = !abortCondition and retryCondition
+
+        val actionHolder = AtomicReference<Runnable>()
+
+        val action = Runnable {
+            try {
+                result.complete(body.call())
+            } catch (t: Throwable) {
+                val duration = Duration.ofNanos(System.nanoTime() - startTime)
+                val context = Context(retryCount, duration, t)
+                val allowRetry = condition.match(context)
+                val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
+
+                errorHandler.handle(context, allowRetry, backOff)
+                if (allowRetry) {
+                    executor.schedule(actionHolder.get(), backOff.toMillis(), TimeUnit.MILLISECONDS)
+                    if (condition.match(context)) {
+                        retryCount++
+                    }
+                } else {
+                    LOG.debug("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
+                    result.completeExceptionally(t)
+                }
+            }
+        }
+        actionHolder.set(action)
+        executor.execute(action)
+        return result
     }
 
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
@@ -111,7 +151,7 @@ class Retry {
 
         @JvmStatic
         fun <T> eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10, body: Callable<T>) : T {
-            return eventually(maxTimeElapsed, unit, backOffTimeMs).call(body = body)
+            return eventually(maxTimeElapsed, unit, backOffTimeMs).submit(body = body)
         }
     }
 }
