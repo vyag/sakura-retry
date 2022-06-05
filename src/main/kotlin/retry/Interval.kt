@@ -22,7 +22,7 @@ import kotlin.random.Random
 
 data class Interval @JvmOverloads constructor(val minIntervalMs: Long = 1000, val maxIntervalMs: Long = minIntervalMs) : BackOff {
 
-    internal val intervalMs = random.nextLong(minIntervalMs, maxIntervalMs + 1)
+    private val intervalMs = random.nextLong(minIntervalMs, maxIntervalMs + 1)
 
     override fun backOff(context: Context): Duration {
         return Duration.ofMillis(intervalMs)

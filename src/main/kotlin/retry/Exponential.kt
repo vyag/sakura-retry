@@ -26,7 +26,7 @@ data class Exponential @JvmOverloads constructor(
     val maxIntervalMs: Long = 60000
 ) : BackOff {
 
-    internal val initIntervalMs = random.nextLong(minInitIntervalMs, maxInitIntervalMs + 1)
+    private val initIntervalMs = random.nextLong(minInitIntervalMs, maxInitIntervalMs)
 
     override fun backOff(context: Context): Duration {
         var value = initIntervalMs
@@ -45,6 +45,7 @@ data class Exponential @JvmOverloads constructor(
     }
 
     companion object {
+        @JvmStatic
         private val random = Random(System.currentTimeMillis())
     }
 }

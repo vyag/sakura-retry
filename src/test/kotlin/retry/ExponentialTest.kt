@@ -17,9 +17,11 @@
 
 package retry
 
+import org.junit.jupiter.api.RepeatedTest
 import java.time.Duration
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ExponentialTest {
 
@@ -28,28 +30,21 @@ class ExponentialTest {
     private val error = Exception()
 
     @Test
-    fun testRandom() {
-        Exponential(1, 1).run {
-            assertEquals(1, initIntervalMs)
-        }
-
-        Array(100) {
-            Exponential(1, 3).initIntervalMs
-        }.toSet().run {
-            assertEquals(setOf<Long>(1, 2, 3), this)
-        }
-    }
-
-    @Test
     fun testMaxInterval() {
         val backOff = Exponential(1, maxIntervalMs = 5)
-        listOf(0 to 1, 1 to 2, 2 to 4, 3 to 5, 4 to 5).forEach {
+        val data = listOf(
+            0 to 1,
+            1 to 2,
+            2 to 4,
+            3 to 5,
+            4 to 5)
+        data.forEach {
             assertEquals(it.second, backOff.backOff(Context(it.first, duration, error)).toMillis().toInt())
         }
     }
 
     @Test
-    fun testOverflow() {
+    fun testOverflowProtection() {
         val backOff = Exponential(Long.MAX_VALUE / 2 + 1, maxIntervalMs = Long.MAX_VALUE / 2 + 2)
         assertEquals(Long.MAX_VALUE / 2 + 1, backOff.backOff(Context(0, duration, error)).toMillis())
         assertEquals(Long.MAX_VALUE / 2 + 2, backOff.backOff(Context(1, duration, error)).toMillis())
