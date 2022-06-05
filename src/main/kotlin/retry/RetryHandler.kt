@@ -24,7 +24,7 @@ import java.lang.reflect.Method
 internal class RetryHandler<T>(private val retry: Retry, private val target: T, private val name: String) : InvocationHandler {
 
     override fun invoke(proxy: Any, method: Method, args: Array<out Any?>?): Any? {
-        return retry.submit("$name.${method.name}") {
+        return retry.call("$name.${method.name}") {
             try {
                 if (args == null) {
                     method.invoke(target)

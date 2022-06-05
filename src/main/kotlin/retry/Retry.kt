@@ -41,7 +41,7 @@ class Retry {
     }
 
     @JvmOverloads
-    fun <T> submit(name: String = "call", body: Callable<T>): T {
+    fun <T> call(name: String = "call", body: Callable<T>): T {
         var retryCount = 0
         val startTime = System.nanoTime()
 
@@ -151,7 +151,7 @@ class Retry {
 
         @JvmStatic
         fun <T> eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10, body: Callable<T>) : T {
-            return eventually(maxTimeElapsed, unit, backOffTimeMs).submit(body = body)
+            return eventually(maxTimeElapsed, unit, backOffTimeMs).call(body = body)
         }
     }
 }

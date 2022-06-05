@@ -30,7 +30,7 @@ class RetryCallTest {
     fun testNoError() {
         val retry = Retry.NONE
         val mock = Mockito.mock(Callable::class.java)
-        retry.submit {
+        retry.call {
             mock.call()
         }
         Mockito.verify(mock, Mockito.times(1)).call()
@@ -47,7 +47,7 @@ class RetryCallTest {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        assertEquals("done", retry.submit {
+        assertEquals("done", retry.call {
             mock.call()
         })
         Mockito.verify(mock, Mockito.times(11)).call()
@@ -63,7 +63,7 @@ class RetryCallTest {
         Mockito.doThrow(IOException()).`when`(mock).call()
 
         assertFailsWith<IOException> {
-            retry.submit {
+            retry.call {
                 mock.call()
             }
         }
@@ -88,7 +88,7 @@ class RetryCallTest {
         Mockito.doThrow(IOException()).`when`(mock).call()
 
         assertFailsWith<IOException> {
-            retry.submit {
+            retry.call {
                 mock.call()
             }
         }
