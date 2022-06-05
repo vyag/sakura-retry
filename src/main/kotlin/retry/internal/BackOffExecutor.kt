@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package retry
+package retry.internal
 
 import java.time.Duration
 

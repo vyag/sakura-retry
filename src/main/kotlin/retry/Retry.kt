@@ -18,6 +18,7 @@
 package retry
 
 import org.slf4j.LoggerFactory
+import retry.internal.BackOffExecutor
 import java.lang.reflect.Proxy
 import java.time.Duration
 import java.util.concurrent.Callable
