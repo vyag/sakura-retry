@@ -19,6 +19,7 @@ package retry
 
 import java.time.Duration
 import kotlin.random.Random
+import kotlin.random.nextLong
 
 data class Exponential @JvmOverloads constructor(
     val minInitIntervalMs: Long = 1000,
@@ -26,7 +27,7 @@ data class Exponential @JvmOverloads constructor(
     val maxIntervalMs: Long = 60000
 ) : BackOff {
 
-    private val initIntervalMs = random.nextLong(minInitIntervalMs, maxInitIntervalMs)
+    private val initIntervalMs = random.nextLong(LongRange(minInitIntervalMs,  maxInitIntervalMs))
 
     override fun backOff(context: Context): Duration {
         var value = initIntervalMs
