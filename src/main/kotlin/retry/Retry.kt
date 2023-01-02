@@ -22,11 +22,11 @@ import retry.internal.BackOffExecutor
 import retry.internal.RetryHandler
 import java.lang.reflect.Proxy
 import java.time.Duration
-import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
+import java.util.function.Function
 
 class Retry {
 
@@ -43,7 +43,7 @@ class Retry {
     }
 
     @JvmOverloads
-    fun <T> call(name: String = "call", body: Callable<T>): T {
+    fun <T> call(name: String = "call", body: Function<Long, T>): T {
         var retryCount = 0
         val startTime = System.nanoTime()
 
@@ -51,7 +51,7 @@ class Retry {
 
         while (true) {
             try {
-                val result = body.call()
+                val result = body.apply(System.nanoTime() - startTime)
                 LOG.debug("Finally {} success after {} retries.", name, retryCount)
                 return result
             } catch (t: Throwable) {
@@ -75,7 +75,7 @@ class Retry {
     }
 
     @JvmOverloads
-    fun <T> submit(executor: ScheduledExecutorService, name: String = "call", body: Callable<T>): CompletableFuture<T> {
+    fun <T> submit(executor: ScheduledExecutorService, name: String = "call", body: Function<Long, T>): CompletableFuture<T> {
         var retryCount = 0
         val startTime = System.nanoTime()
 
@@ -87,7 +87,7 @@ class Retry {
 
         val action = Runnable {
             try {
-                result.complete(body.call())
+                result.complete(body.apply(System.nanoTime() - startTime))
             } catch (t: Throwable) {
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
                 val context = Context(retryCount, duration, t)
@@ -152,7 +152,7 @@ class Retry {
         }
 
         @JvmStatic
-        fun <T> eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10, body: Callable<T>) : T {
+        fun <T> eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10, body: Function<Long, T>) : T {
             return eventually(maxTimeElapsed, unit, backOffTimeMs).call(body = body)
         }
     }

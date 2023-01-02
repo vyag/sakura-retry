@@ -44,7 +44,7 @@ class RetrySubmitTest {
         }).doReturn("done").`when`(mock).call()
 
         val executor = Executors.newScheduledThreadPool(1)
-        assertEquals("done", retry.submit(executor, body = mock).get())
+        assertEquals("done", retry.submit(executor, body = { mock.call() }).get())
         Mockito.verify(mock, Mockito.times(4)).call()
 
         executor.shutdownNow()
@@ -65,7 +65,7 @@ class RetrySubmitTest {
 
         val executor = Executors.newScheduledThreadPool(1)
         val error = assertFailsWith<ExecutionException> {
-            retry.submit(executor, body = mock).get()
+            retry.submit(executor, body = { mock.call() }).get()
         }
         assertTrue(error.cause is IOException)
 
@@ -93,7 +93,7 @@ class RetrySubmitTest {
         val executor = Executors.newScheduledThreadPool(1)
 
         val results = Array(100) {
-            retry.submit(executor, "call-$it", mocks[it])
+            retry.submit(executor, "call-$it") { _ -> mocks[it].call() }
         }
 
         results.forEach {
