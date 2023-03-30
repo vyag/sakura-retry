@@ -25,7 +25,6 @@ import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicReference
 import java.util.function.Function
 
 class Retry {
@@ -83,31 +82,31 @@ class Retry {
 
         val condition = !abortCondition and retryCondition
 
-        val actionHolder = AtomicReference<Runnable>()
+        class Task : Runnable {
+            override fun run() {
+                try {
+                    result.complete(body.apply(System.nanoTime() - startTime))
+                } catch (t: Throwable) {
+                    val duration = Duration.ofNanos(System.nanoTime() - startTime)
+                    val context = Context(retryCount, duration, t)
+                    val allowRetry = condition.match(context)
+                    val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
 
-        val action = Runnable {
-            try {
-                result.complete(body.apply(System.nanoTime() - startTime))
-            } catch (t: Throwable) {
-                val duration = Duration.ofNanos(System.nanoTime() - startTime)
-                val context = Context(retryCount, duration, t)
-                val allowRetry = condition.match(context)
-                val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
-
-                errorHandler.handle(context, allowRetry, backOff)
-                if (allowRetry) {
-                    executor.schedule(actionHolder.get(), backOff.toMillis(), TimeUnit.MILLISECONDS)
-                    if (condition.match(context)) {
-                        retryCount++
+                    errorHandler.handle(context, allowRetry, backOff)
+                    if (allowRetry) {
+                        executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
+                        if (condition.match(context)) {
+                            retryCount++
+                        }
+                    } else {
+                        LOG.debug("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
+                        result.completeExceptionally(t)
                     }
-                } else {
-                    LOG.debug("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
-                    result.completeExceptionally(t)
                 }
             }
         }
-        actionHolder.set(action)
-        executor.execute(action)
+
+        executor.execute(Task())
         return result
     }
 
