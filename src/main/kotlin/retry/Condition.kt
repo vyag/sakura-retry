@@ -23,18 +23,18 @@ fun interface Condition {
 
     infix fun and(policy: Condition): Condition {
         return Condition { context ->
-            this@Condition.match(context) && policy.match(context)
+            match(context) && policy.match(context)
         }
     }
 
     infix fun or(policy: Condition): Condition {
         return Condition { context ->
-            this@Condition.match(context) || policy.match(context)
+            match(context) || policy.match(context)
         }
     }
 
     operator fun not() : Condition {
-        return Condition { context -> !this@Condition.match(context) }
+        return Condition { context -> !match(context) }
     }
 
     companion object {
