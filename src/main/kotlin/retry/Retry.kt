@@ -27,17 +27,14 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.function.Function
 
-class Retry {
-
-    var retryCondition: Condition = Condition.TRUE
-
-    var abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
-
-    var backOff: BackOff = Interval()
-
+class Retry @JvmOverloads constructor(
+    var retryCondition: Condition = Condition.TRUE,
+    var abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
+    var backOff: BackOff = Interval(),
     var errorHandler: ErrorHandler = DefaultErrorHandler()
+) {
 
-    internal var backOffExecutor = BackOffExecutor {
+    internal var backOffExecutor: BackOffExecutor = BackOffExecutor {
         Thread.sleep(it.toMillis(), (it.toNanos() % 1e6).toInt())
     }
 

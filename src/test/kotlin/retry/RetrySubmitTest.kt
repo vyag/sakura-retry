@@ -17,19 +17,27 @@
 
 package retry
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Timeout
 import org.mockito.Mockito
 import java.io.IOException
-import java.util.concurrent.Callable
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import java.util.concurrent.*
+import kotlin.test.*
 
 class RetrySubmitTest {
+    
+    private lateinit var executor: ScheduledExecutorService
+    
+    @BeforeTest
+    fun init() {
+        executor = Executors.newScheduledThreadPool(5)
+    }
+    
+    @AfterTest
+    fun cleanup() {
+        executor.shutdown()
+        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
+    }
 
     @Test
     @Timeout(1)
@@ -43,45 +51,37 @@ class RetrySubmitTest {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        val executor = Executors.newScheduledThreadPool(1)
-        assertEquals("done", retry.submit(executor, body = { mock.call() }).get())
+        assertThat(retry.submit(executor, body = { mock.call() }).get()).isEqualTo("done")
         Mockito.verify(mock, Mockito.times(4)).call()
-
-        executor.shutdownNow()
-        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
     }
 
     @Test
     @Timeout(1)
     fun testRetryFail() {
-        val retry = Retry().apply {
-            retryCondition = MaxRetries(2)
+        val retry = Retry(
+            retryCondition = MaxRetries(2),
             backOff = BackOff.NONE
-        }
+        )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(4) {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        val executor = Executors.newScheduledThreadPool(1)
         val error = assertFailsWith<ExecutionException> {
             retry.submit(executor, body = { mock.call() }).get()
         }
-        assertTrue(error.cause is IOException)
+        assertThat(error.cause).isInstanceOf(IOException::class.java)
 
         Mockito.verify(mock, Mockito.times(3)).call()
-
-        executor.shutdownNow()
-        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
     }
 
     @Test
     @Timeout(5)
     fun testRetrySuccessWithMultipleSubmits() {
-        val retry = Retry().apply {
-            retryCondition = MaxRetries(3)
+        val retry = Retry(
+            retryCondition = MaxRetries(3),
             backOff = BackOff.duration(1, TimeUnit.SECONDS)
-        }
+        )
         val mocks = Array(100) {
             val mock = Mockito.mock(Callable::class.java)
             Mockito.doThrow(*Array(3) {
@@ -90,23 +90,17 @@ class RetrySubmitTest {
             mock
         }
 
-        val executor = Executors.newScheduledThreadPool(1)
-
         val results = Array(100) {
             retry.submit(executor, "call-$it") { _ -> mocks[it].call() }
         }
 
-        results.forEach {
+        for (it in results) {
             assertEquals("done", it.get())
         }
 
-        mocks.forEach {
+        for (it in mocks) {
             Mockito.verify(it, Mockito.times(4)).call()
         }
-
-
-        executor.shutdownNow()
-        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
     }
 
 }

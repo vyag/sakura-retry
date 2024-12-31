@@ -17,6 +17,7 @@
 
 package retry
 
+import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
 import java.io.IOException
 import java.util.concurrent.Callable
@@ -28,10 +29,10 @@ class RetryProxyTest {
 
     @Test
     fun testNoError() {
-        val retry = Retry().apply {
-            retryCondition = MaxRetries(10)
+        val retry = Retry(
+            retryCondition = MaxRetries(10),
             backOff = BackOff.NONE
-        }
+        )
         val mock = Mockito.mock(Callable::class.java)
         val foo = retry.proxy(Callable::class.java, mock)
         foo.call()
@@ -40,26 +41,26 @@ class RetryProxyTest {
 
     @Test
     fun testRetrySuccess() {
-        val retry = Retry().apply {
-            retryCondition = MaxRetries(10)
+        val retry = Retry(
+            retryCondition = MaxRetries(10),
             backOff = BackOff.NONE
-        }
+        )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(9) {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
         val foo = retry.proxy(Callable::class.java, mock)
-        assertEquals("done", foo.call())
+        assertThat(foo.call()).isEqualTo("done")
         Mockito.verify(mock, Mockito.times(10)).call()
     }
 
     @Test
     fun testRetryFailed() {
-        val retry = Retry().apply {
-            retryCondition = MaxRetries(10)
+        val retry = Retry(
+            retryCondition = MaxRetries(10),
             backOff = BackOff.NONE
-        }
+        )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 

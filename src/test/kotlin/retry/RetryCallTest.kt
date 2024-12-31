@@ -17,6 +17,7 @@
 
 package retry
 
+import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
 import retry.internal.BackOffExecutor
 import java.io.IOException
@@ -80,11 +81,11 @@ class RetryCallTest {
             totalSleepMs += it.toMillis()
         }
 
-        val retry = Retry().apply {
-            retryCondition = MaxRetries(10)
+        val retry = Retry(
+            retryCondition = MaxRetries(10),
             backOff = Interval(1000)
-            backOffExecutor = fakeSleeper
-        }
+        )
+        retry.backOffExecutor = fakeSleeper
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 
@@ -94,8 +95,8 @@ class RetryCallTest {
             }
         }
         Mockito.verify(mock, Mockito.times(11)).call()
-        assertEquals(10, invocationCount)
-        assertEquals(10000, totalSleepMs)
+        assertThat(invocationCount).isEqualTo(10)
+        assertThat(totalSleepMs).isEqualTo(10000)
     }
 
 }

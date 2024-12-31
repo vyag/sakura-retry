@@ -17,6 +17,7 @@
 
 package retry
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.RepeatedTest
 import java.time.Duration
 import kotlin.test.Test
@@ -38,15 +39,15 @@ class ExponentialTest {
             2 to 4,
             3 to 5,
             4 to 5)
-        data.forEach {
-            assertEquals(it.second, backOff.backOff(Context(it.first, duration, error)).toMillis().toInt())
+        for (it in data) {
+            assertThat(backOff.backOff(Context(it.first, duration, error)).toMillis().toInt()).isEqualTo(it.second)
         }
     }
 
     @Test
     fun testOverflowProtection() {
         val backOff = Exponential(Long.MAX_VALUE / 2 + 1, maxIntervalMs = Long.MAX_VALUE / 2 + 2)
-        assertEquals(Long.MAX_VALUE / 2 + 1, backOff.backOff(Context(0, duration, error)).toMillis())
-        assertEquals(Long.MAX_VALUE / 2 + 2, backOff.backOff(Context(1, duration, error)).toMillis())
+        assertThat(backOff.backOff(Context(0, duration, error)).toMillis()).isEqualTo(Long.MAX_VALUE / 2 + 1)
+        assertThat(backOff.backOff(Context(1, duration, error)).toMillis()).isEqualTo(Long.MAX_VALUE / 2 + 2)
     }
 }

@@ -17,29 +17,25 @@
 
 package retry
 
+import org.assertj.core.api.Assertions.assertThat
 import java.io.IOException
 import java.time.Duration
 import kotlin.test.Test
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class ConditionTest {
 
     @Test
     fun testLogicOperator() {
-        assertFalse {
-            val cond = Condition.FALSE and Condition.TRUE
-            cond.match(Context(1, Duration.ZERO, IOException()))
-        }
+        assertThat((Condition.FALSE and Condition.TRUE)
+            .match(Context(1, Duration.ZERO, IOException())))
+            .isFalse()
 
-        assertTrue {
-            val cond = Condition.FALSE or Condition.TRUE
-            cond.match(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException()))
-        }
+        assertThat((Condition.FALSE or Condition.TRUE)
+            .match(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
+            .isTrue();
 
-        assertTrue {
-            val cond = !Condition.FALSE
-            cond.match(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException()))
-        }
+        assertThat((!Condition.FALSE)
+           .match(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
+           .isTrue();
     }
 }
