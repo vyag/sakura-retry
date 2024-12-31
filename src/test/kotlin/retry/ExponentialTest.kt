@@ -18,11 +18,8 @@
 package retry
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.RepeatedTest
 import java.time.Duration
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class ExponentialTest {
 

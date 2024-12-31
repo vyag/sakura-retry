@@ -22,7 +22,6 @@ import org.mockito.Mockito
 import java.io.IOException
 import java.util.concurrent.Callable
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class RetryProxyTest {
