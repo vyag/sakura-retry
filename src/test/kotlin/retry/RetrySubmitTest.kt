@@ -42,10 +42,10 @@ class RetrySubmitTest {
     @Test
     @Timeout(1)
     fun testRetrySuccess() {
-        val retry = Retry().apply {
-            retryCondition = MaxRetries(3)
+        val retry = Retry(
+            retryCondition = MaxRetries(3),
             backOff = BackOff.NONE
-        }
+        )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(3) {
             IOException()
@@ -95,7 +95,7 @@ class RetrySubmitTest {
         }
 
         for (it in results) {
-            assertEquals("done", it.get())
+            assertThat(it.get()).isEqualTo("done")
         }
 
         for (it in mocks) {

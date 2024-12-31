@@ -40,10 +40,10 @@ class RetryCallTest {
 
     @Test
     fun testRetrySuccess() {
-        val retry = Retry().apply {
-            retryCondition = MaxRetries(10)
+        val retry = Retry(
+            retryCondition = MaxRetries(10),
             backOff = BackOff.NONE
-        }
+        )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(10) {
             IOException()
@@ -57,10 +57,10 @@ class RetryCallTest {
 
     @Test
     fun testRetryFailed() {
-        val retry = Retry().apply {
-            retryCondition = MaxRetries(10)
+        val retry = Retry(
+            retryCondition = MaxRetries(10),
             backOff = BackOff.NONE
-        }
+        )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 
