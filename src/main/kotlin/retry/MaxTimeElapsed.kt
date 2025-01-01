@@ -17,9 +17,11 @@
 
 package retry
 
-data class MaxTimeElapsed @JvmOverloads constructor(val maxTimeElapsedMs: Long = Long.MAX_VALUE) : Condition {
+import java.time.Duration
+
+data class MaxTimeElapsed(val maxTimeElapsed: Duration) : Condition {
 
     override fun match(context: Context): Boolean {
-        return context.duration.toMillis() < maxTimeElapsedMs
+        return context.duration.toMillis() < maxTimeElapsed.toMillis()
     }
 }

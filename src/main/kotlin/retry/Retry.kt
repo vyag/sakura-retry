@@ -28,10 +28,10 @@ import java.util.concurrent.TimeUnit
 import java.util.function.Function
 
 class Retry @JvmOverloads constructor(
-    val retryCondition: Condition = Condition.TRUE,
-    val abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
-    val backOff: BackOff = Interval(),
-    val errorHandler: ErrorHandler = DefaultErrorHandler()
+    private val retryCondition: Condition = Condition.TRUE,
+    abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
+    private val backOff: BackOff = Interval(),
+    private val errorHandler: ErrorHandler = DefaultErrorHandler()
 ) {
 
     private val condition = !abortCondition and retryCondition
@@ -119,9 +119,6 @@ class Retry @JvmOverloads constructor(
 
         @JvmStatic
         val NONE = Retry(retryCondition = Condition.FALSE)
-
-        @JvmStatic
-        val ALWAYS = Retry(abortCondition = Condition.FALSE)
 
     }
 }
