@@ -20,11 +20,12 @@ package retry
 import org.slf4j.LoggerFactory
 import retry.internal.Utils.toReadableString
 import java.time.Duration
+import java.util.function.Consumer
 
 data class DefaultErrorHandler(
     val log: Condition = Condition.TRUE,
     val stack: Condition = Condition.FALSE,
-    private val callback: (Throwable) -> Unit = {}
+    private val callback: Consumer<Throwable> = Consumer { }
 ) : ErrorHandler {
 
     override fun handle(
@@ -32,7 +33,7 @@ data class DefaultErrorHandler(
         allowRetry: Boolean,
         backOffDuration: Duration
     ) {
-        callback(context.error)
+        callback.accept(context.error)
 
         if (!log.match(context)) {
             return
