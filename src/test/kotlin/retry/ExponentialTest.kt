@@ -20,6 +20,8 @@ package retry
 import org.assertj.core.api.Assertions.assertThat
 import java.time.Duration
 import kotlin.test.Test
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.toJavaDuration
 
 class ExponentialTest {
 
@@ -29,7 +31,7 @@ class ExponentialTest {
 
     @Test
     fun testMaxInterval() {
-        val backOff = Exponential(1, maxIntervalMs = 5)
+        val backOff = Exponential(1.milliseconds, 5.milliseconds)
         val data = listOf(
             0 to 1,
             1 to 2,
@@ -43,7 +45,7 @@ class ExponentialTest {
 
     @Test
     fun testOverflowProtection() {
-        val backOff = Exponential(Long.MAX_VALUE / 2 + 1, maxIntervalMs = Long.MAX_VALUE / 2 + 2)
+        val backOff = Exponential(Duration.ofMillis(Long.MAX_VALUE / 2 + 1), Duration.ofMillis(Long.MAX_VALUE / 2 + 2))
         assertThat(backOff.backOff(Context(0, duration, error)).toMillis()).isEqualTo(Long.MAX_VALUE / 2 + 1)
         assertThat(backOff.backOff(Context(1, duration, error)).toMillis()).isEqualTo(Long.MAX_VALUE / 2 + 2)
     }

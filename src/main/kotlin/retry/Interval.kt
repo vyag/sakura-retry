@@ -20,13 +20,14 @@ package retry
 import java.time.Duration
 import kotlin.random.Random
 import kotlin.random.nextLong
+import kotlin.time.toJavaDuration
 
-data class Interval @JvmOverloads constructor(val minIntervalMs: Long = 1000, val maxIntervalMs: Long = minIntervalMs) : BackOff {
-
-    private val intervalMs = random.nextLong(LongRange(minIntervalMs,  maxIntervalMs))
+data class Interval(val interval: Duration) : BackOff {
+    
+    constructor(interval: kotlin.time.Duration) : this(interval.toJavaDuration())
 
     override fun backOff(context: Context): Duration {
-        return Duration.ofMillis(intervalMs)
+        return interval
     }
 
     companion object {

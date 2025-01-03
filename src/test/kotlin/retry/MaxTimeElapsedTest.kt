@@ -19,10 +19,11 @@ package retry
 import org.assertj.core.api.Assertions.assertThat
 import java.time.Duration
 import kotlin.test.Test
+import kotlin.time.Duration.Companion.seconds
 
 class MaxTimeElapsedTest {
 
-    private val cond = MaxTimeElapsed(Duration.ofSeconds(1))
+    private val cond = MaxTimeElapsed(1.seconds)
     
     @Test
     fun testShouldMatchBeforeDeadline() {

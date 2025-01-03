@@ -29,7 +29,7 @@ fun interface BackOff {
         val NONE = BackOff { Duration.ZERO }
 
         @JvmStatic
-        fun duration(time: Long, unit: TimeUnit = TimeUnit.MILLISECONDS) = Interval(unit.toMillis(time))
+        fun duration(time: Long, unit: TimeUnit = TimeUnit.MILLISECONDS) = Interval(Duration.ofMillis(unit.toMillis(time)))
     }
 
 }

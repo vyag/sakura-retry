@@ -21,6 +21,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
 import retry.internal.BackOffExecutor
 import java.io.IOException
+import java.time.Duration
 import java.util.concurrent.Callable
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -83,7 +84,7 @@ class RetryCallTest {
 
         val retry = Retry(
             retryCondition = MaxRetries(10),
-            backOff = Interval(1000)
+            backOff = Interval(Duration.ofSeconds(1))
         )
         retry.backOffExecutor = fakeSleeper
         val mock = Mockito.mock(Callable::class.java)

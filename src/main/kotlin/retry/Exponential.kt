@@ -20,17 +20,17 @@ package retry
 import java.time.Duration
 import kotlin.random.Random
 import kotlin.random.nextLong
+import kotlin.time.toJavaDuration
 
-data class Exponential @JvmOverloads constructor(
-    val minInitIntervalMs: Long = 1000,
-    val maxInitIntervalMs: Long = minInitIntervalMs,
-    val maxIntervalMs: Long = 60000
+data class Exponential(
+    val initInterval: Duration,
+    val maxInterval: Duration
 ) : BackOff {
-
-    private val initIntervalMs = random.nextLong(LongRange(minInitIntervalMs,  maxInitIntervalMs))
+    
+    constructor(initInterval: kotlin.time.Duration, maxInterval: kotlin.time.Duration) : this(initInterval.toJavaDuration(), maxInterval.toJavaDuration())
 
     override fun backOff(context: Context): Duration {
-        var value = initIntervalMs
+        var value = initInterval.toMillis()
         for (i in 0 until context.retryCount) {
             if (value < Long.MAX_VALUE / 2) {
                 value = value shl 1
@@ -38,15 +38,12 @@ data class Exponential @JvmOverloads constructor(
                 value = Long.MAX_VALUE
                 break
             }
-            if (value > maxIntervalMs)
+            if (value > maxInterval.toMillis()) {
                 break
+            }
         }
-        value = minOf(value, maxIntervalMs)
+        value = minOf(value, maxInterval.toMillis())
         return Duration.ofMillis(value)
     }
 
-    companion object {
-        @JvmStatic
-        private val random = Random(System.currentTimeMillis())
-    }
 }

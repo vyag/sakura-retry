@@ -30,7 +30,7 @@ import java.util.function.Function
 class Retry @JvmOverloads constructor(
     private val retryCondition: Condition = Condition.TRUE,
     abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
-    private val backOff: BackOff = Interval(),
+    private val backOff: BackOff = Interval(Duration.ofSeconds(1)),
     private val errorHandler: ErrorHandler = DefaultErrorHandler()
 ) {
 
@@ -120,5 +120,19 @@ class Retry @JvmOverloads constructor(
         @JvmStatic
         val NONE = Retry(retryCondition = Condition.FALSE)
 
+        @JvmStatic
+        fun eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10) : Retry {
+            return Retry(
+                abortCondition = Condition.FALSE,
+                errorHandler = DefaultErrorHandler(Condition.FALSE, Condition.TRUE),
+                retryCondition = MaxTimeElapsed(Duration.ofMillis(unit.toMillis(maxTimeElapsed))),
+                backOff = Interval(Duration.ofMillis(backOffTimeMs))
+            )
+        }
+
+        @JvmStatic
+        fun <T> eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10, body: Function<Long, T>) : T {
+            return eventually(maxTimeElapsed, unit, backOffTimeMs).call(body = body)
+        }
     }
 }
