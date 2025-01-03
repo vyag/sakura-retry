@@ -17,7 +17,7 @@
 
 package retry
 
-data class MaxRetries @JvmOverloads constructor(val maxRetries: Int = Int.MAX_VALUE) : Condition {
+data class MaxRetries(val maxRetries: Int) : Condition {
 
     override fun match(context: Context): Boolean {
         return context.retryCount < maxRetries

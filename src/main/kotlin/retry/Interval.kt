@@ -18,8 +18,6 @@
 package retry
 
 import java.time.Duration
-import kotlin.random.Random
-import kotlin.random.nextLong
 import kotlin.time.toJavaDuration
 
 data class Interval(val interval: Duration) : BackOff {
@@ -28,10 +26,5 @@ data class Interval(val interval: Duration) : BackOff {
 
     override fun backOff(context: Context): Duration {
         return interval
-    }
-
-    companion object {
-        @JvmStatic
-        private val random = Random(System.currentTimeMillis())
     }
 }

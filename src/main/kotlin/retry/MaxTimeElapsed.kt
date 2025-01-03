@@ -20,11 +20,11 @@ package retry
 import java.time.Duration
 import kotlin.time.toJavaDuration
 
-data class MaxTimeElapsed(val maxTimeElapsed: Duration) : Condition {
+data class MaxTimeElapsed(val duration: Duration) : Condition {
     
-    constructor(maxTimeElapsed: kotlin.time.Duration) : this(maxTimeElapsed.toJavaDuration())
+    constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
 
     override fun match(context: Context): Boolean {
-        return context.duration.toMillis() < maxTimeElapsed.toMillis()
+        return context.duration.toMillis() < duration.toMillis()
     }
 }

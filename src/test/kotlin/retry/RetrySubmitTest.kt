@@ -83,7 +83,7 @@ class RetrySubmitTest {
     fun testRetrySuccessWithMultipleSubmits() {
         val retry = Retry(
             retryCondition = MaxRetries(3),
-            backOff = BackOff.duration(1, TimeUnit.SECONDS)
+            backOff = BackOff.seconds(1)
         )
         val mocks = Array(100) {
             val mock = Mockito.mock(Callable::class.java)

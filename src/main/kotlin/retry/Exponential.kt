@@ -18,19 +18,17 @@
 package retry
 
 import java.time.Duration
-import kotlin.random.Random
-import kotlin.random.nextLong
 import kotlin.time.toJavaDuration
 
 data class Exponential(
-    val initInterval: Duration,
-    val maxInterval: Duration
+    val initDuration: Duration,
+    val maxDuration: Duration
 ) : BackOff {
     
-    constructor(initInterval: kotlin.time.Duration, maxInterval: kotlin.time.Duration) : this(initInterval.toJavaDuration(), maxInterval.toJavaDuration())
+    constructor(initDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(initDuration.toJavaDuration(), maxDuration.toJavaDuration())
 
     override fun backOff(context: Context): Duration {
-        var value = initInterval.toMillis()
+        var value = initDuration.toMillis()
         for (i in 0 until context.retryCount) {
             if (value < Long.MAX_VALUE / 2) {
                 value = value shl 1
@@ -38,11 +36,11 @@ data class Exponential(
                 value = Long.MAX_VALUE
                 break
             }
-            if (value > maxInterval.toMillis()) {
+            if (value > maxDuration.toMillis()) {
                 break
             }
         }
-        value = minOf(value, maxInterval.toMillis())
+        value = minOf(value, maxDuration.toMillis())
         return Duration.ofMillis(value)
     }
 

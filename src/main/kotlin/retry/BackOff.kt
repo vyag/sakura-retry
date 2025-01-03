@@ -18,7 +18,7 @@
 package retry
 
 import java.time.Duration
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 
 fun interface BackOff {
 
@@ -29,7 +29,7 @@ fun interface BackOff {
         val NONE = BackOff { Duration.ZERO }
 
         @JvmStatic
-        fun duration(time: Long, unit: TimeUnit = TimeUnit.MILLISECONDS) = Interval(Duration.ofMillis(unit.toMillis(time)))
+        fun seconds(amount: Long) = Interval(amount.seconds)
     }
 
 }

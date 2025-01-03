@@ -26,11 +26,12 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.function.Function
+import kotlin.time.Duration.Companion.seconds
 
 class Retry @JvmOverloads constructor(
     private val retryCondition: Condition = Condition.TRUE,
     abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
-    private val backOff: BackOff = Interval(Duration.ofSeconds(1)),
+    private val backOff: BackOff = Interval(1.seconds),
     private val errorHandler: ErrorHandler = DefaultErrorHandler()
 ) {
 
