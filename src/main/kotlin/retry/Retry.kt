@@ -63,7 +63,7 @@ class Retry @JvmOverloads constructor(
                         continue
                     }
                 }
-                giveUp(name, retryCount, t)
+                logGiveUp(name, retryCount, t)
                 throw t
             }
         }
@@ -90,7 +90,7 @@ class Retry @JvmOverloads constructor(
                             retryCount++
                         }
                     } else {
-                        giveUp(name, retryCount, t)
+                        logGiveUp(name, retryCount, t)
                         result.completeExceptionally(t)
                     }
                 }
@@ -100,7 +100,7 @@ class Retry @JvmOverloads constructor(
         return result
     }     
     
-    private fun giveUp(name: String, retryCount: Int, t: Throwable) {
+    private fun logGiveUp(name: String, retryCount: Int, t: Throwable) {
         if (LOG.isDebugEnabled) {
             LOG.debug("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
         }
@@ -120,20 +120,5 @@ class Retry @JvmOverloads constructor(
 
         @JvmStatic
         val NONE = Retry(retryCondition = Condition.FALSE)
-
-        @JvmStatic
-        fun eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10) : Retry {
-            return Retry(
-                abortCondition = Condition.FALSE,
-                errorHandler = DefaultErrorHandler(Condition.FALSE, Condition.TRUE),
-                retryCondition = MaxTimeElapsed(Duration.ofMillis(unit.toMillis(maxTimeElapsed))),
-                backOff = FixedInterval(Duration.ofMillis(backOffTimeMs))
-            )
-        }
-
-        @JvmStatic
-        fun <T> eventually(maxTimeElapsed: Long, unit: TimeUnit = TimeUnit.SECONDS, backOffTimeMs: Long = minOf(100, unit.toMillis(maxTimeElapsed)) / 10, body: Function<Long, T>) : T {
-            return eventually(maxTimeElapsed, unit, backOffTimeMs).call(body = body)
-        }
     }
 }

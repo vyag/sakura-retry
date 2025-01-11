@@ -21,15 +21,15 @@ fun interface Condition {
 
     fun match(context: Context) : Boolean
 
-    infix fun and(policy: Condition): Condition {
+    infix fun and(cond: Condition): Condition {
         return Condition { context ->
-            match(context) && policy.match(context)
+            match(context) && cond.match(context)
         }
     }
 
-    infix fun or(policy: Condition): Condition {
+    infix fun or(cond: Condition): Condition {
         return Condition { context ->
-            match(context) || policy.match(context)
+            match(context) || cond.match(context)
         }
     }
 

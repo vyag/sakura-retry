@@ -21,7 +21,6 @@ import org.assertj.core.api.Assertions.assertThat
 import java.time.Duration
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.toJavaDuration
 
 class ExponentialTest {
 

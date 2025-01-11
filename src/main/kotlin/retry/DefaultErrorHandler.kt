@@ -23,8 +23,8 @@ import java.time.Duration
 import java.util.function.Consumer
 
 data class DefaultErrorHandler(
-    val log: Condition = Condition.TRUE,
-    val stack: Condition = Condition.FALSE,
+    private val log: Condition = Condition.TRUE,
+    private val stack: Condition = Condition.FALSE,
     private val recover: Consumer<Throwable> = Consumer { }
 ) : ErrorHandler {
 
