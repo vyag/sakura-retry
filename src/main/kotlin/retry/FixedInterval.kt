@@ -20,7 +20,7 @@ package retry
 import java.time.Duration
 import kotlin.time.toJavaDuration
 
-data class Interval(val interval: Duration) : BackOff {
+data class FixedInterval(val interval: Duration) : BackOff {
     
     constructor(interval: kotlin.time.Duration) : this(interval.toJavaDuration())
 

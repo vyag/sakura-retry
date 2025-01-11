@@ -84,7 +84,7 @@ class RetryCallTest {
 
         val retry = Retry(
             retryCondition = MaxRetries(10),
-            backOff = Interval(Duration.ofSeconds(1))
+            backOff = FixedInterval(Duration.ofSeconds(1))
         )
         retry.backOffExecutor = fakeSleeper
         val mock = Mockito.mock(Callable::class.java)

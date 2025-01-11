@@ -25,7 +25,7 @@ import java.util.function.Consumer
 data class DefaultErrorHandler(
     val log: Condition = Condition.TRUE,
     val stack: Condition = Condition.FALSE,
-    private val callback: Consumer<Throwable> = Consumer { }
+    private val recover: Consumer<Throwable> = Consumer { }
 ) : ErrorHandler {
 
     override fun handle(
@@ -33,7 +33,7 @@ data class DefaultErrorHandler(
         allowRetry: Boolean,
         backOffDuration: Duration
     ) {
-        callback.accept(context.error)
+        recover.accept(context.error)
 
         if (!log.match(context)) {
             return

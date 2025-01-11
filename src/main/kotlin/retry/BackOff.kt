@@ -29,7 +29,7 @@ fun interface BackOff {
         val NONE = BackOff { Duration.ZERO }
 
         @JvmStatic
-        fun seconds(amount: Long) = Interval(amount.seconds)
+        fun seconds(amount: Long) = FixedInterval(amount.seconds)
     }
 
 }

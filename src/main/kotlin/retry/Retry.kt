@@ -31,7 +31,7 @@ import kotlin.time.Duration.Companion.seconds
 class Retry @JvmOverloads constructor(
     private val retryCondition: Condition = Condition.TRUE,
     abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
-    private val backOff: BackOff = Interval(1.seconds),
+    private val backOff: BackOff = FixedInterval(1.seconds),
     private val errorHandler: ErrorHandler = DefaultErrorHandler()
 ) {
 
@@ -127,7 +127,7 @@ class Retry @JvmOverloads constructor(
                 abortCondition = Condition.FALSE,
                 errorHandler = DefaultErrorHandler(Condition.FALSE, Condition.TRUE),
                 retryCondition = MaxTimeElapsed(Duration.ofMillis(unit.toMillis(maxTimeElapsed))),
-                backOff = Interval(Duration.ofMillis(backOffTimeMs))
+                backOff = FixedInterval(Duration.ofMillis(backOffTimeMs))
             )
         }
 
