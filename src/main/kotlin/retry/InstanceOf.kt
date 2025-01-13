@@ -21,7 +21,7 @@ data class InstanceOf(val errors: Set<Class<out Throwable>>) : Condition {
 
     constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
 
-    override fun match(context: Context): Boolean {
+    override fun check(context: Context): Boolean {
         val error = context.error
         return errors.contains(error.javaClass) || errors.any { it.isInstance(error) }
     }

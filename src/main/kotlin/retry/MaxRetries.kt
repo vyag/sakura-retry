@@ -19,7 +19,7 @@ package retry
 
 data class MaxRetries(val maxRetries: Int) : Condition {
 
-    override fun match(context: Context): Boolean {
+    override fun check(context: Context): Boolean {
         return context.retryCount < maxRetries
     }
 }

@@ -27,15 +27,15 @@ class ConditionTest {
     @Test
     fun testLogicOperator() {
         assertThat((Condition.FALSE and Condition.TRUE)
-            .match(Context(1, Duration.ZERO, IOException())))
+            .check(Context(1, Duration.ZERO, IOException())))
             .isFalse()
 
         assertThat((Condition.FALSE or Condition.TRUE)
-            .match(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
+            .check(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
             .isTrue();
 
         assertThat((!Condition.FALSE)
-           .match(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
+           .check(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
            .isTrue();
     }
 }

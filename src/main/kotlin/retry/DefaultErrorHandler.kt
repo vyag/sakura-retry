@@ -35,14 +35,14 @@ data class DefaultErrorHandler(
     ) {
         recover.accept(context.error)
 
-        if (!log.match(context)) {
+        if (!log.check(context)) {
             return
         }
 
         LOG.info(
             "Invocation failed, context: {}, retry: {}, backOff: {}.",
             *arrayListOf(context, allowRetry, backOffDuration.toReadableString()).let {
-                if (stack.match(context)){
+                if (stack.check(context)){
                     it.add(context.error)
                 }
                 it.toTypedArray()

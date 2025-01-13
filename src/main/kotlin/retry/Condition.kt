@@ -19,22 +19,22 @@ package retry
 
 fun interface Condition {
 
-    fun match(context: Context) : Boolean
+    fun check(context: Context) : Boolean
 
     infix fun and(cond: Condition): Condition {
         return Condition { context ->
-            match(context) && cond.match(context)
+            check(context) && cond.check(context)
         }
     }
 
     infix fun or(cond: Condition): Condition {
         return Condition { context ->
-            match(context) || cond.match(context)
+            check(context) || cond.check(context)
         }
     }
 
     operator fun not() : Condition {
-        return Condition { context -> !match(context) }
+        return Condition { context -> !check(context) }
     }
 
     companion object {

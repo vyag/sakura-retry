@@ -24,7 +24,7 @@ data class MaxTimeElapsed(val duration: Duration) : Condition {
     
     constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
 
-    override fun match(context: Context): Boolean {
+    override fun check(context: Context): Boolean {
         return context.duration.toMillis() < duration.toMillis()
     }
 }

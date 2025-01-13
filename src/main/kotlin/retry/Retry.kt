@@ -53,12 +53,12 @@ class Retry @JvmOverloads constructor(
             } catch (t: Throwable) {
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
                 val context = Context(retryCount, duration, t)
-                val allowRetry = condition.match(context)
+                val allowRetry = condition.check(context)
                 val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
                 errorHandler.handle(context, allowRetry, backOff)
                 if (allowRetry) {
                     backOffExecutor.backOff(backOff)
-                    if (condition.match(context)) {
+                    if (condition.check(context)) {
                         retryCount++
                         continue
                     }
@@ -81,12 +81,12 @@ class Retry @JvmOverloads constructor(
                 } catch (t: Throwable) {
                     val duration = Duration.ofNanos(System.nanoTime() - startTime)
                     val context = Context(retryCount, duration, t)
-                    val allowRetry = condition.match(context)
+                    val allowRetry = condition.check(context)
                     val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
                     errorHandler.handle(context, allowRetry, backOff)
                     if (allowRetry) {
                         executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
-                        if (condition.match(context)) {
+                        if (condition.check(context)) {
                             retryCount++
                         }
                     } else {
