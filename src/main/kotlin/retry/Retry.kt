@@ -106,6 +106,7 @@ class Retry @JvmOverloads constructor(
         }
     }
 
+    @JvmOverloads
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
         @Suppress("UNCHECKED_CAST")
         return (Proxy.newProxyInstance(
