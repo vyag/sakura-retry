@@ -54,6 +54,7 @@ class Retry @JvmOverloads constructor(
                 val duration = Duration.ofNanos(System.nanoTime() - startTime)
                 val context = Context(retryCount, duration, t)
                 val allowRetry = condition.check(context)
+                LOG.debug("Check retry condition: {}, then allow retry: {}.", condition.toString(context), allowRetry)
                 val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
                 errorHandler.handle(context, allowRetry, backOff)
                 if (allowRetry) {

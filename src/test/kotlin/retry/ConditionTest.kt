@@ -38,4 +38,10 @@ class ConditionTest {
            .check(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
            .isTrue();
     }
+    
+    @Test
+    fun testToString() {
+        println(Condition.FALSE and (!MaxRetries(5)))
+        println((Condition.FALSE and (!MaxRetries(5))).toString(Context(1, Duration.ZERO, IOException())))
+    }
 }
