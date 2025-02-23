@@ -22,23 +22,17 @@ import retry.internal.Utils.toReadableString
 import java.time.Duration
 import java.util.function.Consumer
 
-data class DefaultErrorHandler(
+data class DefaultErrorHandler @JvmOverloads constructor(
     private val log: Condition = Condition.TRUE,
     private val stack: Condition = Condition.FALSE,
-    private val recover: Consumer<Throwable> = Consumer { }
+    private val beforeRetryAction: Consumer<Throwable> = Consumer { }
 ) : ErrorHandler {
 
-    override fun handle(
-        context: Context,
-        allowRetry: Boolean,
-        backOffDuration: Duration
-    ) {
-        recover.accept(context.error)
-
+    override fun handle(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
+        beforeRetryAction.accept(context.error)
         if (!log.check(context)) {
             return
         }
-
         LOG.info(
             "Invocation failed, context: {}, retry: {}, backOff: {}.",
             *arrayListOf(context, allowRetry, backOffDuration.toReadableString()).let {
