@@ -28,6 +28,6 @@ data class MaxRetries(val maxRetries: Int) : Condition {
     }
 
     override fun toString(context: Context): String {
-        return "context.retryCount(${context.retryCount}) < $maxRetries"
+        return "context.retryCount=${context.retryCount} < $maxRetries"
     }
 }

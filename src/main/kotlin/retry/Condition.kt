@@ -31,11 +31,11 @@ fun interface Condition {
             }
 
             override fun toString(): String {
-                return "($self && $cond)"
+                return "(($self) && ($cond))"
             }
 
             override fun toString(context: Context): String {
-                return "(${self.toString(context)} && ${cond.toString(context)})"
+                return "((${self.toString(context)}) && (${cond.toString(context)}))"
             }
         }
     }
@@ -48,11 +48,11 @@ fun interface Condition {
             }
 
             override fun toString(): String {
-                return "($self || $cond)"
+                return "(($self) || ($cond))"
             }
 
             override fun toString(context: Context): String {
-                return "(${self.toString(context)} || ${cond.toString(context)})"
+                return "((${self.toString(context)}) || (${cond.toString(context)}))"
             }
         }
     }
@@ -65,11 +65,11 @@ fun interface Condition {
             }
 
             override fun toString(): String {
-                return "!$self"
+                return "!($self)"
             }
             
             override fun toString(context: Context): String {
-                return "!${self.toString(context)}"
+                return "!(${self.toString(context)})"
             }    
         }
     }

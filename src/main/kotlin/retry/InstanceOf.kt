@@ -28,10 +28,10 @@ data class InstanceOf(val errors: Set<Class<out Throwable>>) : Condition {
 
 
     override fun toString(): String {
-        return "context.error instanceOf any of $errors"
+        return "context.error is in $errors"
     }
 
     override fun toString(context: Context): String {
-        return "context.error(${context.error}) instanceOf any of $errors"
+        return "context.error=${context.error} is in $errors"
     }
 }
