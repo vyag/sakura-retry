@@ -41,7 +41,9 @@ class ConditionTest {
     
     @Test
     fun testToString() {
-        println(Condition.FALSE and (!MaxRetries(5)))
-        println((Condition.FALSE and (!MaxRetries(5))).toString(Context(1, Duration.ZERO, IOException())))
+        assertThat((Condition.FALSE and (!MaxRetries(5))).toString())
+            .isEqualTo("((false) && (!(context.retryCount < 5)))")
+        assertThat(((Condition.FALSE and (!MaxRetries(5))).toString(Context(1, Duration.ZERO, IOException()))))
+            .isEqualTo("((false) && (!(context.retryCount=1 < 5)))")
     }
 }
