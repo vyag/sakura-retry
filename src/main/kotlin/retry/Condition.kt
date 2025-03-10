@@ -20,30 +20,83 @@ package retry
 fun interface Condition {
 
     fun check(context: Context) : Boolean
+    
+    fun toString(context: Context): String = toString()
 
     infix fun and(cond: Condition): Condition {
-        return Condition { context ->
-            check(context) && cond.check(context)
+        val self = this
+        return object: Condition {
+            override fun check(context: Context): Boolean {
+                return self.check(context) && cond.check(context)
+            }
+
+            override fun toString(): String {
+                return "(($self) && ($cond))"
+            }
+
+            override fun toString(context: Context): String {
+                return "((${self.toString(context)}) && (${cond.toString(context)}))"
+            }
         }
     }
 
     infix fun or(cond: Condition): Condition {
-        return Condition { context ->
-            check(context) || cond.check(context)
+        val self = this
+        return object: Condition {
+            override fun check(context: Context): Boolean {
+                return self.check(context) || cond.check(context)
+            }
+
+            override fun toString(): String {
+                return "(($self) || ($cond))"
+            }
+
+            override fun toString(context: Context): String {
+                return "((${self.toString(context)}) || (${cond.toString(context)}))"
+            }
         }
     }
 
     operator fun not() : Condition {
-        return Condition { context -> !check(context) }
+        val self = this
+        return object: Condition {
+            override fun check(context: Context): Boolean {
+                return !self.check(context)
+            }
+
+            override fun toString(): String {
+                return "!($self)"
+            }
+            
+            override fun toString(context: Context): String {
+                return "!(${self.toString(context)})"
+            }    
+        }
     }
 
     companion object {
 
         @JvmStatic
-        val TRUE = Condition { true }
+        val TRUE = object: Condition { 
+            override fun check(context: Context): Boolean {
+                return true
+            }
+
+            override fun toString(): String {
+                return "true"
+            }
+        }
 
         @JvmStatic
-        val FALSE = Condition { false }
+        val FALSE = object: Condition {
+            override fun check(context: Context): Boolean {
+                return false
+            }
+
+            override fun toString(): String {
+                return "false"
+            }
+        }
     }
 
 }

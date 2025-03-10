@@ -32,10 +32,20 @@ class ConditionTest {
 
         assertThat((Condition.FALSE or Condition.TRUE)
             .check(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
-            .isTrue();
+            .isTrue()
 
         assertThat((!Condition.FALSE)
            .check(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
-           .isTrue();
+           .isTrue()
+    }
+    
+    @Test
+    fun testToString() {
+        assertThat((Condition.FALSE and (!MaxRetries(5))).toString())
+            .isEqualTo("((false) && (!(context.retryCount < 5)))")
+        assertThat(((Condition.TRUE or (!MaxRetries(5))).toString(Context(1, Duration.ZERO, IOException()))))
+            .isEqualTo("((true) || (!(context.retryCount=1 < 5)))")
+        assertThat(((Condition.TRUE and (!MaxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(1, Duration.ZERO, IOException()))))
+            .isEqualTo("((true) && (!(context.duration=PT0S < PT1M)))")
     }
 }

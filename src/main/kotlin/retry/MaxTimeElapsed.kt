@@ -27,4 +27,13 @@ data class MaxTimeElapsed(val duration: Duration) : Condition {
     override fun check(context: Context): Boolean {
         return context.duration.toMillis() < duration.toMillis()
     }
+
+
+    override fun toString(): String {
+        return "context.duration < $duration"
+    }
+
+    override fun toString(context: Context): String {
+        return "context.duration=${context.duration} < $duration"
+    }
 }
