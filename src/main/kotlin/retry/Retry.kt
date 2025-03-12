@@ -29,10 +29,10 @@ import java.util.function.Function
 import kotlin.time.Duration.Companion.seconds
 
 class Retry @JvmOverloads constructor(
-    private val retryCondition: Condition = Condition.TRUE,
-    abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
-    private val backOff: BackOff = FixedInterval(1.seconds),
-    private val errorHandler: ErrorHandler = DefaultErrorHandler()
+    internal val retryCondition: Condition = Condition.TRUE,
+    internal val abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
+    internal val backOff: BackOff = FixedInterval(1.seconds),
+    internal val errorHandler: ErrorHandler = DefaultErrorHandler()
 ) {
 
     private val condition = !abortCondition and retryCondition
