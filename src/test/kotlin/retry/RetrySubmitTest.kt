@@ -94,7 +94,9 @@ class RetrySubmitTest {
         }
 
         val results = Array(100) {
-            retry.submit(executor, "call-$it") { _ -> mocks[it].call() }
+            retry.submit(executor, "call-$it") { 
+                mocks[it].call() 
+            }
         }
 
         for (it in results) {

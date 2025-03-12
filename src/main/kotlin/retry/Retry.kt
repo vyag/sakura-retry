@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.function.Function
+import java.util.function.Supplier
 import kotlin.time.Duration.Companion.seconds
 
 class Retry @JvmOverloads constructor(
@@ -42,12 +43,12 @@ class Retry @JvmOverloads constructor(
     }
 
     @JvmOverloads
-    fun <T> call(name: String = "call", body: Function<Long, T>): T {
+    fun <T> call(name: String = "call", body: Supplier<T>): T {
         var retryCount = 0
         val startTime = System.nanoTime()
         while (true) {
             try {
-                val result = body.apply(System.nanoTime() - startTime)
+                val result = body.get()
                 LOG.debug("Finally {} success after {} retries.", name, retryCount)
                 return result
             } catch (t: Throwable) {
@@ -71,14 +72,14 @@ class Retry @JvmOverloads constructor(
     }
 
     @JvmOverloads
-    fun <T> submit(executor: ScheduledExecutorService, name: String = "call", body: Function<Long, T>): CompletableFuture<T> {
+    fun <T> submit(executor: ScheduledExecutorService, name: String = "call", body: Supplier<T>): CompletableFuture<T> {
         var retryCount = 0
         val startTime = System.nanoTime()
         val result = CompletableFuture<T>()
         class Task : Runnable {
             override fun run() {
                 try {
-                    result.complete(body.apply(System.nanoTime() - startTime))
+                    result.complete(body.get())
                 } catch (t: Throwable) {
                     val duration = Duration.ofNanos(System.nanoTime() - startTime)
                     val context = Context(retryCount, duration, t)
