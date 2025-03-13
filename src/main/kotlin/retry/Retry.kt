@@ -25,7 +25,6 @@ import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.function.Function
 import java.util.function.Supplier
 import kotlin.time.Duration.Companion.seconds
 
@@ -87,10 +86,10 @@ class Retry @JvmOverloads constructor(
                     val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
                     errorHandler.handle(context, allowRetry, backOff)
                     if (allowRetry) {
-                        executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
                         if (condition.check(context)) {
                             retryCount++
                         }
+                        executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
                     } else {
                         logGiveUp(name, retryCount, t)
                         result.completeExceptionally(t)
