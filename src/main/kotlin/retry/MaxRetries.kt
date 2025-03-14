@@ -17,6 +17,11 @@
 
 package retry
 
+/**
+ * The condition check if the retry count is less than the given number.
+ *
+ * @param maxRetries the maximum number of retries
+ */
 data class MaxRetries(val maxRetries: Int) : Condition {
 
     override fun check(context: Context): Boolean {

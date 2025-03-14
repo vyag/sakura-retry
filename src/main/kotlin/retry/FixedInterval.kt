@@ -20,8 +20,18 @@ package retry
 import java.time.Duration
 import kotlin.time.toJavaDuration
 
+/**
+ * Fixed interval back off.
+ * 
+ * @param interval The interval.
+ */
 data class FixedInterval(val interval: Duration) : BackOff {
     
+    /**
+     * Constructs a fixed interval back off.
+     *
+     * @param interval The interval.
+     */
     constructor(interval: kotlin.time.Duration) : this(interval.toJavaDuration())
 
     override fun backOff(context: Context): Duration {

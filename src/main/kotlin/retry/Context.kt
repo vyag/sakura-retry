@@ -20,6 +20,13 @@ package retry
 import retry.internal.Utils.toReadableString
 import java.time.Duration
 
+/**
+ * Represents the context of the retry operation.
+ *
+ * @property retryCount The number of retries.
+ * @property duration The duration of the retry operation.
+ * @property error The error that occurred during the retry operation.
+ */
 data class Context(val retryCount: Int, val duration: Duration, val error: Throwable) {
     override fun toString(): String {
         return "(retryCount=$retryCount, duration=${duration.toReadableString()}, error: $error)"

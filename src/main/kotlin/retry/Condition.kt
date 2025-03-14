@@ -17,12 +17,30 @@
 
 package retry
 
+/**
+ * Condition is a boolean expression that can be evaluated in the context of a given [Context].
+ */
 fun interface Condition {
 
+    /**
+     * Evaluates the condition in the context of the given [Context].
+     * @param context the context to evaluate the condition in
+     * @return true if the condition is satisfied, false otherwise
+     */
     fun check(context: Context) : Boolean
     
+    /**
+     * Returns a string representation of the condition in the context of the given [Context].
+     * @param context the context to evaluate the condition in
+     * @return a string representation of the condition in the context of the given [Context]
+     */
     fun toString(context: Context): String = toString()
 
+    /**
+     * Returns a new condition that is the logical AND of this condition and the given condition.
+     * @param cond the condition to AND with this condition
+     * @return a new condition that is the logical AND of this condition and the given condition
+     */
     infix fun and(cond: Condition): Condition {
         val self = this
         return object: Condition {
@@ -40,6 +58,11 @@ fun interface Condition {
         }
     }
 
+    /**
+     * Returns a new condition that is the logical OR of this condition and the given condition.
+     * @param cond the condition to OR with this condition
+     * @return a new condition that is the logical OR of this condition and the given condition
+     */
     infix fun or(cond: Condition): Condition {
         val self = this
         return object: Condition {
@@ -57,6 +80,10 @@ fun interface Condition {
         }
     }
 
+    /**
+     * Returns a new condition that is the logical NOT of this condition.
+     * @return a new condition that is the logical NOT of this condition
+     */
     operator fun not() : Condition {
         val self = this
         return object: Condition {
@@ -76,6 +103,9 @@ fun interface Condition {
 
     companion object {
 
+        /**
+         * A condition that always returns true.
+         */
         @JvmStatic
         val TRUE = object: Condition { 
             override fun check(context: Context): Boolean {
@@ -87,6 +117,9 @@ fun interface Condition {
             }
         }
 
+        /**
+         * A condition that always returns false.
+         */
         @JvmStatic
         val FALSE = object: Condition {
             override fun check(context: Context): Boolean {

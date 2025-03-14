@@ -19,8 +19,18 @@ package retry
 
 import java.time.Duration
 
+/**
+ * The interface for handling errors.
+ */
 fun interface ErrorHandler {
 
+    /**
+     * Handles an error.
+     *
+     * @param context the context of the retry
+     * @param allowRetry true if the retry is allowed
+     * @param backOffDuration the back off duration
+     */
     fun handle(context: Context, allowRetry: Boolean, backOffDuration: Duration)
 
 }

@@ -22,6 +22,13 @@ import retry.internal.Utils.toReadableString
 import java.time.Duration
 import java.util.function.Consumer
 
+/**
+ * Default implementation of [ErrorHandler].
+ *
+ * @param log if true, logs invocation errors
+ * @param stack if true, logs stack trace of invocation errors
+ * @param beforeRetryAction action to perform before retry
+ */
 data class DefaultErrorHandler @JvmOverloads constructor(
     private val log: Condition = Condition.TRUE,
     private val stack: Condition = Condition.FALSE,

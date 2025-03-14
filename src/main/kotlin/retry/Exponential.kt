@@ -20,11 +20,23 @@ package retry
 import java.time.Duration
 import kotlin.time.toJavaDuration
 
+/**
+ * Exponential backoff implementation.
+ *
+ * @property initDuration The initial duration.
+ * @property maxDuration The maximum duration.
+ */
 data class Exponential(
     val initDuration: Duration,
     val maxDuration: Duration
 ) : BackOff {
     
+    /**
+     * Constructs an Exponential backoff implementation.
+     *
+     * @param initDuration The initial duration.
+     * @param maxDuration The maximum duration.
+     */
     constructor(initDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(initDuration.toJavaDuration(), maxDuration.toJavaDuration())
 
     override fun backOff(context: Context): Duration {

@@ -27,7 +27,7 @@ class RetryBuilderTest {
     
     @Test
     fun testDefault() {
-        val retry = RetryBuilder.create().build()
+        val retry = RetryBuilder().build()
         assertThat(retry.retryCondition).isEqualTo(default.retryCondition)
         assertThat(retry.abortCondition).isEqualTo(default.abortCondition)
         assertThat(retry.backOff).isEqualTo(default.backOff)
@@ -42,7 +42,7 @@ class RetryBuilderTest {
         val backOff = FixedInterval(Duration.ZERO)
         val errorHandler = Mockito.mock(ErrorHandler::class.java)
         
-        val retry = RetryBuilder.create()
+        val retry = RetryBuilder()
             .retryCondition(retryCondition)
             .abortCondition(abortCondition)
             .backOff(backOff)

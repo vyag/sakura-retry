@@ -17,15 +17,24 @@
 
 package retry
 
+/**
+ * The condition check if the error is an instance of one of the given classes.
+ *
+ * @param errors the classes of the errors
+ */
 data class InstanceOf(val errors: Set<Class<out Throwable>>) : Condition {
 
+    /**
+     * The condition check if the error is an instance of one of the given classes.
+     *
+     * @param errors the classes of the errors
+     */
     constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
 
     override fun check(context: Context): Boolean {
         val error = context.error
         return errors.contains(error.javaClass) || errors.any { it.isInstance(error) }
     }
-
 
     override fun toString(): String {
         return "context.error is in $errors"
