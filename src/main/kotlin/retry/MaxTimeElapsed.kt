@@ -20,14 +20,23 @@ package retry
 import java.time.Duration
 import kotlin.time.toJavaDuration
 
+/**
+ * The condition check if the duration is less than the given duration.
+ *
+ * @param duration The duration.
+ */
 data class MaxTimeElapsed(val duration: Duration) : Condition {
     
+    /**
+     * Constructs a max time elapsed condition.
+     *
+     * @param duration The duration.
+     */
     constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
 
     override fun check(context: Context): Boolean {
         return context.duration.toMillis() < duration.toMillis()
     }
-
 
     override fun toString(): String {
         return "context.duration < $duration"

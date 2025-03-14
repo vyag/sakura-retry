@@ -16,39 +16,62 @@
  */
 package retry
 
-class RetryBuilder private constructor() {
+/**
+ * The Java-style builder for [Retry]. We suggest that kotlin users use [Retry] constructor with default parameters instead.
+ */
+class RetryBuilder {
 
     private var retryCondition: Condition = PROTOTYPE.retryCondition
     private var abortCondition: Condition = PROTOTYPE.abortCondition
     private var backOff: BackOff = PROTOTYPE.backOff
     private var errorHandler: ErrorHandler = PROTOTYPE.errorHandler
 
+    /**
+     * Sets the retry condition.
+     *
+     * @param retryCondition the retry condition
+     */
     fun retryCondition(retryCondition: Condition) = apply {
         this.retryCondition = retryCondition
     }
     
+    /**
+     * Sets the abort condition.
+     *
+     * @param abortCondition the abort condition
+     */
     fun abortCondition(abortCondition: Condition) = apply {
         this.abortCondition = abortCondition
     }
     
+    /**
+     * Sets the back off.
+     *
+     * @param backOff the back off
+     */
     fun backOff(backOff: BackOff) : RetryBuilder = apply {
         this.backOff = backOff
     }
     
+    /**
+     * Sets the error handler.
+     *
+     * @param errorHandler the error handler
+     */
     fun errorHandler(errorHandler: ErrorHandler) = apply {
         this.errorHandler = errorHandler
     }
     
+    /**
+     * Builds the [Retry].
+     *
+     * @return the [Retry]
+     */
     fun build() : Retry {
         return Retry(retryCondition, abortCondition, backOff, errorHandler)
     }
 
     companion object {
-        
-        fun create() : RetryBuilder {
-            return RetryBuilder()
-        }
-        
         private val PROTOTYPE = Retry()
     } 
 }

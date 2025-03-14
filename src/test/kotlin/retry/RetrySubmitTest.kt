@@ -54,7 +54,7 @@ class RetrySubmitTest {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        assertThat(retry.submit(executor, body = { mock.call() }).get()).isEqualTo("done")
+        assertThat(retry.submit(executor, function = { mock.call() }).get()).isEqualTo("done")
         Mockito.verify(mock, Mockito.times(4)).call()
     }
 
@@ -71,7 +71,7 @@ class RetrySubmitTest {
         }).doReturn("done").`when`(mock).call()
 
         val error = assertFailsWith<ExecutionException> {
-            retry.submit(executor, body = { mock.call() }).get()
+            retry.submit(executor, function = { mock.call() }).get()
         }
         assertThat(error.cause).isInstanceOf(IOException::class.java)
 

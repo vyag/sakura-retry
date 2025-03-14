@@ -22,12 +22,20 @@ import retry.internal.BackOffExecutor
 import retry.internal.RetryHandler
 import java.lang.reflect.Proxy
 import java.time.Duration
+import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import java.util.function.Supplier
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * The retry class.
+ *
+ * @param retryCondition The condition to retry.
+ * @param abortCondition The condition to abort.
+ * @param backOff The back off strategy.
+ * @param errorHandler The error handler.
+ */
 class Retry @JvmOverloads constructor(
     internal val retryCondition: Condition = Condition.TRUE,
     internal val abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
@@ -41,13 +49,21 @@ class Retry @JvmOverloads constructor(
         Thread.sleep(it.toMillis(), (it.toNanos() % 1e6).toInt())
     }
 
+    /**
+     * Calls the given function with retry.
+     * 
+     * @param name The optional name of the function.
+     * @param function The function to call.
+     * @return The result of the function.
+     * @throws Throwable The original exception by the function call if the retry is aborted.
+     */
     @JvmOverloads
-    fun <T> call(name: String = "call", body: Supplier<T>): T {
+    fun <T> call(name: String = "call", function: Callable<T>): T {
         var retryCount = 0
         val startTime = System.nanoTime()
         while (true) {
             try {
-                val result = body.get()
+                val result = function.call()
                 LOG.debug("Finally {} success after {} retries.", name, retryCount)
                 return result
             } catch (t: Throwable) {
@@ -70,15 +86,23 @@ class Retry @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Submits the given function with retry.
+     *
+     * @param executor The executor to submit the function.
+     * @param name The optional name of the function.
+     * @param function The function to submit.
+     * @return The [java.util.concurrent.Future] result of the function.
+     */
     @JvmOverloads
-    fun <T> submit(executor: ScheduledExecutorService, name: String = "call", body: Supplier<T>): CompletableFuture<T> {
+    fun <T> submit(executor: ScheduledExecutorService, name: String = "call", function: Callable<T>): CompletableFuture<T> {
         var retryCount = 0
         val startTime = System.nanoTime()
         val result = CompletableFuture<T>()
         class Task : Runnable {
             override fun run() {
                 try {
-                    result.complete(body.get())
+                    result.complete(function.call())
                 } catch (t: Throwable) {
                     val duration = Duration.ofNanos(System.nanoTime() - startTime)
                     val context = Context(retryCount, duration, t)
@@ -107,6 +131,14 @@ class Retry @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Creates a proxy for the given target object with retry.
+     *
+     * @param clazz The interface class of the target object.
+     * @param target The target object.
+     * @param name The optional name of the target object.
+     * @return The proxy object.
+     */
     @JvmOverloads
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
         @Suppress("UNCHECKED_CAST")
@@ -120,6 +152,9 @@ class Retry @JvmOverloads constructor(
 
         private val LOG = LoggerFactory.getLogger(Retry::class.java)
 
+        /**
+         * The policy that never retries.
+         */
         @JvmStatic
         val NONE = Retry(retryCondition = Condition.FALSE)
     }
