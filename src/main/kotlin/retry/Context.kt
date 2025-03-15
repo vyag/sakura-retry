@@ -19,16 +19,22 @@ package retry
 
 import retry.internal.Utils.toReadableString
 import java.time.Duration
+import java.time.Instant
 
 /**
  * Represents the context of the retry operation.
- *
+ * 
+ * @property startTime The start time of the retry operation.
+ * @property now The current time.
  * @property retryCount The number of retries.
- * @property duration The duration of the retry operation.
  * @property error The error that occurred during the retry operation.
  */
-data class Context(val retryCount: Int, val duration: Duration, val error: Throwable) {
+data class Context(val startTime: Instant, val now: Instant, val retryCount: Int, val error: Throwable) {
+    
+    fun duration() = Duration.between(startTime, now)
+    
     override fun toString(): String {
-        return "(retryCount=$retryCount, duration=${duration.toReadableString()}, error: $error)"
+        val duration = Duration.between(startTime, now)
+        return "(startTime=${startTime}, now=${now}, retryCount=$retryCount, duration=${duration.toReadableString()}, error: $error)"
     }
 }

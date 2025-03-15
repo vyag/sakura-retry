@@ -20,6 +20,8 @@ package retry
 import org.assertj.core.api.Assertions.assertThat
 import java.io.IOException
 import java.time.Duration
+import java.time.Instant
+import javax.print.attribute.IntegerSyntax
 import kotlin.test.Test
 
 class ConditionTest {
@@ -27,15 +29,15 @@ class ConditionTest {
     @Test
     fun testLogicOperator() {
         assertThat((Condition.FALSE and Condition.TRUE)
-            .check(Context(1, Duration.ZERO, IOException())))
+            .check(Context(Instant.MIN, Instant.MIN, 1, IOException())))
             .isFalse()
 
         assertThat((Condition.FALSE or Condition.TRUE)
-            .check(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
+            .check(Context(Instant.MIN, Instant.MAX, Int.MAX_VALUE, IOException())))
             .isTrue()
 
         assertThat((!Condition.FALSE)
-           .check(Context(Int.MAX_VALUE, Duration.ofDays(1), IOException())))
+           .check(Context(Instant.MIN, Instant.MAX, Int.MAX_VALUE, IOException())))
            .isTrue()
     }
     
@@ -43,9 +45,9 @@ class ConditionTest {
     fun testToString() {
         assertThat((Condition.FALSE and (!MaxRetries(5))).toString())
             .isEqualTo("((false) && (!(context.retryCount < 5)))")
-        assertThat(((Condition.TRUE or (!MaxRetries(5))).toString(Context(1, Duration.ZERO, IOException()))))
+        assertThat(((Condition.TRUE or (!MaxRetries(5))).toString(Context(Instant.MIN, Instant.MAX, 1, IOException()))))
             .isEqualTo("((true) || (!(context.retryCount=1 < 5)))")
-        assertThat(((Condition.TRUE and (!MaxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(1, Duration.ZERO, IOException()))))
+        assertThat(((Condition.TRUE and (!MaxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(Instant.MIN, Instant.MIN, 1, IOException()))))
             .isEqualTo("((true) && (!(context.duration=PT0S < PT1M)))")
     }
 }

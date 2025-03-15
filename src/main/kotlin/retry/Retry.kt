@@ -22,6 +22,7 @@ import retry.internal.BackOffExecutor
 import retry.internal.RetryHandler
 import java.lang.reflect.Proxy
 import java.time.Duration
+import java.time.Instant
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
@@ -39,7 +40,7 @@ import kotlin.time.Duration.Companion.seconds
 class Retry @JvmOverloads constructor(
     internal val retryCondition: Condition = Condition.TRUE,
     internal val abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
-    internal val backOff: BackOff = FixedInterval(1.seconds),
+    internal val backOff: BackOff = FixedDelay(1.seconds),
     internal val errorHandler: ErrorHandler = DefaultErrorHandler()
 ) {
 
@@ -60,15 +61,14 @@ class Retry @JvmOverloads constructor(
     @JvmOverloads
     fun <T> call(name: String = "call", function: Callable<T>): T {
         var retryCount = 0
-        val startTime = System.nanoTime()
+        val startTime = Instant.now()
         while (true) {
             try {
                 val result = function.call()
                 LOG.debug("Finally {} success after {} retries.", name, retryCount)
                 return result
             } catch (t: Throwable) {
-                val duration = Duration.ofNanos(System.nanoTime() - startTime)
-                val context = Context(retryCount, duration, t)
+                val context = Context(startTime, Instant.now(), retryCount, t)
                 val allowRetry = condition.check(context)
                 LOG.debug("Check retry condition: {}, then allow retry: {}.", condition.toString(context), allowRetry)
                 val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
@@ -97,15 +97,14 @@ class Retry @JvmOverloads constructor(
     @JvmOverloads
     fun <T> submit(executor: ScheduledExecutorService, name: String = "call", function: Callable<T>): CompletableFuture<T> {
         var retryCount = 0
-        val startTime = System.nanoTime()
+        val startTime = Instant.now()
         val result = CompletableFuture<T>()
         class Task : Runnable {
             override fun run() {
                 try {
                     result.complete(function.call())
                 } catch (t: Throwable) {
-                    val duration = Duration.ofNanos(System.nanoTime() - startTime)
-                    val context = Context(retryCount, duration, t)
+                    val context = Context(startTime, Instant.now(), retryCount, t)
                     val allowRetry = condition.check(context)
                     val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
                     errorHandler.handle(context, allowRetry, backOff)
