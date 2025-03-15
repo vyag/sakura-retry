@@ -1,4 +1,4 @@
-![Maven Central Version](https://img.shields.io/maven-central/v/com.github.marks-yag/retry)
+![Maven Central Version](https://img.shields.io/maven-central/v/com.github.marks-yag/retry?link=https%3A%2F%2Fmvnrepository.com%2Fartifact%2Fcom.github.marks-yag%2Fretry)
 [![Java CI with Maven](https://github.com/marks-yag/retry/actions/workflows/maven.yml/badge.svg)](https://github.com/marks-yag/retry/actions/workflows/maven.yml)
 # Retry
 An elegant JVM library for transient failure handling, with customizable retries, backoff strategies, error handling, async support and proxy feature.
@@ -26,19 +26,6 @@ Retry retry = new RetryBuilder().maxRetries(10).backOff(BackOff.seconds(1)).buil
 retry.call(() -> {
     throw new Exception("error");
 });
-```
-
-##Maven
-```xml
-<dependency>
-    <groupId>io.github.marks-yag</groupId>
-    <artifactId>retry</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
-## Gradle
-```groovy
-implementation 'io.github.marks-yag:retry:1.0.0'
 ```
 ## License
 [Apache License 2.0](LICENSE)
