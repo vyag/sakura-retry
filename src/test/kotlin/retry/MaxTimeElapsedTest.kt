@@ -18,6 +18,7 @@ package retry
 
 import org.assertj.core.api.Assertions.assertThat
 import java.time.Duration
+import java.time.Instant
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
@@ -27,12 +28,12 @@ class MaxTimeElapsedTest {
     
     @Test
     fun testShouldMatchBeforeDeadline() {
-        assertThat(cond.check(Context(Int.MAX_VALUE, Duration.ofMillis(999), RuntimeException()))).isTrue()
+        assertThat(cond.check(Context(Instant.MIN, Instant.MIN.plusMillis(999), Int.MAX_VALUE, RuntimeException()))).isTrue()
     }
 
     @Test
     fun testShouldNotMatchAfterDeadline() {
-        assertThat(cond.check(Context(0, Duration.ofMillis(1000), RuntimeException()))).isFalse()
-        assertThat(cond.check(Context(1, Duration.ofMillis(1001), RuntimeException()))).isFalse()
+        assertThat(cond.check(Context(Instant.MIN, Instant.MIN.plusMillis(1000), 0, RuntimeException()))).isFalse()
+        assertThat(cond.check(Context(Instant.MIN, Instant.MIN.plusMillis(1001), 1, RuntimeException()))).isFalse()
     }
 }

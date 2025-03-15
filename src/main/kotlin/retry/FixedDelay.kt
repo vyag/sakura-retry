@@ -18,30 +18,23 @@
 package retry
 
 import java.time.Duration
-import java.time.Instant
 import kotlin.time.toJavaDuration
 
 /**
- * Fixed interval back off.
+ * Fixed delay back off.
  * 
- * @param interval The delay.
+ * @param delay The delay.
  */
-data class FixedInterval(val interval: Duration) : BackOff {
+data class FixedDelay(val delay: Duration) : BackOff {
     
     /**
-     * Constructs a fixed interval back off.
+     * Constructs a fixed delay back off.
      *
-     * @param interval The interval.
+     * @param delay The interval.
      */
-    constructor(interval: kotlin.time.Duration) : this(interval.toJavaDuration())
+    constructor(delay: kotlin.time.Duration) : this(delay.toJavaDuration())
 
     override fun backOff(context: Context): Duration {
-        val targetRetryTime = context.startTime.plus(
-            interval.multipliedBy(context.retryCount.toLong()))
-        return if (targetRetryTime.isAfter(context.now)) {
-            Duration.between(context.now, targetRetryTime)
-        } else {
-            Duration.ZERO
-        }
+        return delay
     }
 }
