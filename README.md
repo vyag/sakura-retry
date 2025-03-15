@@ -1,3 +1,4 @@
+![Maven Central Version](https://img.shields.io/maven-central/v/com.github.marks-yag/retry)
 [![Java CI with Maven](https://github.com/marks-yag/retry/actions/workflows/maven.yml/badge.svg)](https://github.com/marks-yag/retry/actions/workflows/maven.yml)
 # Retry
 An elegant JVM library for transient failure handling, with customizable retries, backoff strategies, error handling, async support and proxy feature.
