@@ -18,7 +18,6 @@
 package retry
 
 import java.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * Backoff strategy.
@@ -38,17 +37,9 @@ fun interface BackOff {
         /**
          * No backoff.
          */
-        @JvmStatic
+        @JvmField
         val NONE = BackOff { Duration.ZERO }
 
-        /**
-         * Fixed interval backoff of specified seconds.
-         *
-         * @param amount the seconds
-         * @return the backoff strategy
-         */
-        @JvmStatic
-        fun seconds(amount: Long) = FixedDelay(amount.seconds)
     }
 
 }

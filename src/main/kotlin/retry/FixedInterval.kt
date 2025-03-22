@@ -18,7 +18,7 @@
 package retry
 
 import java.time.Duration
-import java.time.Instant
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 /**
@@ -43,5 +43,17 @@ data class FixedInterval(val interval: Duration) : BackOff {
         } else {
             Duration.ZERO
         }
+    }
+    
+    companion object {
+
+        /**
+         * Fixed interval backoff of specified seconds.
+         *
+         * @param amount the seconds
+         * @return the backoff strategy
+         */
+        @JvmStatic
+        fun seconds(amount: Long) = FixedInterval(amount.seconds)
     }
 }

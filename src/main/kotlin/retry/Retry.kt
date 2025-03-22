@@ -38,16 +38,32 @@ import kotlin.time.Duration.Companion.seconds
  * @param errorHandler The error handler.
  */
 class Retry @JvmOverloads constructor(
-    internal val retryCondition: Condition = Condition.TRUE,
-    internal val abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
-    internal val backOff: BackOff = FixedDelay(1.seconds),
-    internal val errorHandler: ErrorHandler = DefaultErrorHandler()
+    val retryCondition: Condition = Condition.TRUE,
+    val abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
+    val backOff: BackOff = FixedDelay(1.seconds),
+    val errorHandler: ErrorHandler = DefaultErrorHandler()
 ) {
 
     private val condition = !abortCondition and retryCondition
 
+    @JvmSynthetic
     internal var backOffExecutor: BackOffExecutor = BackOffExecutor {
         Thread.sleep(it.toMillis(), (it.toNanos() % 1e6).toInt())
+    }
+
+    /**
+     * Calls the given function with retry.
+     *
+     * @param name The optional name of the function.
+     * @param function The function to call.
+     * @return The result of the function.
+     * @throws Throwable The original exception by the function call if the retry is aborted.
+     */
+    @JvmOverloads
+    @JvmName("call")
+    @Throws(Exception::class)
+    internal fun <T> callWithThrows(name: String = "call", function: Callable<T>): T {
+        return call(name, function)
     }
 
     /**
@@ -59,6 +75,7 @@ class Retry @JvmOverloads constructor(
      * @throws Throwable The original exception by the function call if the retry is aborted.
      */
     @JvmOverloads
+    @JvmName("callWithNoThrowDeclaration")
     fun <T> call(name: String = "call", function: Callable<T>): T {
         var retryCount = 0
         val startTime = Instant.now()
@@ -154,7 +171,7 @@ class Retry @JvmOverloads constructor(
         /**
          * The policy that never retries.
          */
-        @JvmStatic
+        @JvmField
         val NONE = Retry(retryCondition = Condition.FALSE)
     }
 }
