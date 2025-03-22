@@ -30,7 +30,7 @@
     <name>Retry</name>
 
     <description>
-        Retry is a simple retry library written in Kotlin.
+        Retry is an elegant JVM library for transient failure handling, with customizable retries, backoff strategies, error handling, async support and proxy feature.
     </description>
 
     <properties>
@@ -148,8 +148,6 @@
 
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
-        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
-
         <plugins>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -172,6 +170,12 @@
                         <goals>
                             <goal>test-compile</goal>
                         </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <sourceDir>src/test/kotlin</sourceDir>
+                                <sourceDir>src/test/java</sourceDir>
+                            </sourceDirs>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

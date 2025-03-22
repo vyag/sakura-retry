@@ -17,7 +17,6 @@
 package retry
 
 import org.assertj.core.api.Assertions.assertThat
-import java.time.Duration
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds

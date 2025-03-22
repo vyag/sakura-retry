@@ -21,7 +21,6 @@ import org.assertj.core.api.Assertions.assertThat
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant
-import javax.print.attribute.IntegerSyntax
 import kotlin.test.Test
 
 class ConditionTest {

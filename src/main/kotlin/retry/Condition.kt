@@ -106,7 +106,7 @@ fun interface Condition {
         /**
          * A condition that always returns true.
          */
-        @JvmStatic
+        @JvmField
         val TRUE = object: Condition { 
             override fun check(context: Context): Boolean {
                 return true
@@ -120,7 +120,7 @@ fun interface Condition {
         /**
          * A condition that always returns false.
          */
-        @JvmStatic
+        @JvmField
         val FALSE = object: Condition {
             override fun check(context: Context): Boolean {
                 return false
