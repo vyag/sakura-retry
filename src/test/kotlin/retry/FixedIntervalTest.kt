@@ -20,20 +20,19 @@ import org.assertj.core.api.Assertions.assertThat
 import java.time.Duration
 import java.time.Instant
 import kotlin.test.Test
-import kotlin.time.Duration.Companion.seconds
 
 class FixedIntervalTest {
 
     @Test
     fun testAlign() {
-        val backoff = FixedInterval(1.seconds)
+        val backoff = FixedInterval.seconds(1)
         assertThat(backoff.backOff(Context(Instant.MIN, Instant.MIN.plusMillis(2500), 3, RuntimeException())))
             .isEqualTo(Duration.ofMillis(500))
     }
 
     @Test
     fun testTimeout() {
-        val backoff = FixedInterval(1.seconds)
+        val backoff = FixedInterval.seconds(1)
         assertThat(backoff.backOff(Context(Instant.MIN, Instant.MIN.plusMillis(2500), 2, RuntimeException())))
             .isEqualTo(Duration.ofMillis(0))
     }
