@@ -18,7 +18,6 @@
 package retry
 
 import java.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 /**
@@ -26,7 +25,7 @@ import kotlin.time.toJavaDuration
  * 
  * @param delay The delay.
  */
-data class FixedDelay(val delay: Duration) : BackOff {
+data class FixedDelay(val delay: Duration) : Backoff {
     
     /**
      * Constructs a fixed delay back off.
@@ -35,19 +34,7 @@ data class FixedDelay(val delay: Duration) : BackOff {
      */
     constructor(delay: kotlin.time.Duration) : this(delay.toJavaDuration())
 
-    override fun backOff(context: Context): Duration {
+    override fun backoff(context: Context): Duration {
         return delay
-    }
-    
-    companion object {
-
-        /**
-         * Fixed delay backoff of specified seconds.
-         *
-         * @param amount the seconds
-         * @return the backoff strategy
-         */
-        @JvmStatic
-        fun seconds(amount: Long) = FixedDelay(amount.seconds)
     }
 }

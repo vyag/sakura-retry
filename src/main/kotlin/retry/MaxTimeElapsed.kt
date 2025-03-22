@@ -18,8 +18,6 @@
 package retry
 
 import java.time.Duration
-import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 /**
@@ -46,17 +44,5 @@ data class MaxTimeElapsed(val duration: Duration) : Condition {
 
     override fun toString(context: Context): String {
         return "context.duration=${context.duration()} < $duration"
-    }
-    
-    companion object {
-        
-        /**
-         * Max time elapsed condition of specified seconds.
-         *
-         * @param amount the seconds
-         * @return the condition
-         */
-        @JvmStatic
-        fun seconds(amount: Long) = MaxTimeElapsed(amount.seconds)
     }
 }

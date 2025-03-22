@@ -20,12 +20,16 @@ retry.call {
 ```
 
 ```java
-import retry.BackOff;
-import retry.Retry;
+import retry.Backoff;
+import retry.RetryPolicy;
 
-Retry retry = new RetryBuilder().maxRetries(10).backOff(BackOff.seconds(1)).build();
-retry.call(() -> {
-    throw new Exception("error");
+RetryPolicy retryPolicy = new RetryBuilder().maxRetries(10).backOff(Backoff.seconds(1)).build();
+retry.
+
+call(() ->{
+    throw new
+
+Exception("error");
 });
 ```
 ## License

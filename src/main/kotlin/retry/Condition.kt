@@ -15,6 +15,7 @@
  * under the License.
  */
 
+@file:JvmName("Conditions")
 package retry
 
 /**
@@ -100,36 +101,32 @@ fun interface Condition {
             }    
         }
     }
+}
 
-    companion object {
-
-        /**
-         * A condition that always returns true.
-         */
-        @JvmField
-        val TRUE = object: Condition { 
-            override fun check(context: Context): Boolean {
-                return true
-            }
-
-            override fun toString(): String {
-                return "true"
-            }
-        }
-
-        /**
-         * A condition that always returns false.
-         */
-        @JvmField
-        val FALSE = object: Condition {
-            override fun check(context: Context): Boolean {
-                return false
-            }
-
-            override fun toString(): String {
-                return "false"
-            }
-        }
+/**
+ * A condition that always returns true.
+ */
+@JvmField
+val TRUE = object: Condition {
+    override fun check(context: Context): Boolean {
+        return true
     }
 
+    override fun toString(): String {
+        return "true"
+    }
+}
+
+/**
+ * A condition that always returns false.
+ */
+@JvmField
+val FALSE = object: Condition {
+    override fun check(context: Context): Boolean {
+        return false
+    }
+
+    override fun toString(): String {
+        return "false"
+    }
 }

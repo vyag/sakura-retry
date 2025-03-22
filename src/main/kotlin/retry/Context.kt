@@ -31,7 +31,7 @@ import java.time.Instant
  */
 data class Context(val startTime: Instant, val now: Instant, val retryCount: Int, val error: Throwable) {
     
-    fun duration() = Duration.between(startTime, now)
+    fun duration(): Duration = Duration.between(startTime, now)
     
     override fun toString(): String {
         val duration = Duration.between(startTime, now)

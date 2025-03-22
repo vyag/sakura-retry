@@ -30,22 +30,19 @@ public class BuilderTest {
     @Test
     @Disabled("Do compile failed is expected.")
     public void testBuildCompiledWithJvmFields() {
-        Retry retry = new RetryBuilder()
-            .retryCondition(Condition.TRUE)
-            .retryCondition(Condition.FALSE)
+        RetryPolicy retryPolicy = new RetryBuilder()
+            .retryCondition(Conditions.TRUE)
+            .retryCondition(Conditions.FALSE)
             .retryCondition(new MaxRetries(5))
-            .retryCondition(MaxTimeElapsed.seconds(10))
             .retryCondition(new MaxTimeElapsed(Duration.ofSeconds(10)))
-            .abortCondition(Condition.TRUE)
-            .abortCondition(Condition.FALSE)
-            .backOff(BackOff.NONE)
-            .backOff(FixedDelay.seconds(1))
+            .abortCondition(Conditions.TRUE)
+            .abortCondition(Conditions.FALSE)
+            .backOff(Backoffs.IMMEDIATELY)
             .backOff(new FixedDelay(Duration.ofSeconds(1)))
-            .backOff(FixedInterval.seconds(1))
             .backOff(new FixedInterval(Duration.ofSeconds(1)))
-            .errorHandler(new DefaultErrorHandler())
+            .errorHandler(new SimpleLoggingStrategy())
             .build();
-        retry.callWithNoThrowDeclaration(() -> {
+        retryPolicy.callWithNoThrowDeclaration(() -> {
             throw new IOException();
         });
     }
@@ -54,17 +51,17 @@ public class BuilderTest {
     public void testBuild() {
         Condition retryCondition = new MaxRetries(5);
         Condition abortCondition = new MaxTimeElapsed(Duration.ofSeconds(10));
-        BackOff backOff = FixedDelay.seconds(1);
-        ErrorHandler errorHandler = (context, allowRetry, backOffDuration) -> {};
-        Retry retry = new RetryBuilder()
+        Backoff backOff = new FixedDelay(Duration.ofSeconds(1));
+        LoggingStrategy errorHandler = (context, allowRetry, backOffDuration) -> {};
+        RetryPolicy retryPolicy = new RetryBuilder()
             .retryCondition(retryCondition)
             .abortCondition(abortCondition)
             .backOff(backOff)
             .errorHandler(errorHandler)
             .build();
-        assertThat(retry.getRetryCondition()).isSameAs(retryCondition);
-        assertThat(retry.getAbortCondition()).isSameAs(abortCondition);
-        assertThat(retry.getBackOff()).isSameAs(backOff);
-        assertThat(retry.getErrorHandler()).isSameAs(errorHandler);
+        assertThat(retryPolicy.getRetryCondition()).isSameAs(retryCondition);
+        assertThat(retryPolicy.getAbortCondition()).isSameAs(abortCondition);
+        assertThat(retryPolicy.getBackOff()).isSameAs(backOff);
+        assertThat(retryPolicy.getLoggingStrategy()).isSameAs(errorHandler);
     }
 }

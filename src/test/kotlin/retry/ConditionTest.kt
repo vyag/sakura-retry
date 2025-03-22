@@ -27,26 +27,26 @@ class ConditionTest {
 
     @Test
     fun testLogicOperator() {
-        assertThat((Condition.FALSE and Condition.TRUE)
+        assertThat((FALSE and TRUE)
             .check(Context(Instant.MIN, Instant.MIN, 1, IOException())))
             .isFalse()
 
-        assertThat((Condition.FALSE or Condition.TRUE)
+        assertThat((FALSE or TRUE)
             .check(Context(Instant.MIN, Instant.MAX, Int.MAX_VALUE, IOException())))
             .isTrue()
 
-        assertThat((!Condition.FALSE)
+        assertThat((!FALSE)
            .check(Context(Instant.MIN, Instant.MAX, Int.MAX_VALUE, IOException())))
            .isTrue()
     }
     
     @Test
     fun testToString() {
-        assertThat((Condition.FALSE and (!MaxRetries(5))).toString())
+        assertThat((FALSE and (!MaxRetries(5))).toString())
             .isEqualTo("((false) && (!(context.retryCount < 5)))")
-        assertThat(((Condition.TRUE or (!MaxRetries(5))).toString(Context(Instant.MIN, Instant.MAX, 1, IOException()))))
+        assertThat(((TRUE or (!MaxRetries(5))).toString(Context(Instant.MIN, Instant.MAX, 1, IOException()))))
             .isEqualTo("((true) || (!(context.retryCount=1 < 5)))")
-        assertThat(((Condition.TRUE and (!MaxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(Instant.MIN, Instant.MIN, 1, IOException()))))
+        assertThat(((TRUE and (!MaxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(Instant.MIN, Instant.MIN, 1, IOException()))))
             .isEqualTo("((true) && (!(context.duration=PT0S < PT1M)))")
     }
 }

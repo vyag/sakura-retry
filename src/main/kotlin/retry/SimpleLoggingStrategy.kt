@@ -20,23 +20,19 @@ package retry
 import org.slf4j.LoggerFactory
 import retry.internal.Utils.toReadableString
 import java.time.Duration
-import java.util.function.Consumer
 
 /**
- * Default implementation of [ErrorHandler].
+ * Default implementation of [LoggingStrategy].
  *
  * @param log if true, logs invocation errors
  * @param stack if true, logs stack trace of invocation errors
- * @param beforeRetryAction action to perform before retry
  */
-data class DefaultErrorHandler @JvmOverloads constructor(
-    private val log: Condition = Condition.TRUE,
-    private val stack: Condition = Condition.FALSE,
-    private val beforeRetryAction: Consumer<Throwable> = Consumer { }
-) : ErrorHandler {
+data class SimpleLoggingStrategy @JvmOverloads constructor(
+    private val log: Condition = TRUE,
+    private val stack: Condition = FALSE,
+) : LoggingStrategy {
 
-    override fun handle(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
-        beforeRetryAction.accept(context.error)
+    override fun logging(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
         if (!log.check(context)) {
             return
         }
@@ -51,7 +47,7 @@ data class DefaultErrorHandler @JvmOverloads constructor(
         )
     }
 
-    companion object {
-        private val LOG = LoggerFactory.getLogger(DefaultErrorHandler::class.java)
+    private companion object {
+        private val LOG = LoggerFactory.getLogger(SimpleLoggingStrategy::class.java)
     }
 }

@@ -29,7 +29,7 @@ import kotlin.time.toJavaDuration
 data class Exponential(
     val initDuration: Duration,
     val maxDuration: Duration
-) : BackOff {
+) : Backoff {
     
     /**
      * Constructs an Exponential backoff implementation.
@@ -39,7 +39,7 @@ data class Exponential(
      */
     constructor(initDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(initDuration.toJavaDuration(), maxDuration.toJavaDuration())
 
-    override fun backOff(context: Context): Duration {
+    override fun backoff(context: Context): Duration {
         var value = initDuration.toMillis()
         for (i in 0 until context.retryCount) {
             if (value < Long.MAX_VALUE / 2) {

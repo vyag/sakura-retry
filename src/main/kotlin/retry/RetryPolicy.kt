@@ -14,7 +14,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+@file:JvmName("RetryPolicies")
 package retry
 
 import org.slf4j.LoggerFactory
@@ -35,13 +35,13 @@ import kotlin.time.Duration.Companion.seconds
  * @param retryCondition The condition to retry.
  * @param abortCondition The condition to abort.
  * @param backOff The back off strategy.
- * @param errorHandler The error handler.
+ * @param loggingStrategy The error handler.
  */
-class Retry @JvmOverloads constructor(
-    val retryCondition: Condition = Condition.TRUE,
+class RetryPolicy @JvmOverloads constructor(
+    val retryCondition: Condition = TRUE,
     val abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
-    val backOff: BackOff = FixedDelay(1.seconds),
-    val errorHandler: ErrorHandler = DefaultErrorHandler()
+    val backOff: Backoff = FixedDelay(1.seconds),
+    val loggingStrategy: LoggingStrategy = SimpleLoggingStrategy()
 ) {
 
     private val condition = !abortCondition and retryCondition
@@ -88,8 +88,8 @@ class Retry @JvmOverloads constructor(
                 val context = Context(startTime, Instant.now(), retryCount, t)
                 val allowRetry = condition.check(context)
                 LOG.debug("Check retry condition: {}, then allow retry: {}.", condition.toString(context), allowRetry)
-                val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
-                errorHandler.handle(context, allowRetry, backOff)
+                val backOff = if (allowRetry) backOff.backoff(context) else Duration.ZERO
+                loggingStrategy.logging(context, allowRetry, backOff)
                 if (allowRetry) {
                     backOffExecutor.backOff(backOff)
                     if (condition.check(context)) {
@@ -123,8 +123,8 @@ class Retry @JvmOverloads constructor(
                 } catch (t: Throwable) {
                     val context = Context(startTime, Instant.now(), retryCount, t)
                     val allowRetry = condition.check(context)
-                    val backOff = if (allowRetry) backOff.backOff(context) else Duration.ZERO
-                    errorHandler.handle(context, allowRetry, backOff)
+                    val backOff = if (allowRetry) backOff.backoff(context) else Duration.ZERO
+                    loggingStrategy.logging(context, allowRetry, backOff)
                     if (allowRetry) {
                         if (condition.check(context)) {
                             retryCount++
@@ -159,19 +159,20 @@ class Retry @JvmOverloads constructor(
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
         @Suppress("UNCHECKED_CAST")
         return (Proxy.newProxyInstance(
-            Retry::class.java.classLoader, arrayOf(clazz),
+            RetryPolicy::class.java.classLoader, arrayOf(clazz),
             RetryHandler(this, target, name)
         ) as T)
     }
 
-    companion object {
+    private companion object {
 
-        private val LOG = LoggerFactory.getLogger(Retry::class.java)
+        private val LOG = LoggerFactory.getLogger(RetryPolicy::class.java)
 
-        /**
-         * The policy that never retries.
-         */
-        @JvmField
-        val NONE = Retry(retryCondition = Condition.FALSE)
     }
 }
+
+/**
+ * The policy that never retries.
+ */
+@JvmField
+val NONE = RetryPolicy(retryCondition = FALSE)

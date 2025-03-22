@@ -14,23 +14,28 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+@file:JvmName("Backoffs")
 package retry
 
 import java.time.Duration
 
 /**
- * The interface for handling errors.
+ * Backoff strategy.
  */
-fun interface ErrorHandler {
+fun interface Backoff {
 
     /**
-     * Handles an error.
+     * Returns the backoff duration.
      *
-     * @param context the context of the retry
-     * @param allowRetry true if the retry is allowed
-     * @param backOffDuration the back off duration
+     * @param context the context
+     * @return the backoff duration
      */
-    fun handle(context: Context, allowRetry: Boolean, backOffDuration: Duration)
-
+    fun backoff(context: Context): Duration
 }
+
+
+/**
+ * No backoff.
+ */
+@JvmField
+val IMMEDIATELY = Backoff { Duration.ZERO }

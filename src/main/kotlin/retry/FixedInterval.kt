@@ -18,7 +18,6 @@
 package retry
 
 import java.time.Duration
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 /**
@@ -26,7 +25,7 @@ import kotlin.time.toJavaDuration
  * 
  * @param interval The delay.
  */
-data class FixedInterval(val interval: Duration) : BackOff {
+data class FixedInterval(val interval: Duration) : Backoff {
     
     /**
      * Constructs a fixed interval back off.
@@ -35,7 +34,7 @@ data class FixedInterval(val interval: Duration) : BackOff {
      */
     constructor(interval: kotlin.time.Duration) : this(interval.toJavaDuration())
 
-    override fun backOff(context: Context): Duration {
+    override fun backoff(context: Context): Duration {
         val targetRetryTime = context.startTime.plus(
             interval.multipliedBy(context.retryCount.toLong()))
         return if (targetRetryTime.isAfter(context.now)) {
@@ -43,17 +42,5 @@ data class FixedInterval(val interval: Duration) : BackOff {
         } else {
             Duration.ZERO
         }
-    }
-    
-    companion object {
-
-        /**
-         * Fixed interval backoff of specified seconds.
-         *
-         * @param amount the seconds
-         * @return the backoff strategy
-         */
-        @JvmStatic
-        fun seconds(amount: Long) = FixedInterval(amount.seconds)
     }
 }

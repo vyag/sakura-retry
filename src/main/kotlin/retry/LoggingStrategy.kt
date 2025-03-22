@@ -20,26 +20,17 @@ package retry
 import java.time.Duration
 
 /**
- * Backoff strategy.
+ * The interface for logging.
  */
-fun interface BackOff {
+fun interface LoggingStrategy {
 
     /**
-     * Returns the backoff duration.
+     * Do logging.
      *
-     * @param context the context
-     * @return the backoff duration
+     * @param context the context of the retry
+     * @param allowRetry true if the retry is allowed
+     * @param backOffDuration the back off duration
      */
-    fun backOff(context: Context): Duration
-
-    companion object {
-
-        /**
-         * No backoff.
-         */
-        @JvmField
-        val NONE = BackOff { Duration.ZERO }
-
-    }
+    fun logging(context: Context, allowRetry: Boolean, backOffDuration: Duration)
 
 }

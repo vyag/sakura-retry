@@ -23,7 +23,7 @@ import kotlin.test.Test
 
 class RetryBuilderTest {
     
-    private val default = Retry()
+    private val default = RetryPolicy()
     
     @Test
     fun testDefault() {
@@ -31,26 +31,26 @@ class RetryBuilderTest {
         assertThat(retry.retryCondition).isEqualTo(default.retryCondition)
         assertThat(retry.abortCondition).isEqualTo(default.abortCondition)
         assertThat(retry.backOff).isEqualTo(default.backOff)
-        assertThat(retry.errorHandler).isEqualTo(default.errorHandler)
+        assertThat(retry.loggingStrategy).isEqualTo(default.loggingStrategy)
         assertThat(retry).isNotSameAs(default)
     }
     
     @Test
     fun testBuild() {
-        val retryCondition = Condition.TRUE
-        val abortCondition = Condition.FALSE
+        val retryCondition = TRUE
+        val abortCondition = FALSE
         val backOff = FixedInterval(Duration.ZERO)
-        val errorHandler = Mockito.mock(ErrorHandler::class.java)
+        val loggingStrategy = Mockito.mock(LoggingStrategy::class.java)
         
         val retry = RetryBuilder()
             .retryCondition(retryCondition)
             .abortCondition(abortCondition)
             .backOff(backOff)
-            .errorHandler(errorHandler)
+            .errorHandler(loggingStrategy)
             .build()
         assertThat(retry.retryCondition).isSameAs(retryCondition)
         assertThat(retry.abortCondition).isSameAs(abortCondition)
         assertThat(retry.backOff).isSameAs(backOff)
-        assertThat(retry.errorHandler).isSameAs(errorHandler)
+        assertThat(retry.loggingStrategy).isSameAs(loggingStrategy)
     }
 }
