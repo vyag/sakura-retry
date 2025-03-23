@@ -40,8 +40,8 @@ public class BuilderTest {
             .backoffPolicy(BackoffPolicies.NONE)
             .backoffPolicy(new FixedDelay(Duration.ofSeconds(1)))
             .backoffPolicy(new FixedInterval(Duration.ofSeconds(1)))
-            .errorHandler(LoggingPolicies.EVERYTHING)
-            .errorHandler(new SimpleLoggingPolicy(Conditions.TRUE, Conditions.FALSE))
+            .loggingPolicy(LoggingPolicies.EVERYTHING)
+            .loggingPolicy(new SimpleLoggingPolicy(Conditions.TRUE, Conditions.FALSE))
             .build();
         retryPolicy.callWithNoThrowDeclaration(() -> {
             throw new IOException();
@@ -58,11 +58,11 @@ public class BuilderTest {
             .retryCondition(retryCondition)
             .abortCondition(abortCondition)
             .backoffPolicy(backOff)
-            .errorHandler(errorHandler)
+            .loggingPolicy(errorHandler)
             .build();
         assertThat(retryPolicy.getRetryCondition()).isSameAs(retryCondition);
         assertThat(retryPolicy.getAbortCondition()).isSameAs(abortCondition);
-        assertThat(retryPolicy.getBackOff()).isSameAs(backOff);
+        assertThat(retryPolicy.getBackoffPolicy()).isSameAs(backOff);
         assertThat(retryPolicy.getLoggingPolicy()).isSameAs(errorHandler);
     }
 }

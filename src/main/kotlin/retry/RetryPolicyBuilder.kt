@@ -23,7 +23,7 @@ class RetryPolicyBuilder {
 
     private var retryCondition: Condition = PROTOTYPE.retryCondition
     private var abortCondition: Condition = PROTOTYPE.abortCondition
-    private var backoffPolicy: BackoffPolicy = PROTOTYPE.backOff
+    private var backoffPolicy: BackoffPolicy = PROTOTYPE.backoffPolicy
     private var loggingPolicy: LoggingPolicy = PROTOTYPE.loggingPolicy
 
     /**
@@ -58,7 +58,7 @@ class RetryPolicyBuilder {
      *
      * @param loggingPolicy the error handler
      */
-    fun errorHandler(loggingPolicy: LoggingPolicy) = apply {
+    fun loggingPolicy(loggingPolicy: LoggingPolicy) = apply {
         this.loggingPolicy = loggingPolicy
     }
     
@@ -68,7 +68,7 @@ class RetryPolicyBuilder {
      * @return the [RetryPolicy]
      */
     fun build() : RetryPolicy {
-        return RetryPolicy(retryCondition, abortCondition, backoffPolicy, loggingPolicy)
+        return RetryPolicy(retryCondition = retryCondition, abortCondition = abortCondition, backoffPolicy, loggingPolicy)
     }
 
     private companion object {
