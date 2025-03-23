@@ -7,30 +7,38 @@ An elegant JVM library for transient failure handling, with customizable retries
 ## Usage
 Retry is available on Maven Central.
 
+Kotlin:
 ```kotlin
 import retry.*
 
-val retryPolicy = RetryPolicy(
-    retryCondition = MaxRetries(10),
-    backOff = BackoffPolicies.seconds(1)
-)
-retryPolicy.call {
-    throw Exception("error")
+fun main() {
+    val policy = RetryPolicy(
+        retryCondition = MaxRetries(10),
+        backOff = BackoffPolicies.seconds(1)
+    )
+    policy.call {
+        throw Exception("error")
+    }
 }
 ```
 
+Java:
 ```java
 import retry.BackoffPolicy;
 import retry.Conditions;
 import retry.RetryPolicy;
 
-RetryPolicy retryPolicy = new RetryBuilder()
-    .retryCondition(Conditions.TRUE)
-    .backoffPolicy(BackoffPolicies.seconds(1))
-    .build();
-retryPolicy.call(() ->{
-    throw new Exception("error");
-});
+public class Test {
+    public static void main(String[] args) {
+        RetryPolicy policy = new RetryBuilder()
+            .retryCondition(new MaxRetries(10))
+            .backoffPolicy(BackoffPolicies.seconds(1))
+            .build();
+        policy.call(() -> {
+            throw new Exception("error");
+        });
+    }
+}
 ```
 ## License
 [Apache License 2.0](LICENSE)
