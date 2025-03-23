@@ -18,29 +18,19 @@
 package retry
 
 import java.time.Duration
-import kotlin.time.toJavaDuration
 
 /**
- * Fixed interval back off.
- * 
- * @param interval The delay.
+ * The interface for logging.
  */
-data class FixedInterval(val interval: Duration) : Backoff {
-    
-    /**
-     * Constructs a fixed interval back off.
-     *
-     * @param interval The interval.
-     */
-    constructor(interval: kotlin.time.Duration) : this(interval.toJavaDuration())
+fun interface LoggingPolicy {
 
-    override fun backoff(context: Context): Duration {
-        val targetRetryTime = context.startTime.plus(
-            interval.multipliedBy(context.retryCount.toLong()))
-        return if (targetRetryTime.isAfter(context.now)) {
-            Duration.between(context.now, targetRetryTime)
-        } else {
-            Duration.ZERO
-        }
-    }
+    /**
+     * Do logging.
+     *
+     * @param context the context of the retry
+     * @param allowRetry true if the retry is allowed
+     * @param backOffDuration the back off duration
+     */
+    fun logging(context: Context, allowRetry: Boolean, backOffDuration: Duration)
+
 }

@@ -27,30 +27,30 @@ class RetryBuilderTest {
     
     @Test
     fun testDefault() {
-        val retry = RetryBuilder().build()
+        val retry = RetryPolicyBuilder().build()
         assertThat(retry.retryCondition).isEqualTo(default.retryCondition)
         assertThat(retry.abortCondition).isEqualTo(default.abortCondition)
         assertThat(retry.backOff).isEqualTo(default.backOff)
-        assertThat(retry.loggingStrategy).isEqualTo(default.loggingStrategy)
+        assertThat(retry.loggingPolicy).isEqualTo(default.loggingPolicy)
         assertThat(retry).isNotSameAs(default)
     }
     
     @Test
     fun testBuild() {
-        val retryCondition = TRUE
-        val abortCondition = FALSE
+        val retryCondition = Conditions.TRUE
+        val abortCondition = Conditions.FALSE
         val backOff = FixedInterval(Duration.ZERO)
-        val loggingStrategy = Mockito.mock(LoggingStrategy::class.java)
+        val loggingPolicy = Mockito.mock(LoggingPolicy::class.java)
         
-        val retry = RetryBuilder()
+        val retry = RetryPolicyBuilder()
             .retryCondition(retryCondition)
             .abortCondition(abortCondition)
-            .backOff(backOff)
-            .errorHandler(loggingStrategy)
+            .backoffPolicy(backOff)
+            .errorHandler(loggingPolicy)
             .build()
         assertThat(retry.retryCondition).isSameAs(retryCondition)
         assertThat(retry.abortCondition).isSameAs(abortCondition)
         assertThat(retry.backOff).isSameAs(backOff)
-        assertThat(retry.loggingStrategy).isSameAs(loggingStrategy)
+        assertThat(retry.loggingPolicy).isSameAs(loggingPolicy)
     }
 }

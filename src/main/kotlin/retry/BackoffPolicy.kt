@@ -14,23 +14,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+@file:JvmName("Backoffs")
 package retry
 
 import java.time.Duration
 
 /**
- * The interface for logging.
+ * Backoff strategy.
  */
-fun interface LoggingStrategy {
+fun interface BackoffPolicy {
 
     /**
-     * Do logging.
+     * Returns the backoff duration.
      *
-     * @param context the context of the retry
-     * @param allowRetry true if the retry is allowed
-     * @param backOffDuration the back off duration
+     * @param context the context
+     * @return the backoff duration
      */
-    fun logging(context: Context, allowRetry: Boolean, backOffDuration: Duration)
-
+    fun backoff(context: Context): Duration
 }
+
+

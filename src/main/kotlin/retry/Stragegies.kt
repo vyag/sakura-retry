@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 marks.yag@gmail.com
+ * Copyright 2025-2025 marks.yag@gmail.com
  *
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
@@ -14,28 +14,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-@file:JvmName("Backoffs")
 package retry
 
-import java.time.Duration
-
-/**
- * Backoff strategy.
- */
-fun interface Backoff {
+object RetryPolicies {
 
     /**
-     * Returns the backoff duration.
-     *
-     * @param context the context
-     * @return the backoff duration
+     * The policy that never retries.
      */
-    fun backoff(context: Context): Duration
+    @JvmField
+    val NONE = RetryPolicy(
+        retryCondition = Conditions.FALSE,
+        backOff = BackoffPolicies.NONE
+    )
 }
-
-
-/**
- * No backoff.
- */
-@JvmField
-val IMMEDIATELY = Backoff { Duration.ZERO }

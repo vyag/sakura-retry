@@ -19,12 +19,12 @@ package retry
 /**
  * The Java-style builder for [RetryPolicy]. We suggest that kotlin users use [RetryPolicy] constructor with default parameters instead.
  */
-class RetryBuilder {
+class RetryPolicyBuilder {
 
     private var retryCondition: Condition = PROTOTYPE.retryCondition
     private var abortCondition: Condition = PROTOTYPE.abortCondition
-    private var backOff: Backoff = PROTOTYPE.backOff
-    private var loggingStrategy: LoggingStrategy = PROTOTYPE.loggingStrategy
+    private var backoffPolicy: BackoffPolicy = PROTOTYPE.backOff
+    private var loggingPolicy: LoggingPolicy = PROTOTYPE.loggingPolicy
 
     /**
      * Sets the retry condition.
@@ -45,21 +45,21 @@ class RetryBuilder {
     }
     
     /**
-     * Sets the back off.
+     * Sets the backoff policy.
      *
-     * @param backOff the back off
+     * @param backoffPolicy the back off
      */
-    fun backOff(backOff: Backoff) : RetryBuilder = apply {
-        this.backOff = backOff
+    fun backoffPolicy(backoffPolicy: BackoffPolicy) : RetryPolicyBuilder = apply {
+        this.backoffPolicy = backoffPolicy
     }
     
     /**
-     * Sets the error handler.
+     * Sets the logging policy.
      *
-     * @param loggingStrategy the error handler
+     * @param loggingPolicy the error handler
      */
-    fun errorHandler(loggingStrategy: LoggingStrategy) = apply {
-        this.loggingStrategy = loggingStrategy
+    fun errorHandler(loggingPolicy: LoggingPolicy) = apply {
+        this.loggingPolicy = loggingPolicy
     }
     
     /**
@@ -68,7 +68,7 @@ class RetryBuilder {
      * @return the [RetryPolicy]
      */
     fun build() : RetryPolicy {
-        return RetryPolicy(retryCondition, abortCondition, backOff, loggingStrategy)
+        return RetryPolicy(retryCondition, abortCondition, backoffPolicy, loggingPolicy)
     }
 
     private companion object {

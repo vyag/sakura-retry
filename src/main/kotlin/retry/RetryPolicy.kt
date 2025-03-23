@@ -35,13 +35,13 @@ import kotlin.time.Duration.Companion.seconds
  * @param retryCondition The condition to retry.
  * @param abortCondition The condition to abort.
  * @param backOff The back off strategy.
- * @param loggingStrategy The error handler.
+ * @param loggingPolicy The error handler.
  */
 class RetryPolicy @JvmOverloads constructor(
-    val retryCondition: Condition = TRUE,
+    val retryCondition: Condition = Conditions.TRUE,
     val abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
-    val backOff: Backoff = FixedDelay(1.seconds),
-    val loggingStrategy: LoggingStrategy = SimpleLoggingStrategy()
+    val backOff: BackoffPolicy = FixedDelay(1.seconds),
+    val loggingPolicy: LoggingPolicy = LoggingPolicies.EVERYTHING
 ) {
 
     private val condition = !abortCondition and retryCondition
@@ -89,7 +89,7 @@ class RetryPolicy @JvmOverloads constructor(
                 val allowRetry = condition.check(context)
                 LOG.debug("Check retry condition: {}, then allow retry: {}.", condition.toString(context), allowRetry)
                 val backOff = if (allowRetry) backOff.backoff(context) else Duration.ZERO
-                loggingStrategy.logging(context, allowRetry, backOff)
+                loggingPolicy.logging(context, allowRetry, backOff)
                 if (allowRetry) {
                     backOffExecutor.backOff(backOff)
                     if (condition.check(context)) {
@@ -124,7 +124,7 @@ class RetryPolicy @JvmOverloads constructor(
                     val context = Context(startTime, Instant.now(), retryCount, t)
                     val allowRetry = condition.check(context)
                     val backOff = if (allowRetry) backOff.backoff(context) else Duration.ZERO
-                    loggingStrategy.logging(context, allowRetry, backOff)
+                    loggingPolicy.logging(context, allowRetry, backOff)
                     if (allowRetry) {
                         if (condition.check(context)) {
                             retryCount++
@@ -170,9 +170,3 @@ class RetryPolicy @JvmOverloads constructor(
 
     }
 }
-
-/**
- * The policy that never retries.
- */
-@JvmField
-val NONE = RetryPolicy(retryCondition = FALSE)

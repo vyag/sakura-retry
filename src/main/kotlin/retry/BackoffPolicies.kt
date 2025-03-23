@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 marks.yag@gmail.com
+ * Copyright 2018-2025 marks.yag@gmail.com
  *
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
@@ -14,11 +14,80 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package retry
 
 import java.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
+
+object BackoffPolicies {
+
+    /**
+     * No backoff.
+     */
+    @JvmField
+    val NONE = BackoffPolicy { Duration.ZERO }
+
+    /**
+     * Fixed delay back off of specified seconds.
+     * @see FixedDelay
+     */
+    @JvmStatic
+    fun seconds(amount: Long) = FixedDelay(amount.seconds)
+
+    /**
+     * Fixed delay back off of specified milliseconds.
+     * 
+     * @see FixedDelay
+     */
+    @JvmStatic
+    fun millis(amount: Long) = FixedDelay(amount.milliseconds)
+}
+
+/**
+ * Fixed delay back off.
+ *
+ * @param delay The delay.
+ */
+data class FixedDelay(val delay: Duration) : BackoffPolicy {
+
+    /**
+     * Constructs a fixed delay back off.
+     *
+     * @param delay The interval.
+     */
+    constructor(delay: kotlin.time.Duration) : this(delay.toJavaDuration())
+
+    override fun backoff(context: Context): Duration {
+        return delay
+    }
+}
+
+/**
+ * Fixed interval back off.
+ *
+ * @param interval The delay.
+ */
+data class FixedInterval(val interval: Duration) : BackoffPolicy {
+
+    /**
+     * Constructs a fixed interval back off.
+     *
+     * @param interval The interval.
+     */
+    constructor(interval: kotlin.time.Duration) : this(interval.toJavaDuration())
+
+    override fun backoff(context: Context): Duration {
+        val targetRetryTime = context.startTime.plus(
+            interval.multipliedBy(context.retryCount.toLong()))
+        return if (targetRetryTime.isAfter(context.now)) {
+            Duration.between(context.now, targetRetryTime)
+        } else {
+            Duration.ZERO
+        }
+    }
+}
 
 /**
  * Exponential backoff implementation.
@@ -29,8 +98,8 @@ import kotlin.time.toJavaDuration
 data class Exponential(
     val initDuration: Duration,
     val maxDuration: Duration
-) : Backoff {
-    
+) : BackoffPolicy {
+
     /**
      * Constructs an Exponential backoff implementation.
      *
