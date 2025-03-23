@@ -23,34 +23,34 @@ import kotlin.test.Test
 
 class RetryBuilderTest {
     
-    private val default = Retry()
+    private val default = RetryPolicy()
     
     @Test
     fun testDefault() {
-        val retry = RetryBuilder().build()
+        val retry = RetryPolicyBuilder().build()
         assertThat(retry.retryCondition).isEqualTo(default.retryCondition)
         assertThat(retry.abortCondition).isEqualTo(default.abortCondition)
         assertThat(retry.backOff).isEqualTo(default.backOff)
-        assertThat(retry.errorHandler).isEqualTo(default.errorHandler)
+        assertThat(retry.loggingPolicy).isEqualTo(default.loggingPolicy)
         assertThat(retry).isNotSameAs(default)
     }
     
     @Test
     fun testBuild() {
-        val retryCondition = Condition.TRUE
-        val abortCondition = Condition.FALSE
+        val retryCondition = Conditions.TRUE
+        val abortCondition = Conditions.FALSE
         val backOff = FixedInterval(Duration.ZERO)
-        val errorHandler = Mockito.mock(ErrorHandler::class.java)
+        val loggingPolicy = Mockito.mock(LoggingPolicy::class.java)
         
-        val retry = RetryBuilder()
+        val retry = RetryPolicyBuilder()
             .retryCondition(retryCondition)
             .abortCondition(abortCondition)
-            .backOff(backOff)
-            .errorHandler(errorHandler)
+            .backoffPolicy(backOff)
+            .errorHandler(loggingPolicy)
             .build()
         assertThat(retry.retryCondition).isSameAs(retryCondition)
         assertThat(retry.abortCondition).isSameAs(abortCondition)
         assertThat(retry.backOff).isSameAs(backOff)
-        assertThat(retry.errorHandler).isSameAs(errorHandler)
+        assertThat(retry.loggingPolicy).isSameAs(loggingPolicy)
     }
 }

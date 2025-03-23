@@ -17,14 +17,14 @@
 package retry
 
 /**
- * The Java-style builder for [Retry]. We suggest that kotlin users use [Retry] constructor with default parameters instead.
+ * The Java-style builder for [RetryPolicy]. We suggest that kotlin users use [RetryPolicy] constructor with default parameters instead.
  */
-class RetryBuilder {
+class RetryPolicyBuilder {
 
     private var retryCondition: Condition = PROTOTYPE.retryCondition
     private var abortCondition: Condition = PROTOTYPE.abortCondition
-    private var backOff: BackOff = PROTOTYPE.backOff
-    private var errorHandler: ErrorHandler = PROTOTYPE.errorHandler
+    private var backoffPolicy: BackoffPolicy = PROTOTYPE.backOff
+    private var loggingPolicy: LoggingPolicy = PROTOTYPE.loggingPolicy
 
     /**
      * Sets the retry condition.
@@ -45,33 +45,33 @@ class RetryBuilder {
     }
     
     /**
-     * Sets the back off.
+     * Sets the backoff policy.
      *
-     * @param backOff the back off
+     * @param backoffPolicy the back off
      */
-    fun backOff(backOff: BackOff) : RetryBuilder = apply {
-        this.backOff = backOff
+    fun backoffPolicy(backoffPolicy: BackoffPolicy) : RetryPolicyBuilder = apply {
+        this.backoffPolicy = backoffPolicy
     }
     
     /**
-     * Sets the error handler.
+     * Sets the logging policy.
      *
-     * @param errorHandler the error handler
+     * @param loggingPolicy the error handler
      */
-    fun errorHandler(errorHandler: ErrorHandler) = apply {
-        this.errorHandler = errorHandler
+    fun errorHandler(loggingPolicy: LoggingPolicy) = apply {
+        this.loggingPolicy = loggingPolicy
     }
     
     /**
-     * Builds the [Retry].
+     * Builds the [RetryPolicy].
      *
-     * @return the [Retry]
+     * @return the [RetryPolicy]
      */
-    fun build() : Retry {
-        return Retry(retryCondition, abortCondition, backOff, errorHandler)
+    fun build() : RetryPolicy {
+        return RetryPolicy(retryCondition, abortCondition, backoffPolicy, loggingPolicy)
     }
 
-    companion object {
-        private val PROTOTYPE = Retry()
+    private companion object {
+        private val PROTOTYPE = RetryPolicy()
     } 
 }

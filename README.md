@@ -10,21 +10,25 @@ Retry is available on Maven Central.
 ```kotlin
 import retry.*
 
-val retry = Retry(
+val retryPolicy = RetryPolicy(
     retryCondition = MaxRetries(10),
-    backOff = BackOff.NONE
+    backOff = BackoffPolicies.seconds(1)
 )
-retry.call {
+retryPolicy.call {
     throw Exception("error")
 }
 ```
 
 ```java
-import retry.BackOff;
-import retry.Retry;
+import retry.BackoffPolicy;
+import retry.Conditions;
+import retry.RetryPolicy;
 
-Retry retry = new RetryBuilder().maxRetries(10).backOff(BackOff.seconds(1)).build();
-retry.call(() -> {
+RetryPolicy retryPolicy = new RetryBuilder()
+    .retryCondition(Conditions.TRUE)
+    .backoffPolicy(BackoffPolicies.seconds(1))
+    .build();
+retryPolicy.call(() ->{
     throw new Exception("error");
 });
 ```

@@ -14,25 +14,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
+@file:JvmName("Backoffs")
 package retry
 
+import java.time.Duration
+
 /**
- * The condition check if the retry count is less than the given number.
- *
- * @param maxRetries the maximum number of retries
+ * Backoff strategy.
  */
-data class MaxRetries(val maxRetries: Int) : Condition {
+fun interface BackoffPolicy {
 
-    override fun check(context: Context): Boolean {
-        return context.retryCount < maxRetries
-    }
-
-    override fun toString(): String {
-        return "context.retryCount < $maxRetries"
-    }
-
-    override fun toString(context: Context): String {
-        return "context.retryCount=${context.retryCount} < $maxRetries"
-    }
+    /**
+     * Returns the backoff duration.
+     *
+     * @param context the context
+     * @return the backoff duration
+     */
+    fun backoff(context: Context): Duration
 }
+
+

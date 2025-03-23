@@ -30,17 +30,17 @@ public class ExceptionDeclarationTest {
     @Disabled("Do compile failed is expected.")
     @Test
     public void testCallWithNoThrowsDoNotHaveAnExceptionThrowDeclaration() {
-        Retry retry = Retry.NONE;
-        retry.callWithNoThrowDeclaration(() -> {
+        RetryPolicy retryPolicy = RetryPolicies.NONE;
+        retryPolicy.callWithNoThrowDeclaration(() -> {
             throw new IOException();
         });
     }
     
     @Test
     public void testOriginalExceptionCouldBeThrowByCallWithNoThrows() {
-        Retry retry = Retry.NONE;
+        RetryPolicy retryPolicy = RetryPolicies.NONE;
         IOException exception = new IOException("fun");
-        IOException got = assertThrowsExactly(IOException.class, () -> retry.callWithNoThrowDeclaration(() -> {
+        IOException got = assertThrowsExactly(IOException.class, () -> retryPolicy.callWithNoThrowDeclaration(() -> {
             throw exception;
         }));
         assertThat(got).isSameAs(exception);
@@ -48,11 +48,11 @@ public class ExceptionDeclarationTest {
 
     @Test
     public void testCallWithThrowsDeclaration() {
-        Retry retry = Retry.NONE;
+        RetryPolicy retryPolicy = RetryPolicies.NONE;
         IOException exception = new IOException("fun");
         IOException got = assertThrowsExactly(IOException.class, () -> {
             try {
-                retry.call(() -> {
+                retryPolicy.call(() -> {
                     throw exception;
                 });
             } catch (IOException e) {

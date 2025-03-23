@@ -31,7 +31,7 @@ class RetryCallTest {
 
     @Test
     fun testNoError() {
-        val retry = Retry.NONE
+        val retry = RetryPolicies.NONE
         val mock = Mockito.mock(Callable::class.java)
         retry.call {
             mock.call()
@@ -41,16 +41,16 @@ class RetryCallTest {
 
     @Test
     fun testRetrySuccess() {
-        val retry = Retry(
+        val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(10),
-            backOff = BackOff.NONE
+            backOff = BackoffPolicies.NONE
         )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(10) {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        assertEquals("done", retry.call {
+        assertEquals("done", retryPolicy.call {
             mock.call()
         })
         Mockito.verify(mock, Mockito.times(11)).call()
@@ -58,15 +58,15 @@ class RetryCallTest {
 
     @Test
     fun testRetryFailed() {
-        val retry = Retry(
+        val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(10),
-            backOff = BackOff.NONE
+            backOff = BackoffPolicies.NONE
         )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 
         assertFailsWith<IOException> {
-            retry.call {
+            retryPolicy.call {
                 mock.call()
             }
         }
@@ -82,16 +82,16 @@ class RetryCallTest {
             totalSleepMs += it.toMillis()
         }
 
-        val retry = Retry(
+        val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(10),
             backOff = FixedDelay(Duration.ofSeconds(1))
         )
-        retry.backOffExecutor = fakeSleeper
+        retryPolicy.backOffExecutor = fakeSleeper
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 
         assertFailsWith<IOException> {
-            retry.call {
+            retryPolicy.call {
                 mock.call()
             }
         }

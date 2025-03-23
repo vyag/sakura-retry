@@ -26,6 +26,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
+import kotlin.time.Duration.Companion.seconds
 
 class RetrySubmitTest {
     
@@ -45,25 +46,25 @@ class RetrySubmitTest {
     @Test
     @Timeout(1)
     fun testRetrySuccess() {
-        val retry = Retry(
+        val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(3),
-            backOff = BackOff.NONE
+            backOff = BackoffPolicies.NONE
         )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(3) {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        assertThat(retry.submit(executor, function = { mock.call() }).get()).isEqualTo("done")
+        assertThat(retryPolicy.submit(executor, function = { mock.call() }).get()).isEqualTo("done")
         Mockito.verify(mock, Mockito.times(4)).call()
     }
 
     @Test
     @Timeout(1)
     fun testRetryFail() {
-        val retry = Retry(
+        val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(2),
-            backOff = BackOff.NONE
+            backOff = BackoffPolicies.NONE
         )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(4) {
@@ -71,7 +72,7 @@ class RetrySubmitTest {
         }).doReturn("done").`when`(mock).call()
 
         val error = assertFailsWith<ExecutionException> {
-            retry.submit(executor, function = { mock.call() }).get()
+            retryPolicy.submit(executor, function = { mock.call() }).get()
         }
         assertThat(error.cause).isInstanceOf(IOException::class.java)
 
@@ -81,9 +82,9 @@ class RetrySubmitTest {
     @Test
     @Timeout(5)
     fun testRetrySuccessWithMultipleSubmits() {
-        val retry = Retry(
+        val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(3),
-            backOff = FixedDelay.seconds(1)
+            backOff = FixedDelay(1.seconds)
         )
         val mocks = Array(100) {
             val mock = Mockito.mock(Callable::class.java)
@@ -94,7 +95,7 @@ class RetrySubmitTest {
         }
 
         val results = Array(100) {
-            retry.submit(executor, "call-$it") { 
+            retryPolicy.submit(executor, "call-$it") { 
                 mocks[it].call() 
             }
         }
