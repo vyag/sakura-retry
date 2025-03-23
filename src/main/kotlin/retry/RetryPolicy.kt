@@ -18,7 +18,7 @@
 package retry
 
 import org.slf4j.LoggerFactory
-import retry.internal.BackOffExecutor
+import retry.internal.BackoffExecutor
 import retry.internal.RetryHandler
 import java.lang.reflect.Proxy
 import java.time.Duration
@@ -34,20 +34,20 @@ import kotlin.time.Duration.Companion.seconds
  *
  * @param retryCondition The condition to retry.
  * @param abortCondition The condition to abort.
- * @param backOff The back off strategy.
+ * @param backoffPolicy The back off strategy.
  * @param loggingPolicy The error handler.
  */
 class RetryPolicy @JvmOverloads constructor(
     val retryCondition: Condition = Conditions.TRUE,
     val abortCondition: Condition = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java),
-    val backOff: BackoffPolicy = FixedDelay(1.seconds),
+    val backoffPolicy: BackoffPolicy = FixedDelay(1.seconds),
     val loggingPolicy: LoggingPolicy = LoggingPolicies.EVERYTHING
 ) {
 
     private val condition = !abortCondition and retryCondition
 
     @JvmSynthetic
-    internal var backOffExecutor: BackOffExecutor = BackOffExecutor {
+    internal var backoffExecutor: BackoffExecutor = BackoffExecutor {
         Thread.sleep(it.toMillis(), (it.toNanos() % 1e6).toInt())
     }
 
@@ -88,10 +88,10 @@ class RetryPolicy @JvmOverloads constructor(
                 val context = Context(startTime, Instant.now(), retryCount, t)
                 val allowRetry = condition.check(context)
                 LOG.debug("Check retry condition: {}, then allow retry: {}.", condition.toString(context), allowRetry)
-                val backOff = if (allowRetry) backOff.backoff(context) else Duration.ZERO
+                val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                 loggingPolicy.logging(context, allowRetry, backOff)
                 if (allowRetry) {
-                    backOffExecutor.backOff(backOff)
+                    backoffExecutor.backOff(backOff)
                     if (condition.check(context)) {
                         retryCount++
                         continue
@@ -123,7 +123,7 @@ class RetryPolicy @JvmOverloads constructor(
                 } catch (t: Throwable) {
                     val context = Context(startTime, Instant.now(), retryCount, t)
                     val allowRetry = condition.check(context)
-                    val backOff = if (allowRetry) backOff.backoff(context) else Duration.ZERO
+                    val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                     loggingPolicy.logging(context, allowRetry, backOff)
                     if (allowRetry) {
                         if (condition.check(context)) {

@@ -30,7 +30,7 @@ class RetryBuilderTest {
         val retry = RetryPolicyBuilder().build()
         assertThat(retry.retryCondition).isEqualTo(default.retryCondition)
         assertThat(retry.abortCondition).isEqualTo(default.abortCondition)
-        assertThat(retry.backOff).isEqualTo(default.backOff)
+        assertThat(retry.backoffPolicy).isEqualTo(default.backoffPolicy)
         assertThat(retry.loggingPolicy).isEqualTo(default.loggingPolicy)
         assertThat(retry).isNotSameAs(default)
     }
@@ -46,11 +46,11 @@ class RetryBuilderTest {
             .retryCondition(retryCondition)
             .abortCondition(abortCondition)
             .backoffPolicy(backOff)
-            .errorHandler(loggingPolicy)
+            .loggingPolicy(loggingPolicy)
             .build()
         assertThat(retry.retryCondition).isSameAs(retryCondition)
         assertThat(retry.abortCondition).isSameAs(abortCondition)
-        assertThat(retry.backOff).isSameAs(backOff)
+        assertThat(retry.backoffPolicy).isSameAs(backOff)
         assertThat(retry.loggingPolicy).isSameAs(loggingPolicy)
     }
 }

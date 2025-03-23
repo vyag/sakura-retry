@@ -1,5 +1,5 @@
 /*
- * Copyright 2018-2020 marks.yag@gmail.com
+ * Copyright 2025-2025 marks.yag@gmail.com
  *
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
@@ -14,13 +14,21 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package retry
 
-package retry.internal
+object RetryPolicies {
 
-import java.time.Duration
-
-internal fun interface BackOffExecutor {
-
-    fun backOff(duration: Duration)
-
+    /**
+     * The policy that never retries.
+     */
+    @JvmField
+    val NONE = RetryPolicy(
+        retryCondition = Conditions.FALSE,
+        backoffPolicy = BackoffPolicies.NONE
+    )
+    
+    fun times(amount: Int) = RetryPolicy(
+        retryCondition = MaxRetries(amount),
+        backoffPolicy = BackoffPolicies.NONE
+    )
 }

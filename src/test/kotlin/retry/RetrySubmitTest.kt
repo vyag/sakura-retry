@@ -48,7 +48,7 @@ class RetrySubmitTest {
     fun testRetrySuccess() {
         val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(3),
-            backOff = BackoffPolicies.NONE
+            backoffPolicy = BackoffPolicies.NONE
         )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(3) {
@@ -64,7 +64,7 @@ class RetrySubmitTest {
     fun testRetryFail() {
         val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(2),
-            backOff = BackoffPolicies.NONE
+            backoffPolicy = BackoffPolicies.NONE
         )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(4) {
@@ -84,7 +84,7 @@ class RetrySubmitTest {
     fun testRetrySuccessWithMultipleSubmits() {
         val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(3),
-            backOff = FixedDelay(1.seconds)
+            backoffPolicy = FixedDelay(1.seconds)
         )
         val mocks = Array(100) {
             val mock = Mockito.mock(Callable::class.java)

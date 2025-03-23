@@ -19,7 +19,7 @@ package retry
 
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
-import retry.internal.BackOffExecutor
+import retry.internal.BackoffExecutor
 import java.io.IOException
 import java.time.Duration
 import java.util.concurrent.Callable
@@ -43,7 +43,7 @@ class RetryCallTest {
     fun testRetrySuccess() {
         val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(10),
-            backOff = BackoffPolicies.NONE
+            backoffPolicy = BackoffPolicies.NONE
         )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(10) {
@@ -60,7 +60,7 @@ class RetryCallTest {
     fun testRetryFailed() {
         val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(10),
-            backOff = BackoffPolicies.NONE
+            backoffPolicy = BackoffPolicies.NONE
         )
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
@@ -77,16 +77,16 @@ class RetryCallTest {
     fun testRetryBackOff() {
         var invocationCount = 0
         var totalSleepMs = 0L
-        val fakeSleeper = BackOffExecutor {
+        val fakeSleeper = BackoffExecutor {
             invocationCount++
             totalSleepMs += it.toMillis()
         }
 
         val retryPolicy = RetryPolicy(
             retryCondition = MaxRetries(10),
-            backOff = FixedDelay(Duration.ofSeconds(1))
+            backoffPolicy = FixedDelay(Duration.ofSeconds(1))
         )
-        retryPolicy.backOffExecutor = fakeSleeper
+        retryPolicy.backoffExecutor = fakeSleeper
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 
