@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Collections;
 
 public class BuilderTest {
     
@@ -35,13 +36,17 @@ public class BuilderTest {
             .retryCondition(Conditions.FALSE)
             .retryCondition(new MaxRetries(5))
             .retryCondition(new MaxTimeElapsed(Duration.ofSeconds(10)))
+            .updateRetryCondition(condition -> condition.and(new MaxRetries(3)))
             .abortCondition(Conditions.TRUE)
             .abortCondition(Conditions.FALSE)
+            .updateAbortCondition(condition -> condition.and(new MaxTimeElapsed(Duration.ofSeconds(10))))
             .backoffPolicy(BackoffPolicies.NONE)
             .backoffPolicy(new FixedDelay(Duration.ofSeconds(1)))
             .backoffPolicy(new FixedInterval(Duration.ofSeconds(1)))
-            .loggingPolicy(LoggingPolicies.EVERYTHING)
-            .loggingPolicy(new SimpleLoggingPolicy(Conditions.TRUE, Conditions.FALSE))
+            .addFailureListener(FailureListeners.logging(Conditions.TRUE, Conditions.FALSE))
+            .addFailureListener(new SimpleLoggingFailureListener(Conditions.TRUE, Conditions.FALSE))
+            .failureListeners(Collections.emptyList())
+            .clearFailureListeners()
             .build();
         retryPolicy.callWithNoThrowDeclaration(() -> {
             throw new IOException();
@@ -53,16 +58,17 @@ public class BuilderTest {
         Condition retryCondition = new MaxRetries(5);
         Condition abortCondition = new MaxTimeElapsed(Duration.ofSeconds(10));
         BackoffPolicy backOff = new FixedDelay(Duration.ofSeconds(1));
-        LoggingPolicy errorHandler = (context, allowRetry, backOffDuration) -> {};
+        FailureListener errorHandler = (context, allowRetry, backOffDuration) -> {};
         RetryPolicy retryPolicy = new RetryPolicyBuilder()
             .retryCondition(retryCondition)
             .abortCondition(abortCondition)
             .backoffPolicy(backOff)
-            .loggingPolicy(errorHandler)
+            .addFailureListener(errorHandler)
             .build();
         assertThat(retryPolicy.getRetryCondition()).isSameAs(retryCondition);
         assertThat(retryPolicy.getAbortCondition()).isSameAs(abortCondition);
         assertThat(retryPolicy.getBackoffPolicy()).isSameAs(backOff);
-        assertThat(retryPolicy.getLoggingPolicy()).isSameAs(errorHandler);
+        assertThat(retryPolicy.getFailureListeners()).containsAll(new RetryPolicy().getFailureListeners());
+        assertThat(retryPolicy.getFailureListeners()).contains(errorHandler);
     }
 }

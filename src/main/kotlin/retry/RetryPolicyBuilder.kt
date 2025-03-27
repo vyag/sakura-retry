@@ -16,15 +16,18 @@
  */
 package retry
 
+import java.util.*
+import java.util.function.Function
+
 /**
- * The Java-style builder for [RetryPolicy]. We suggest that kotlin users use [RetryPolicy] constructor with default parameters instead.
+ * The Java-style builder for [RetryPolicy].
  */
 class RetryPolicyBuilder {
 
     private var retryCondition: Condition = PROTOTYPE.retryCondition
     private var abortCondition: Condition = PROTOTYPE.abortCondition
     private var backoffPolicy: BackoffPolicy = PROTOTYPE.backoffPolicy
-    private var loggingPolicy: LoggingPolicy = PROTOTYPE.loggingPolicy
+    private var failureListeners: MutableList<FailureListener> = PROTOTYPE.failureListeners.toMutableList()
 
     /**
      * Sets the retry condition.
@@ -34,6 +37,15 @@ class RetryPolicyBuilder {
     fun retryCondition(retryCondition: Condition) = apply {
         this.retryCondition = retryCondition
     }
+
+    /**
+     * Updates the retry condition.
+     *
+     * @param updater the updater
+     */
+    fun updateRetryCondition(updater: Function<Condition, Condition>) = apply {
+        this.retryCondition = updater.apply(retryCondition)
+    }
     
     /**
      * Sets the abort condition.
@@ -42,6 +54,15 @@ class RetryPolicyBuilder {
      */
     fun abortCondition(abortCondition: Condition) = apply {
         this.abortCondition = abortCondition
+    }
+
+    /**
+     * Updates the abort condition.
+     *
+     * @param updater the updater
+     */
+    fun updateAbortCondition(updater: Function<Condition, Condition>) = apply {
+        this.abortCondition = updater.apply(abortCondition)
     }
     
     /**
@@ -54,12 +75,28 @@ class RetryPolicyBuilder {
     }
     
     /**
-     * Sets the logging policy.
+     * Sets the failure listeners.
      *
-     * @param loggingPolicy the error handler
+     * @param failureListeners the failure listeners
      */
-    fun loggingPolicy(loggingPolicy: LoggingPolicy) = apply {
-        this.loggingPolicy = loggingPolicy
+    fun failureListeners(failureListeners: MutableList<FailureListener>) = apply {
+        this.failureListeners = failureListeners
+    }
+    
+    /**
+     * Add a failure listener.
+     *
+     * @param failureListener the failure listener
+     */
+    fun addFailureListener(failureListener: FailureListener) = apply {
+        this.failureListeners.add(failureListener)
+    }
+
+    /**
+     * Clear the failure listeners.
+     */
+    fun clearFailureListeners() = apply {
+        this.failureListeners.clear()
     }
     
     /**
@@ -68,7 +105,7 @@ class RetryPolicyBuilder {
      * @return the [RetryPolicy]
      */
     fun build() : RetryPolicy {
-        return RetryPolicy(retryCondition = retryCondition, abortCondition = abortCondition, backoffPolicy, loggingPolicy)
+        return RetryPolicy(retryCondition = retryCondition, abortCondition = abortCondition, backoffPolicy, Collections.unmodifiableList(failureListeners))
     }
 
     private companion object {

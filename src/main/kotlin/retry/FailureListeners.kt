@@ -14,43 +14,31 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package retry
 
 import org.slf4j.LoggerFactory
 import retry.internal.Utils.toReadableString
 import java.time.Duration
 
-object LoggingPolicies {
+object FailureListeners {
 
-    @JvmField
-    val EVERYTHING = SimpleLoggingPolicy(Conditions.TRUE, Conditions.FALSE)
+    @JvmStatic
+    fun logging(logEnabled: Condition, stackEnabled: Condition) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
     
-    @JvmField
-    val ONE_STACK = SimpleLoggingPolicy(Conditions.TRUE, MaxRetries(1))
-    
-    @JvmField
-    val NO_STACK = SimpleLoggingPolicy(Conditions.TRUE, Conditions.FALSE)
-    
-    @JvmField
-    val ONE_LOG = SimpleLoggingPolicy(MaxRetries(1), Conditions.FALSE)
-    
-    @JvmField
-    val NOTHING = SimpleLoggingPolicy(Conditions.FALSE, Conditions.FALSE)
 }
 
 /**
- * Default implementation of [LoggingPolicy].
+ * A simple logging failure listener.
  *
  * @param log if true, logs invocation errors
  * @param stack if true, logs stack trace of invocation errors
  */
-data class SimpleLoggingPolicy(
+data class SimpleLoggingFailureListener(
     private val log: Condition,
     private val stack: Condition
-) : LoggingPolicy {
+) : FailureListener {
 
-    override fun logging(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
+    override fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
         if (log.check(context)) {
             LOG.info(
                 "Invocation failed, context: {}, retry: {}, backOff: {}.",
@@ -65,6 +53,6 @@ data class SimpleLoggingPolicy(
     }
 
     private companion object {
-        private val LOG = LoggerFactory.getLogger(SimpleLoggingPolicy::class.java)
+        private val LOG = LoggerFactory.getLogger(SimpleLoggingFailureListener::class.java)
     }
 }

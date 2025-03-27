@@ -31,7 +31,7 @@ class RetryBuilderTest {
         assertThat(retry.retryCondition).isEqualTo(default.retryCondition)
         assertThat(retry.abortCondition).isEqualTo(default.abortCondition)
         assertThat(retry.backoffPolicy).isEqualTo(default.backoffPolicy)
-        assertThat(retry.loggingPolicy).isEqualTo(default.loggingPolicy)
+        assertThat(retry.failureListeners).isEqualTo(default.failureListeners)
         assertThat(retry).isNotSameAs(default)
     }
     
@@ -40,17 +40,18 @@ class RetryBuilderTest {
         val retryCondition = Conditions.TRUE
         val abortCondition = Conditions.FALSE
         val backOff = FixedInterval(Duration.ZERO)
-        val loggingPolicy = Mockito.mock(LoggingPolicy::class.java)
+        val failureListener = Mockito.mock(FailureListener::class.java)
         
         val retry = RetryPolicyBuilder()
             .retryCondition(retryCondition)
             .abortCondition(abortCondition)
             .backoffPolicy(backOff)
-            .loggingPolicy(loggingPolicy)
+            .addFailureListener(failureListener)
             .build()
         assertThat(retry.retryCondition).isSameAs(retryCondition)
         assertThat(retry.abortCondition).isSameAs(abortCondition)
         assertThat(retry.backoffPolicy).isSameAs(backOff)
-        assertThat(retry.loggingPolicy).isSameAs(loggingPolicy)
+        assertThat(retry.failureListeners).containsAll(default.failureListeners)
+        assertThat(retry.failureListeners).contains(failureListener)
     }
 }
