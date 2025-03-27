@@ -48,6 +48,20 @@ object Conditions {
             return "false"
         }
     }
+
+    /**
+     * A condition that returns true if the error is unrecoverable:
+     * - [InterruptedException]
+     * - [RuntimeException]
+     * - [Error]
+     *
+     * This condition is used by the default [RetryPolicy] to determine if the retry is allowed.
+     *
+     * @see [RetryPolicy]
+     * @see [InstanceOf]
+     */
+    @JvmField
+    val UNRECOVERABLE_EXCEPTIONS = InstanceOf(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
 }
 
 /**

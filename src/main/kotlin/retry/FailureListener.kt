@@ -14,23 +14,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package retry
 
 import java.time.Duration
 
 /**
- * The interface for logging.
+ * The interface for failure listener.
  */
-fun interface LoggingPolicy {
+fun interface FailureListener {
 
     /**
-     * Do logging.
+     * 
      *
      * @param context the context of the retry
      * @param allowRetry true if the retry is allowed
      * @param backOffDuration the back off duration
      */
-    fun logging(context: Context, allowRetry: Boolean, backOffDuration: Duration)
+    fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration)
 
 }

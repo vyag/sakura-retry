@@ -23,6 +23,7 @@ import retry.internal.BackoffExecutor
 import java.io.IOException
 import java.time.Duration
 import java.util.concurrent.Callable
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -71,6 +72,33 @@ class RetryCallTest {
             }
         }
         Mockito.verify(mock, Mockito.times(11)).call()
+    }
+    
+    @Test
+    fun testRetryWithRecovery() {
+        val broken = AtomicBoolean(true)
+        val retryPolicy = RetryPolicy(
+            retryCondition = MaxRetries(10),
+            backoffPolicy = BackoffPolicies.NONE,
+            failureListeners = listOf(
+                object: FailureListener {
+                    override fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
+                        broken.set(false)
+                    }
+                }
+            )
+        )
+        var count = 0
+        val result = retryPolicy.call {
+            count++
+            if (broken.get()) {
+                throw IOException()
+            } else {
+                "fixed"
+            }
+        }
+        assertThat(result).isEqualTo("fixed")
+        assertThat(count).isEqualTo(2)
     }
 
     @Test
