@@ -18,6 +18,8 @@
 package retry
 
 import org.assertj.core.api.Assertions.assertThat
+import retry.Conditions.MaxRetries
+import retry.Conditions.MaxTimeElapsed
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant

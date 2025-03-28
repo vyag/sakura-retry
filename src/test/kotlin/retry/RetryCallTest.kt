@@ -19,6 +19,8 @@ package retry
 
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
+import retry.BackoffPolicies.FixedDelay
+import retry.Conditions.MaxRetries
 import retry.internal.BackoffExecutor
 import java.io.IOException
 import java.time.Duration
@@ -117,6 +119,8 @@ class RetryCallTest {
         retryPolicy.backoffExecutor = fakeSleeper
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
+        
+        retryPolicy.callWithThrows {  }
 
         assertFailsWith<IOException> {
             retryPolicy.call {

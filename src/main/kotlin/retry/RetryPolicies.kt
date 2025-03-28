@@ -16,6 +16,8 @@
  */
 package retry
 
+import retry.Conditions.MaxRetries
+
 object RetryPolicies {
 
     /**

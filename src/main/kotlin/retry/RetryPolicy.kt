@@ -17,8 +17,10 @@
 package retry
 
 import org.slf4j.LoggerFactory
+import retry.BackoffPolicies.FixedDelay
 import retry.internal.BackoffExecutor
 import retry.internal.RetryHandler
+import java.lang.Exception
 import java.lang.reflect.Proxy
 import java.time.Duration
 import java.time.Instant
@@ -56,10 +58,10 @@ class RetryPolicy @JvmOverloads constructor(
      * @param name The optional name of the function.
      * @param function The function to call.
      * @return The result of the function.
-     * @throws Throwable The original exception by the function call if the retry is aborted.
+     * @throws Exception The original exception by the function call if the retry is aborted.
      */
     @JvmOverloads
-    @JvmName("call")
+    @JvmName("callWithThrows")
     @Throws(Exception::class)
     internal fun <T> callWithThrows(name: String = "call", function: Callable<T>): T {
         return call(name, function)
@@ -74,7 +76,6 @@ class RetryPolicy @JvmOverloads constructor(
      * @throws Throwable The original exception by the function call if the retry is aborted.
      */
     @JvmOverloads
-    @JvmName("callWithNoThrowDeclaration")
     fun <T> call(name: String = "call", function: Callable<T>): T {
         var retryCount = 0
         val startTime = Instant.now()
