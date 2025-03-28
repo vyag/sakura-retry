@@ -19,6 +19,11 @@ package retry;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import retry.BackoffPolicies.FixedDelay;
+import retry.BackoffPolicies.FixedInterval;
+import retry.Conditions.MaxRetries;
+import retry.Conditions.MaxTimeElapsed;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -44,11 +49,11 @@ public class BuilderTest {
             .backoffPolicy(new FixedDelay(Duration.ofSeconds(1)))
             .backoffPolicy(new FixedInterval(Duration.ofSeconds(1)))
             .addFailureListener(FailureListeners.logging(Conditions.TRUE, Conditions.FALSE))
-            .addFailureListener(new SimpleLoggingFailureListener(Conditions.TRUE, Conditions.FALSE))
+            .addFailureListener(new FailureListeners.SimpleLoggingFailureListener(Conditions.TRUE, Conditions.FALSE))
             .failureListeners(Collections.emptyList())
             .clearFailureListeners()
             .build();
-        retryPolicy.callWithNoThrowDeclaration(() -> {
+        retryPolicy.call(() -> {
             throw new IOException();
         });
     }

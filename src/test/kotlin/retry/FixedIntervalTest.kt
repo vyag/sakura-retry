@@ -17,6 +17,7 @@
 package retry
 
 import org.assertj.core.api.Assertions.assertThat
+import retry.BackoffPolicies.FixedInterval
 import java.time.Duration
 import java.time.Instant
 import kotlin.test.Test

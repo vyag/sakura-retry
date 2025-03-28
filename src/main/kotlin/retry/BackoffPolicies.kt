@@ -17,112 +17,95 @@
 package retry
 
 import java.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 object BackoffPolicies {
+
+    /**
+     * Fixed delay back off.
+     *
+     * @param duration The delay.
+     */
+    data class FixedDelay(val duration: Duration) : BackoffPolicy {
+
+        /**
+         * Constructs a fixed delay back off.
+         *
+         * @param delay The interval.
+         */
+        constructor(delay: kotlin.time.Duration) : this(delay.toJavaDuration())
+
+        override fun backoff(context: Context): Duration {
+            return duration
+        }
+    }
+
+    /**
+     * Fixed interval back off.
+     *
+     * @param duration The delay.
+     */
+    data class FixedInterval(val duration: Duration) : BackoffPolicy {
+
+        /**
+         * Constructs a fixed interval back off.
+         *
+         * @param interval The interval.
+         */
+        constructor(interval: kotlin.time.Duration) : this(interval.toJavaDuration())
+
+        override fun backoff(context: Context): Duration {
+            val targetRetryTime = context.startTime.plus(
+                duration.multipliedBy(context.retryCount.toLong()))
+            return if (targetRetryTime.isAfter(context.now)) {
+                Duration.between(context.now, targetRetryTime)
+            } else {
+                Duration.ZERO
+            }
+        }
+    }
+
+    /**
+     * Exponential backoff implementation.
+     *
+     * @property initDuration The initial duration.
+     * @property maxDuration The maximum duration.
+     */
+    data class Exponential(
+        val initDuration: Duration,
+        val maxDuration: Duration
+    ) : BackoffPolicy {
+
+        /**
+         * Constructs an Exponential backoff implementation.
+         *
+         * @param initDuration The initial duration.
+         * @param maxDuration The maximum duration.
+         */
+        constructor(initDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(initDuration.toJavaDuration(), maxDuration.toJavaDuration())
+
+        override fun backoff(context: Context): Duration {
+            var value = initDuration.toMillis()
+            for (i in 0 until context.retryCount) {
+                if (value < Long.MAX_VALUE / 2) {
+                    value = value shl 1
+                } else {
+                    value = Long.MAX_VALUE
+                    break
+                }
+                if (value > maxDuration.toMillis()) {
+                    break
+                }
+            }
+            value = minOf(value, maxDuration.toMillis())
+            return Duration.ofMillis(value)
+        }
+
+    }
 
     /**
      * No backoff.
      */
     @JvmField
     val NONE = BackoffPolicy { Duration.ZERO }
-
-    /**
-     * Fixed delay back off of specified seconds.
-     * @see FixedDelay
-     */
-    @JvmStatic
-    fun seconds(amount: Long) = FixedDelay(amount.seconds)
-
-    /**
-     * Fixed delay back off of specified milliseconds.
-     * 
-     * @see FixedDelay
-     */
-    @JvmStatic
-    fun millis(amount: Long) = FixedDelay(amount.milliseconds)
-}
-
-/**
- * Fixed delay back off.
- *
- * @param delay The delay.
- */
-data class FixedDelay(val delay: Duration) : BackoffPolicy {
-
-    /**
-     * Constructs a fixed delay back off.
-     *
-     * @param delay The interval.
-     */
-    constructor(delay: kotlin.time.Duration) : this(delay.toJavaDuration())
-
-    override fun backoff(context: Context): Duration {
-        return delay
-    }
-}
-
-/**
- * Fixed interval back off.
- *
- * @param interval The delay.
- */
-data class FixedInterval(val interval: Duration) : BackoffPolicy {
-
-    /**
-     * Constructs a fixed interval back off.
-     *
-     * @param interval The interval.
-     */
-    constructor(interval: kotlin.time.Duration) : this(interval.toJavaDuration())
-
-    override fun backoff(context: Context): Duration {
-        val targetRetryTime = context.startTime.plus(
-            interval.multipliedBy(context.retryCount.toLong()))
-        return if (targetRetryTime.isAfter(context.now)) {
-            Duration.between(context.now, targetRetryTime)
-        } else {
-            Duration.ZERO
-        }
-    }
-}
-
-/**
- * Exponential backoff implementation.
- *
- * @property initDuration The initial duration.
- * @property maxDuration The maximum duration.
- */
-data class Exponential(
-    val initDuration: Duration,
-    val maxDuration: Duration
-) : BackoffPolicy {
-
-    /**
-     * Constructs an Exponential backoff implementation.
-     *
-     * @param initDuration The initial duration.
-     * @param maxDuration The maximum duration.
-     */
-    constructor(initDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(initDuration.toJavaDuration(), maxDuration.toJavaDuration())
-
-    override fun backoff(context: Context): Duration {
-        var value = initDuration.toMillis()
-        for (i in 0 until context.retryCount) {
-            if (value < Long.MAX_VALUE / 2) {
-                value = value shl 1
-            } else {
-                value = Long.MAX_VALUE
-                break
-            }
-            if (value > maxDuration.toMillis()) {
-                break
-            }
-        }
-        value = minOf(value, maxDuration.toMillis())
-        return Duration.ofMillis(value)
-    }
-
 }

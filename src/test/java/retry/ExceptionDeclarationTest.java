@@ -31,7 +31,7 @@ public class ExceptionDeclarationTest {
     @Test
     public void testCallWithNoThrowsDoNotHaveAnExceptionThrowDeclaration() {
         RetryPolicy retryPolicy = RetryPolicies.NONE;
-        retryPolicy.callWithNoThrowDeclaration(() -> {
+        retryPolicy.call(() -> {
             throw new IOException();
         });
     }
@@ -40,7 +40,7 @@ public class ExceptionDeclarationTest {
     public void testOriginalExceptionCouldBeThrowByCallWithNoThrows() {
         RetryPolicy retryPolicy = RetryPolicies.NONE;
         IOException exception = new IOException("fun");
-        IOException got = assertThrowsExactly(IOException.class, () -> retryPolicy.callWithNoThrowDeclaration(() -> {
+        IOException got = assertThrowsExactly(IOException.class, () -> retryPolicy.callWithThrows(() -> {
             throw exception;
         }));
         assertThat(got).isSameAs(exception);
@@ -52,7 +52,7 @@ public class ExceptionDeclarationTest {
         IOException exception = new IOException("fun");
         IOException got = assertThrowsExactly(IOException.class, () -> {
             try {
-                retryPolicy.call(() -> {
+                retryPolicy.callWithThrows(() -> {
                     throw exception;
                 });
             } catch (IOException e) {
