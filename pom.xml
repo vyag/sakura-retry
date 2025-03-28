@@ -24,7 +24,7 @@
     <groupId>com.github.marks-yag</groupId>
     <artifactId>retry</artifactId>
     <url>https://github.com/marks-yag/retry</url>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0.RC1</version>
     <packaging>jar</packaging>
 
     <name>Retry</name>
