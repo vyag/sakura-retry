@@ -1,6 +1,9 @@
 [![Maven Central Version](https://img.shields.io/maven-central/v/com.github.marks-yag/retry)](https://maven-badges.herokuapp.com/maven-central/com.github.marks-yag/retry)
 ![Maven Central Last Update](https://img.shields.io/maven-central/last-update/com.github.marks-yag/retry)
 [![Java CI with Maven](https://github.com/marks-yag/retry/actions/workflows/maven.yml/badge.svg)](https://github.com/marks-yag/retry/actions/workflows/maven.yml)
+
+[English](README.md) | 中文
+
 # RetryX
 RetryX一个JVM上追求优雅（:p）的轻量级重试框架，支持高度可定制的的重试策略、退避策略和失败监听能力，支持同步调用和异步提交，并支持将定义好的重试策略以AOP的方式应用于代理对象。
 
@@ -39,7 +42,7 @@ RetryX采用Kotlin语言编写，同时也提供了Java友好的API支持。虽�
 RetryX可以通过Maven Central中心仓获取。
 
 ## 示例
-Kotlin语言可以使用构造函数的缺省参数直接创建`RetryPolicy`:
+Kotlin用户可以使用构造函数的缺省参数直接创建`RetryPolicy`:
 ```kotlin
 import retry.*
 
@@ -65,7 +68,7 @@ fun main() {
     }
 }
 ```
-Java语言建议通过`RetryBuilder`来创建`RetryPolicy`:
+Java用户建议通过`RetryBuilder`来创建`RetryPolicy`:
 ```java
 import retry.BackoffPolicy;
 import retry.Conditions;
@@ -124,7 +127,7 @@ public class Test {
     }
 }
 ```
-或者使用`RetryPolicy.callWithThrows`，它在方法签名中声明了`Throwable`异常，因此可以：
+或者使用`RetryPolicy.callWithThrows`，它在方法签名中声明了`Exception`异常，因此可以：
 ```java
 public class Test {
     public static void main(String[] args) {
