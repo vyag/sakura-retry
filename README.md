@@ -4,7 +4,10 @@
 
 English | [中文](README_cn.md)
 # Retry
-An elegant lightweight retry framework for JVM, supporting highly customizable retry policies, backoff strategies, and failure listeners, supporting both synchronous and asynchronous calls, and supporting the application of retry policies as AOP proxies.
+An elegant(🌝) lightweight retry framework for JVM languages, supporting:
+- Highly customizable retry policies, backoff strategies, and failure listeners.
+- Both synchronous and asynchronous calls
+- Retry policies as AOP proxies.
 
 # Design Principles
 Unlike SpringRetry, Retry does not provide annotation-based retry policies, but recommends users to define reusable retry policies through programming and apply them to the business logic that needs retries. This approach decouples the specific business logic implementation from the retry policy, allowing users to dynamically select different retry policies for the same business logic without limitations imposed by annotation declarations at compile time.
