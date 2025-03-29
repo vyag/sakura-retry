@@ -22,30 +22,13 @@ import java.util.function.Function
 /**
  * The Java-style builder for [RetryPolicy].
  */
-class RetryPolicyBuilder {
+class RetryPolicyBuilder(private val retryCondition: Condition, private val backoffPolicy: BackoffPolicy) {
+    
+    private val prototype: RetryPolicy = createPrototype(retryCondition, backoffPolicy)
 
-    private var retryCondition: Condition = PROTOTYPE.retryCondition
-    private var abortCondition: Condition = PROTOTYPE.abortCondition
-    private var backoffPolicy: BackoffPolicy = PROTOTYPE.backoffPolicy
-    private var failureListeners: MutableList<FailureListener> = PROTOTYPE.failureListeners.toMutableList()
-
-    /**
-     * Sets the retry condition.
-     *
-     * @param retryCondition the retry condition
-     */
-    fun retryCondition(retryCondition: Condition) = apply {
-        this.retryCondition = retryCondition
-    }
-
-    /**
-     * Updates the retry condition.
-     *
-     * @param updater the updater
-     */
-    fun updateRetryCondition(updater: Function<Condition, Condition>) = apply {
-        this.retryCondition = updater.apply(retryCondition)
-    }
+    private var abortCondition: Condition = prototype.abortCondition
+    
+    private var failureListeners: MutableList<FailureListener> = prototype.failureListeners.toMutableList()
     
     /**
      * Sets the abort condition.
@@ -64,14 +47,14 @@ class RetryPolicyBuilder {
     fun updateAbortCondition(updater: Function<Condition, Condition>) = apply {
         this.abortCondition = updater.apply(abortCondition)
     }
-    
+
     /**
-     * Sets the backoff policy.
+     * Adds the abort condition.
      *
-     * @param backoffPolicy the back off
+     * @param abortCondition the abort condition
      */
-    fun backoffPolicy(backoffPolicy: BackoffPolicy) : RetryPolicyBuilder = apply {
-        this.backoffPolicy = backoffPolicy
+    fun addAbortCondition(abortCondition: Condition) = apply {
+        this.abortCondition = this.abortCondition or abortCondition
     }
     
     /**
@@ -105,10 +88,10 @@ class RetryPolicyBuilder {
      * @return the [RetryPolicy]
      */
     fun build() : RetryPolicy {
-        return RetryPolicy(retryCondition = retryCondition, abortCondition = abortCondition, backoffPolicy, Collections.unmodifiableList(failureListeners))
+        return RetryPolicy(retryCondition = retryCondition, backoffPolicy = backoffPolicy, abortCondition = abortCondition, Collections.unmodifiableList(failureListeners))
     }
 
     private companion object {
-        private val PROTOTYPE = RetryPolicy()
+        private fun createPrototype(retryCondition: Condition, backoffPolicy: BackoffPolicy) = RetryPolicy(retryCondition, backoffPolicy)
     } 
 }

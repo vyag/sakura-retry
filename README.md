@@ -19,6 +19,7 @@ We can use constructor with default parameters to create `RetryPolicy` in Kotlin
 fun main() {
     val policy = RetryPolicy(
         retryCondition = MaxRetries(10),
+        backoffPolicy = FixedDelay(Duration.ofSeconds(1))
     )
     policy.call {
         throw IOException("error")
@@ -28,8 +29,8 @@ fun main() {
 Alternatively, you can also use `RetryBuilder` to create `RetryPolicy`:
 ```kotlin
 fun main() {
-    val policy = RetryBuilder()
-        .retryCondition(MaxRetries(10))
+    val policy = RetryBuilder(retryCondition = MaxRetries(10), backoffPolicy = FixedDelay(Duration.ofSeconds(1)))
+        .addFailureListener(MyFailureListener())
         .build()
     policy.call {
         throw IOException("error")
@@ -40,11 +41,11 @@ Java user was suggested to use `RetryBuilder` to create `RetryPolicy`:
 ```java
 public class Test {
     public static void main(String[] args) {
-        RetryPolicy policy = new RetryBuilder()
-           .retryCondition(new MaxRetries(10))
-           .build();
+        RetryPolicy policy = new RetryBuilder(new MaxRetries(10), FixedDelay(Duration.ofSeconds(1)))
+            .addFailureListener(MyFailureListener())
+            .build();
         try {
-            policy.callWithThrows(() -> {
+            policy.call(() -> {
                 throw new IOException("error");
             });
         } catch (IOException e) {

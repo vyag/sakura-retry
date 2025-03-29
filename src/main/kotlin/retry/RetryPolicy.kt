@@ -39,9 +39,9 @@ import kotlin.time.Duration.Companion.seconds
  * @param failureListeners The error handler.
  */
 class RetryPolicy @JvmOverloads constructor(
-    val retryCondition: Condition = Conditions.TRUE,
+    val retryCondition: Condition,
+    val backoffPolicy: BackoffPolicy,
     val abortCondition: Condition = Conditions.UNRECOVERABLE_EXCEPTIONS,
-    val backoffPolicy: BackoffPolicy = FixedDelay(1.seconds),
     val failureListeners: List<FailureListener> = listOf(FailureListeners.logging(Conditions.TRUE, Conditions.TRUE))
 ) {
 

@@ -24,11 +24,11 @@ import kotlin.test.Test
 
 class RetryBuilderTest {
     
-    private val default = RetryPolicy()
+    private val default = RetryPolicy(Conditions.TRUE, BackoffPolicies.NONE)
     
     @Test
     fun testDefault() {
-        val retry = RetryPolicyBuilder().build()
+        val retry = RetryPolicyBuilder(Conditions.TRUE, BackoffPolicies.NONE).build()
         assertThat(retry.retryCondition).isEqualTo(default.retryCondition)
         assertThat(retry.abortCondition).isEqualTo(default.abortCondition)
         assertThat(retry.backoffPolicy).isEqualTo(default.backoffPolicy)
@@ -39,19 +39,17 @@ class RetryBuilderTest {
     @Test
     fun testBuild() {
         val retryCondition = Conditions.TRUE
+        val backoff = FixedInterval(Duration.ZERO)
         val abortCondition = Conditions.FALSE
-        val backOff = FixedInterval(Duration.ZERO)
         val failureListener = Mockito.mock(FailureListener::class.java)
         
-        val retry = RetryPolicyBuilder()
-            .retryCondition(retryCondition)
+        val retry = RetryPolicyBuilder(retryCondition, backoff)
             .abortCondition(abortCondition)
-            .backoffPolicy(backOff)
             .addFailureListener(failureListener)
             .build()
         assertThat(retry.retryCondition).isSameAs(retryCondition)
         assertThat(retry.abortCondition).isSameAs(abortCondition)
-        assertThat(retry.backoffPolicy).isSameAs(backOff)
+        assertThat(retry.backoffPolicy).isSameAs(backoff)
         assertThat(retry.failureListeners).containsAll(default.failureListeners)
         assertThat(retry.failureListeners).contains(failureListener)
     }

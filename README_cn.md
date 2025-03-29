@@ -19,6 +19,7 @@ Kotlin用户可以使用带缺省参数的构造函数直接创建`RetryPolicy`:
 fun main() {
     val policy = RetryPolicy(
         retryCondition = MaxRetries(10),
+        backoffPolicy = FixedDelay(Duration.ofSeconds(1))
     )
     policy.call {
         throw IOException("error")
@@ -28,8 +29,7 @@ fun main() {
 当然也可以使用`RetryBuilder`来创建`RetryPolicy`:
 ```kotlin
 fun main() {
-    val policy = RetryBuilder()
-        .retryCondition(MaxRetries(10))
+    val policy = RetryBuilder(retryCondition = MaxRetries(10), backoffPolicy = FixedDelay(Duration.ofSeconds(1)))
         .addFailureListener(MyFailureListener())
         .build()
     policy.call {
@@ -41,12 +41,11 @@ Java用户建议通过`RetryBuilder`来创建`RetryPolicy`:
 ```java
 public class Test {
     public static void main(String[] args) {
-        RetryPolicy policy = new RetryBuilder()
-            .retryCondition(new MaxRetries(10))
+        RetryPolicy policy = new RetryBuilder(MaxRetries(10), FixedDelay(Duration.ofSeconds(1)))
             .addFailureListener(MyFailureListener())
             .build();
         try {
-            policy.callWithThrows(() -> {
+            policy.call(() -> {
                 throw new IOException("error");
             });
         } catch (IOException e) {
