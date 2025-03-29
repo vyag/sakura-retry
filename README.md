@@ -14,7 +14,7 @@ An elegant(🌝) lightweight retry framework for JVM languages, supporting:
 # Getting Started
 Retry is available on [Maven Central](https://mvnrepository.com/artifact/com.github.marks-yag/retry).
 
-Kotlin user can use the default parameters of the constructor to create `RetryPolicy`:
+We can use constructor with default parameters to create `RetryPolicy` in Kotlin:
 ```kotlin
 import retry.*
 fun main() {
@@ -26,7 +26,7 @@ fun main() {
     }
 }
 ```
-Alternatively, you can use `RetryBuilder` to create `RetryPolicy`:
+Alternatively, you can also use `RetryBuilder` to create `RetryPolicy`:
 ```kotlin
 import retry.*
 fun main() {
