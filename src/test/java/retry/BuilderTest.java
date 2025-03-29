@@ -34,51 +34,19 @@ import java.util.Collections;
 public class BuilderTest {
     
     @Test
-    @Disabled("Do compile failed is expected.")
-    public void testBuildCompiledWithJvmFields() {
-        RetryPolicy retryPolicy = new RetryPolicyBuilder()
-            .retryCondition(Conditions.TRUE)
-            .retryCondition(Conditions.FALSE)
-            .retryCondition(new MaxRetries(5))
-            .retryCondition(new MaxTimeElapsed(Duration.ofSeconds(10)))
-            .updateRetryCondition(condition -> condition.and(new MaxRetries(3)))
-            .abortCondition(Conditions.TRUE)
-            .abortCondition(Conditions.FALSE)
-            .updateAbortCondition(condition -> condition.and(new MaxTimeElapsed(Duration.ofSeconds(10))))
-            .backoffPolicy(BackoffPolicies.NONE)
-            .backoffPolicy(new FixedDelay(Duration.ofSeconds(1)))
-            .backoffPolicy(new FixedInterval(Duration.ofSeconds(1)))
-            .addFailureListener(FailureListeners.logging(Conditions.TRUE, Conditions.FALSE))
-            .addFailureListener(new FailureListeners.SimpleLoggingFailureListener(Conditions.TRUE, Conditions.FALSE))
-            .failureListeners(Collections.emptyList())
-            .clearFailureListeners()
-            .build();
-        try {
-            retryPolicy.call(() -> {
-                throw new IOException();
-            });
-        } catch (IOException e) {
-        } catch (Exception e) {
-            // ignore
-        }
-    }
-    
-    @Test
     public void testBuild() {
         Condition retryCondition = new MaxRetries(5);
+        BackoffPolicy backoff = new FixedDelay(Duration.ofSeconds(1));
         Condition abortCondition = new MaxTimeElapsed(Duration.ofSeconds(10));
-        BackoffPolicy backOff = new FixedDelay(Duration.ofSeconds(1));
-        FailureListener errorHandler = (context, allowRetry, backOffDuration) -> {};
-        RetryPolicy retryPolicy = new RetryPolicyBuilder()
-            .retryCondition(retryCondition)
+        FailureListener failureListener = (context, allowRetry, backOffDuration) -> {};
+        RetryPolicy retryPolicy = new RetryPolicyBuilder(retryCondition, backoff)
             .abortCondition(abortCondition)
-            .backoffPolicy(backOff)
-            .addFailureListener(errorHandler)
+            .addFailureListener(failureListener)
             .build();
         assertThat(retryPolicy.getRetryCondition()).isSameAs(retryCondition);
         assertThat(retryPolicy.getAbortCondition()).isSameAs(abortCondition);
-        assertThat(retryPolicy.getBackoffPolicy()).isSameAs(backOff);
-        assertThat(retryPolicy.getFailureListeners()).containsAll(new RetryPolicy().getFailureListeners());
-        assertThat(retryPolicy.getFailureListeners()).contains(errorHandler);
+        assertThat(retryPolicy.getBackoffPolicy()).isSameAs(backoff);
+        assertThat(retryPolicy.getFailureListeners()).containsAll(new RetryPolicy(Conditions.TRUE, BackoffPolicies.NONE).getFailureListeners());
+        assertThat(retryPolicy.getFailureListeners()).contains(failureListener);
     }
 }
