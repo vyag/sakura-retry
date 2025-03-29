@@ -20,39 +20,19 @@ package retry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 public class ExceptionDeclarationTest {
     
-    @Disabled("Do compile failed is expected.")
     @Test
-    public void testCallWithNoThrowsDoNotHaveAnExceptionThrowDeclaration() {
-        RetryPolicy retryPolicy = RetryPolicies.NONE;
-        retryPolicy.call(() -> {
-            throw new IOException();
-        });
-    }
-    
-    @Test
-    public void testOriginalExceptionCouldBeThrowByCallWithNoThrows() {
-        RetryPolicy retryPolicy = RetryPolicies.NONE;
-        IOException exception = new IOException("fun");
-        IOException got = assertThrowsExactly(IOException.class, () -> retryPolicy.callWithThrows(() -> {
-            throw exception;
-        }));
-        assertThat(got).isSameAs(exception);
-    }
-
-    @Test
-    public void testCallWithThrowsDeclaration() {
+    public void testOriginalExceptionCouldBeThrowByCall() {
         RetryPolicy retryPolicy = RetryPolicies.NONE;
         IOException exception = new IOException("fun");
         IOException got = assertThrowsExactly(IOException.class, () -> {
             try {
-                retryPolicy.callWithThrows(() -> {
+                retryPolicy.call(() -> {
                     throw exception;
                 });
             } catch (IOException e) {

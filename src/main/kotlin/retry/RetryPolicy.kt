@@ -54,28 +54,14 @@ class RetryPolicy @JvmOverloads constructor(
 
     /**
      * Calls the given function with retry.
-     *
+     * 
      * @param name The optional name of the function.
      * @param function The function to call.
      * @return The result of the function.
      * @throws Exception The original exception by the function call if the retry is aborted.
      */
     @JvmOverloads
-    @JvmName("callWithThrows")
     @Throws(Exception::class)
-    internal fun <T> callWithThrows(name: String = "call", function: Callable<T>): T {
-        return call(name, function)
-    }
-
-    /**
-     * Calls the given function with retry.
-     * 
-     * @param name The optional name of the function.
-     * @param function The function to call.
-     * @return The result of the function.
-     * @throws Throwable The original exception by the function call if the retry is aborted.
-     */
-    @JvmOverloads
     fun <T> call(name: String = "call", function: Callable<T>): T {
         var retryCount = 0
         val startTime = Instant.now()
