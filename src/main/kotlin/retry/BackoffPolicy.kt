@@ -14,13 +14,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-@file:JvmName("Backoffs")
 package retry
 
 import java.time.Duration
 
 /**
- * Backoff strategy.
+ * Backoff policy.
  */
 fun interface BackoffPolicy {
 
@@ -31,6 +30,21 @@ fun interface BackoffPolicy {
      * @return the backoff duration
      */
     fun backoff(context: Context): Duration
+    
+    /**
+     * Returns a new backoff policy that is the sum of this backoff policy and the given backoff policy.
+     *
+     * @param backoffPolicy the backoff policy to add
+     * @return a new backoff policy that is the sum of this backoff policy and the given backoff policy
+     */
+    infix operator fun plus(backoffPolicy: BackoffPolicy): BackoffPolicy {
+        val self = this
+        return object : BackoffPolicy {
+            override fun backoff(context: Context): Duration {
+                return self.backoff(context) + backoffPolicy.backoff(context)
+            }
+        }
+    }
 }
 
 
