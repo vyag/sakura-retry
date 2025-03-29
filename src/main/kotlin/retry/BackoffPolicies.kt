@@ -17,6 +17,7 @@
 package retry
 
 import java.time.Duration
+import kotlin.random.Random
 import kotlin.time.toJavaDuration
 
 object BackoffPolicies {
@@ -101,6 +102,32 @@ object BackoffPolicies {
             return Duration.ofMillis(value)
         }
 
+    }
+    
+    /**
+     * Constructs a random backoff implementation.
+     *
+     * @param minDuration The minimum duration.
+     * @param maxDuration The maximum duration.
+     */
+    data class RandomBackoff(val minDuration: Duration, val maxDuration: Duration) : BackoffPolicy {
+
+        /**
+         * Constructs a random backoff implementation.
+         *
+         * @param minDuration The minimum duration.
+         * @param maxDuration The maximum duration.
+         */
+        constructor(minDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(minDuration.toJavaDuration(), maxDuration.toJavaDuration())
+        
+        override fun backoff(context: Context): Duration {
+            val value = random.nextLong(minDuration.toMillis(), maxDuration.toMillis())
+            return Duration.ofMillis(value)
+        }
+        
+        private companion object {
+            private val random = Random(System.currentTimeMillis())
+        }
     }
 
     /**
