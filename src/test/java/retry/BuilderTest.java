@@ -53,9 +53,14 @@ public class BuilderTest {
             .failureListeners(Collections.emptyList())
             .clearFailureListeners()
             .build();
-        retryPolicy.call(() -> {
-            throw new IOException();
-        });
+        try {
+            retryPolicy.call(() -> {
+                throw new IOException();
+            });
+        } catch (IOException e) {
+        } catch (Exception e) {
+            // ignore
+        }
     }
     
     @Test

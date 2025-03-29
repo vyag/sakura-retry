@@ -31,9 +31,9 @@ object BackoffPolicies {
         /**
          * Constructs a fixed delay back off.
          *
-         * @param delay The interval.
+         * @param duration The dealy.
          */
-        constructor(delay: kotlin.time.Duration) : this(delay.toJavaDuration())
+        constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
 
         override fun backoff(context: Context): Duration {
             return duration
@@ -43,16 +43,16 @@ object BackoffPolicies {
     /**
      * Fixed interval back off.
      *
-     * @param duration The delay.
+     * @param duration The interval.
      */
     data class FixedInterval(val duration: Duration) : BackoffPolicy {
 
         /**
          * Constructs a fixed interval back off.
          *
-         * @param interval The interval.
+         * @param duration The interval.
          */
-        constructor(interval: kotlin.time.Duration) : this(interval.toJavaDuration())
+        constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
 
         override fun backoff(context: Context): Duration {
             val targetRetryTime = context.startTime.plus(

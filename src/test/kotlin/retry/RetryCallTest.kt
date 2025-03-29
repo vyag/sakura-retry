@@ -120,8 +120,6 @@ class RetryCallTest {
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
         
-        retryPolicy.callWithThrows {  }
-
         assertFailsWith<IOException> {
             retryPolicy.call {
                 mock.call()
