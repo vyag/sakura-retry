@@ -7,37 +7,13 @@ English | [中文](README_cn.md)
 An elegant(🌝) lightweight retry framework for JVM languages, supporting:
 - Highly customizable retry policies, backoff strategies, and failure listeners.
 - Both synchronous and asynchronous calls
-- Retry policies as AOP proxies.
+- AOP retry policy enhancement.
 
-# Design Principles
-Unlike SpringRetry, Retry does not provide annotation-based retry policies, but recommends users to define reusable retry policies through programming and apply them to the business logic that needs retries. This approach decouples the specific business logic implementation from the retry policy, allowing users to dynamically select different retry policies for the same business logic without limitations imposed by annotation declarations at compile time.
-Retry policies are defined by combining the following elements, and provide built-in implementations:
-- Retry condition: Defines when to retry.
-- Termination condition: Defines when to terminate retries. When the retry condition is not met or the termination condition is met, retries will stop.
-- Backoff strategy: Defines the waiting time interval between retries.
-- Failure listener: Defines the processing logic when retries fail. Includes logging output, custom recovery logic, etc.
-Unlike other retry frameworks, Retry does not provide retry policies based on return values, but only through exceptions. Callers can encapsulate unexpected return values as exceptions and throw them.
-# Supported Languages
-Retry is written in Kotlin and provides Java-friendly APIs. Although not tested, it should theoretically be compatible with other JVM languages like Scala.
-# Built-in Retry Conditions
-- `Conditions.MaxRetries(amount)`: Maximum number of retries (not including the first execution).
-- `Conditions.MaxAttempts(amount)`: Maximum number of attempts (including the first execution).
-- `Conditions.MaxTimeElapsed(duration)`: Maximum time elapsed for attempts.
-- `Conditions.ExceptionOf(types)`: Specified exception types.
-- `Conditions.TRUE`: Always returns true.
-- `Conditions.FALSE`: Always returns false.
-- `Conditions.UNRECOVERABLE_EXCEPTIONS`: Unrecoverable exception types (like `InterruptedException`, `RuntimeException`, and `Error`), which are also the default termination condition for `RetryPolicy`.
-# Built-in Backoff Strategies
-- `BackoffPolicies.FixedDelay`: Fixed backoff time.
-- `BackoffPolicies.FixedInterval`: Fixed interval between attempts. If the execution time of the attempt exceeds the interval, the next attempt will start immediately.
-- `BackoffPolicies.Exponential(initDuration, maxDuration)`: Exponential backoff.
-- `BackoffPolicies.NONE`: No backoff, which is also the default backoff strategy for `RetryPolicy`.
-# Built-in Failure Listeners
-- `FailureListeners.SimpleLoggingFailureListener(log, stack)`: Simple logging output. Also the default failure listener for `RetryPolicy`.
+**Retry** is written in Kotlin and provides Java-friendly APIs. 
+
 # Getting Started
-RetryX is available on Maven Central.
+Retry is available on [Maven Central](https://mvnrepository.com/artifact/com.github.marks-yag/retry).
 
-# Example
 Kotlin user can use the default parameters of the constructor to create `RetryPolicy`:
 ```kotlin
 import retry.*
@@ -76,6 +52,31 @@ public class Test {
     }
 }
 ```
+
+# Design Principles
+Unlike SpringRetry, Retry does not provide annotation-based retry policies, but recommends users to define reusable retry policies through programming and apply them to the business logic that needs retries. This approach decouples the specific business logic implementation from the retry policy, allowing users to dynamically select different retry policies for the same business logic without limitations imposed by annotation declarations at compile time.
+Retry policies are defined by combining the following elements, and provide built-in implementations:
+- Retry condition: Defines when to retry.
+- Termination condition: Defines when to terminate retries. When the retry condition is not met or the termination condition is met, retries will stop.
+- Backoff strategy: Defines the waiting time interval between retries.
+- Failure listener: Defines the processing logic when retries fail. Includes logging output, custom recovery logic, etc.
+Unlike other retry frameworks, Retry does not provide retry policies based on return values, but only through exceptions. Callers can encapsulate unexpected return values as exceptions and throw them.
+
+# Built-in Retry Conditions
+- `Conditions.MaxRetries(amount)`: Maximum number of retries (not including the first execution).
+- `Conditions.MaxAttempts(amount)`: Maximum number of attempts (including the first execution).
+- `Conditions.MaxTimeElapsed(duration)`: Maximum time elapsed for attempts.
+- `Conditions.ExceptionOf(types)`: Specified exception types.
+- `Conditions.TRUE`: Always returns true.
+- `Conditions.FALSE`: Always returns false.
+- `Conditions.UNRECOVERABLE_EXCEPTIONS`: Unrecoverable exception types (like `InterruptedException`, `RuntimeException`, and `Error`), which are also the default termination condition for `RetryPolicy`.
+# Built-in Backoff Strategies
+- `BackoffPolicies.FixedDelay`: Fixed backoff time.
+- `BackoffPolicies.FixedInterval`: Fixed interval between attempts. If the execution time of the attempt exceeds the interval, the next attempt will start immediately.
+- `BackoffPolicies.Exponential(initDuration, maxDuration)`: Exponential backoff.
+- `BackoffPolicies.NONE`: No backoff, which is also the default backoff strategy for `RetryPolicy`.
+# Built-in Failure Listeners
+- `FailureListeners.SimpleLoggingFailureListener(log, stack)`: Simple logging output. Also the default failure listener for `RetryPolicy`.
 
 # Additional tips for Java users
 There are different options for checked exception. For Kotlin users, `RetryPolicy.call(Callable)` will throw the exception thrown by the last execution of the Callable, even though its method signature does not declare any exceptions, which is recommended in Kotlin. Callers can ignore the method signature based on actual needs to catch exceptions.
