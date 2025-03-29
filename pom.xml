@@ -30,7 +30,7 @@
     <name>Retry</name>
 
     <description>
-        Retry is an elegant JVM library for transient failure handling, with customizable retries, backoff strategies, error handling, async support and proxy feature.
+        An elegant(🌝) lightweight retry framework for JVM languages
     </description>
 
     <properties>
