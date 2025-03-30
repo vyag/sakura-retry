@@ -41,8 +41,8 @@ Java user was suggested to use `RetryBuilder` to create `RetryPolicy`:
 ```java
 public class Test {
     public static void main(String[] args) {
-        RetryPolicy policy = new RetryBuilder(new MaxRetries(10), FixedDelay(Duration.ofSeconds(1)))
-            .addFailureListener(MyFailureListener())
+        RetryPolicy policy = new RetryBuilder(new MaxRetries(10), new FixedDelay(Duration.ofSeconds(1)))
+            .addFailureListener(new MyFailureListener())
             .build();
         try {
             policy.call(() -> {
