@@ -17,10 +17,9 @@
 package retry
 
 import org.slf4j.LoggerFactory
-import retry.BackoffPolicies.FixedDelay
 import retry.internal.BackoffExecutor
+import retry.internal.DefaultBackoffExecutor
 import retry.internal.RetryHandler
-import java.lang.Exception
 import java.lang.reflect.Proxy
 import java.time.Duration
 import java.time.Instant
@@ -28,7 +27,6 @@ import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration.Companion.seconds
 
 /**
  * The retry class.
@@ -48,9 +46,7 @@ class RetryPolicy @JvmOverloads constructor(
     private val condition = !abortCondition and retryCondition
 
     @JvmSynthetic
-    internal var backoffExecutor: BackoffExecutor = BackoffExecutor {
-        Thread.sleep(it.toMillis(), (it.toNanos() % 1e6).toInt())
-    }
+    internal var backoffExecutor: BackoffExecutor = DefaultBackoffExecutor()
 
     /**
      * Calls the given function with retry.
@@ -79,7 +75,7 @@ class RetryPolicy @JvmOverloads constructor(
                     failureListener.onFailure(context, allowRetry, backOff)
                 }
                 if (allowRetry) {
-                    backoffExecutor.backOff(backOff)
+                    backoffExecutor.backoff(backOff)
                     if (condition.check(context)) {
                         retryCount++
                         continue

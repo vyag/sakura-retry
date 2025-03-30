@@ -76,9 +76,9 @@ Unlike some other retry frameworks, **Retry** does not provide retry policies ba
 - `Conditions.FALSE`: Always returns false.
 - `Conditions.UNRECOVERABLE_EXCEPTIONS`: Unrecoverable exception types (like `InterruptedException`, `RuntimeException`, and `Error`), which are also the default termination condition for `RetryPolicy`.
 # Built-in Backoff Strategies
-- `BackoffPolicies.FixedDelay(duration)`: Fixed backoff time.
-- `BackoffPolicies.FixedInterval(duration)`: Fixed interval between attempts. If the execution time of the attempt exceeds the interval, the next attempt will start immediately.
-- `BackoffPolicies.Exponential(initDuration, maxDuration)`: Exponential backoff.
+- `BackoffPolicies.FixedDelay(duration)`: Fixed delay backoff.
+- `BackoffPolicies.Exponential(initDuration, maxDuration)`: Exponential delay backoff.
+- `BackoffPolicies.Random(minDuration, maxDuration)`: Random delay backoff.
 - `BackoffPolicies.NONE`: No backoff, which is also the default backoff strategy for `RetryPolicy`.
 # Built-in Failure Listeners
 - `FailureListeners.SimpleLoggingFailureListener(log, stack)`: Simple logging output. Also the default failure listener for `RetryPolicy`.

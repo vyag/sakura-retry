@@ -42,31 +42,6 @@ object BackoffPolicies {
     }
 
     /**
-     * Fixed interval back off.
-     *
-     * @param duration The interval.
-     */
-    data class FixedInterval(val duration: Duration) : BackoffPolicy {
-
-        /**
-         * Constructs a fixed interval back off.
-         *
-         * @param duration The interval.
-         */
-        constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
-
-        override fun backoff(context: Context): Duration {
-            val targetRetryTime = context.startTime.plus(
-                duration.multipliedBy(context.retryCount.toLong()))
-            return if (targetRetryTime.isAfter(context.now)) {
-                Duration.between(context.now, targetRetryTime)
-            } else {
-                Duration.ZERO
-            }
-        }
-    }
-
-    /**
      * Exponential backoff implementation.
      *
      * @property initDuration The initial duration.
@@ -105,12 +80,17 @@ object BackoffPolicies {
     }
     
     /**
-     * Constructs a random backoff implementation.
+     * Constructs a random backoff implementation in the range of [minDuration] to [maxDuration].
+     * 
+     * [minDuration] must be less than or equal to [maxDuration], otherwise an [IllegalArgumentException] will be thrown.
+     * 
+     * Zero and negative durations are allowed.
      *
+     * @throws IllegalArgumentException if [minDuration] is greater than [maxDuration].
      * @param minDuration The minimum duration.
      * @param maxDuration The maximum duration.
      */
-    data class RandomBackoff(val minDuration: Duration, val maxDuration: Duration) : BackoffPolicy {
+    data class Random(val minDuration: Duration, val maxDuration: Duration) : BackoffPolicy {
 
         /**
          * Constructs a random backoff implementation.
@@ -119,6 +99,10 @@ object BackoffPolicies {
          * @param maxDuration The maximum duration.
          */
         constructor(minDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(minDuration.toJavaDuration(), maxDuration.toJavaDuration())
+        
+        init {
+            require(minDuration <= maxDuration) { "minDuration must be less than or equal to maxDuration" }
+        }
         
         override fun backoff(context: Context): Duration {
             val value = random.nextLong(minDuration.toMillis(), maxDuration.toMillis())

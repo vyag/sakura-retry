@@ -20,16 +20,12 @@ package retry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import retry.BackoffPolicies.FixedDelay;
-import retry.BackoffPolicies.FixedInterval;
 import retry.Conditions.MaxRetries;
 import retry.Conditions.MaxTimeElapsed;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.time.Duration;
-import java.util.Collections;
 
 public class BuilderTest {
     

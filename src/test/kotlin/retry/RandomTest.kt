@@ -14,28 +14,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.BackoffPolicies.FixedInterval
-import java.time.Duration
+import org.junit.jupiter.api.RepeatedTest
 import java.time.Instant
-import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
-class FixedIntervalTest {
+class RandomTest {
 
-    @Test
-    fun testAlign() {
-        val backoff = FixedInterval(1.seconds)
-        assertThat(backoff.backoff(Context(Instant.MIN, Instant.MIN.plusMillis(2500), 3, RuntimeException())))
-            .isEqualTo(Duration.ofMillis(500))
-    }
+    private val error = Exception()
 
-    @Test
-    fun testTimeout() {
-        val backoff = FixedInterval(1.seconds)
-        assertThat(backoff.backoff(Context(Instant.MIN, Instant.MIN.plusMillis(2500), 2, RuntimeException())))
-            .isEqualTo(Duration.ofMillis(0))
+    @RepeatedTest(1000)
+    fun testBackoffDistribution() {
+        val backoff = BackoffPolicies.Random((-100).seconds, 100.seconds)
+        val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error)).toMillis()
+        assertThat(backoffDuration).isBetween(-100000, 100000)
     }
 }
