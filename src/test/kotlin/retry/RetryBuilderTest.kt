@@ -18,7 +18,7 @@ package retry
 
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
-import retry.BackoffPolicies.FixedInterval
+import retry.BackoffPolicies.FixedDelay
 import java.time.Duration
 import kotlin.test.Test
 
@@ -39,7 +39,7 @@ class RetryBuilderTest {
     @Test
     fun testBuild() {
         val retryCondition = Conditions.TRUE
-        val backoff = FixedInterval(Duration.ZERO)
+        val backoff = FixedDelay(Duration.ZERO)
         val abortCondition = Conditions.FALSE
         val failureListener = Mockito.mock(FailureListener::class.java)
         

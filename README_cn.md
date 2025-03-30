@@ -79,8 +79,8 @@ public class Test {
 
 # 内置退避策略
 - `BackoffPolicies.FixedDelay(duration)`：固定的退避时间。
-- `BackoffPolicies.FixedInterval(duration)`：固定的开始时间间隔，如果某次尝试执行的时间超过了间隔，那么下一次尝试将立即开始。
 - `BackoffPolicies.Exponential(initDuration, maxDuration)`：指数退避。
+- `BackoffPolicies.Random(initDuration, maxDuration)`：随机退避。
 - `BackoffPolicies.NONE`：不进行退避，它也是`RetryPolicy`的默认退避策略。
 - 
 # 内置失败监听器

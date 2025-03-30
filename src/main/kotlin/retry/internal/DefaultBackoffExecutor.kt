@@ -14,22 +14,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package retry.internal
 
-package retry
-
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.RepeatedTest
 import java.time.Duration
-import java.time.Instant
 
-class RandomBackoffTest {
-
-    private val error = Exception()
-
-    @RepeatedTest(1000)
-    fun testBackoffDistribution() {
-        val backoff = BackoffPolicies.RandomBackoff(Duration.ofSeconds(-100), Duration.ofMillis(100))
-        val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error)).toMillis()
-        assertThat(backoffDuration).isBetween(-100000, 100000)
+class DefaultBackoffExecutor(
+    private val executor: (Duration) -> Unit = {
+        Thread.sleep(it.toMillis(), (it.toNanos() % 1e6).toInt())
     }
+) : BackoffExecutor {
+
+    override fun backoff(duration: Duration) {
+        if (!duration.isNegative && !duration.isZero) {
+            executor.invoke(duration)
+        }
+    }
+
 }

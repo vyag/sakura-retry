@@ -21,6 +21,6 @@ import java.time.Duration
 
 internal fun interface BackoffExecutor {
 
-    fun backOff(duration: Duration)
-
+    fun backoff(duration: Duration)
+    
 }
