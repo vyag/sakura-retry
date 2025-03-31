@@ -24,13 +24,13 @@ import kotlin.test.Test
 
 class RetryBuilderTest {
     
-    private val default = RetryPolicy(Conditions.TRUE, BackoffPolicies.NONE)
+    private val default = RetryPolicy.Builder(Rules.TRUE, BackoffPolicies.NONE).build()
     
     @Test
     fun testDefault() {
-        val retry = RetryPolicyBuilder(Conditions.TRUE, BackoffPolicies.NONE).build()
-        assertThat(retry.retryCondition).isEqualTo(default.retryCondition)
-        assertThat(retry.abortCondition).isEqualTo(default.abortCondition)
+        val retry = RetryPolicy.Builder(Rules.TRUE, BackoffPolicies.NONE).build()
+        assertThat(retry.retryRule).isEqualTo(default.retryRule)
+        assertThat(retry.abortRule).isEqualTo(default.abortRule)
         assertThat(retry.backoffPolicy).isEqualTo(default.backoffPolicy)
         assertThat(retry.failureListeners).isEqualTo(default.failureListeners)
         assertThat(retry).isNotSameAs(default)
@@ -38,17 +38,17 @@ class RetryBuilderTest {
     
     @Test
     fun testBuild() {
-        val retryCondition = Conditions.TRUE
+        val retryRule = Rules.TRUE
         val backoff = FixedDelay(Duration.ZERO)
-        val abortCondition = Conditions.FALSE
+        val abortRule = Rules.FALSE
         val failureListener = Mockito.mock(FailureListener::class.java)
         
-        val retry = RetryPolicyBuilder(retryCondition, backoff)
-            .abortCondition(abortCondition)
+        val retry = RetryPolicy.Builder(retryRule, backoff)
+            .abortRule(abortRule)
             .addFailureListener(failureListener)
             .build()
-        assertThat(retry.retryCondition).isSameAs(retryCondition)
-        assertThat(retry.abortCondition).isSameAs(abortCondition)
+        assertThat(retry.retryRule).isSameAs(retryRule)
+        assertThat(retry.abortRule).isSameAs(abortRule)
         assertThat(retry.backoffPolicy).isSameAs(backoff)
         assertThat(retry.failureListeners).containsAll(default.failureListeners)
         assertThat(retry.failureListeners).contains(failureListener)

@@ -20,8 +20,8 @@ package retry;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import retry.BackoffPolicies.FixedDelay;
-import retry.Conditions.MaxRetries;
-import retry.Conditions.MaxTimeElapsed;
+import retry.Rules.MaxAttempts;
+import retry.Rules.MaxTimeElapsed;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,18 +31,18 @@ public class BuilderTest {
     
     @Test
     public void testBuild() {
-        Condition retryCondition = new MaxRetries(5);
+        Rule retryRule = new MaxAttempts(5);
         BackoffPolicy backoff = new FixedDelay(Duration.ofSeconds(1));
-        Condition abortCondition = new MaxTimeElapsed(Duration.ofSeconds(10));
+        Rule abortRule = new MaxTimeElapsed(Duration.ofSeconds(10));
         FailureListener failureListener = (context, allowRetry, backOffDuration) -> {};
-        RetryPolicy retryPolicy = new RetryPolicyBuilder(retryCondition, backoff)
-            .abortCondition(abortCondition)
+        RetryPolicy retryPolicy = new RetryPolicy.Builder(retryRule, backoff)
+            .abortRule(abortRule)
             .addFailureListener(failureListener)
             .build();
-        assertThat(retryPolicy.getRetryCondition()).isSameAs(retryCondition);
-        assertThat(retryPolicy.getAbortCondition()).isSameAs(abortCondition);
+        assertThat(retryPolicy.getRetryRule()).isSameAs(retryRule);
+        assertThat(retryPolicy.getAbortRule()).isSameAs(abortRule);
         assertThat(retryPolicy.getBackoffPolicy()).isSameAs(backoff);
-        assertThat(retryPolicy.getFailureListeners()).containsAll(new RetryPolicy(Conditions.TRUE, BackoffPolicies.NONE).getFailureListeners());
+        assertThat(retryPolicy.getFailureListeners()).containsAll(new RetryPolicy.Builder(Rules.TRUE, BackoffPolicies.NONE).build().getFailureListeners());
         assertThat(retryPolicy.getFailureListeners()).contains(failureListener);
     }
 }

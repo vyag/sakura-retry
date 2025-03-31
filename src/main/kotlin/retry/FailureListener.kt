@@ -24,7 +24,7 @@ import java.time.Duration
 fun interface FailureListener {
 
     /**
-     * 
+     * Invoked when an attempt fails. 
      *
      * @param context the context of the retry
      * @param allowRetry true if the retry is allowed

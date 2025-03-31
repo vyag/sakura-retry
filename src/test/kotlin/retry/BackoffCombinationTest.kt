@@ -21,6 +21,7 @@ import org.assertj.core.api.Assertions.assertThat
 import java.time.Duration
 import java.time.Instant
 import kotlin.test.Test
+import kotlin.time.Duration.Companion.seconds
 
 class BackoffCombinationTest {
 
@@ -28,7 +29,7 @@ class BackoffCombinationTest {
 
     @Test
     fun testBackoffCombination() {
-        val backoff = BackoffPolicies.FixedDelay(Duration.ofSeconds(1)) + BackoffPolicies.FixedDelay(Duration.ofSeconds(1))
+        val backoff = BackoffPolicies.FixedDelay(1.seconds) + BackoffPolicies.FixedDelay(1.seconds)
         val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error))
         assertThat(backoffDuration).isEqualTo(Duration.ofSeconds(2))
     }

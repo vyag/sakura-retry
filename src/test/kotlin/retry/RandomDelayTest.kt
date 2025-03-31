@@ -20,15 +20,14 @@ package retry
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.RepeatedTest
 import java.time.Instant
-import kotlin.time.Duration.Companion.seconds
 
-class RandomTest {
+class RandomDelayTest {
 
     private val error = Exception()
 
     @RepeatedTest(1000)
     fun testBackoffDistribution() {
-        val backoff = BackoffPolicies.Random((-100).seconds, 100.seconds)
+        val backoff = BackoffPolicies.randomDelayInSeconds(-100, 100)
         val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error)).toMillis()
         assertThat(backoffDuration).isBetween(-100000, 100000)
     }

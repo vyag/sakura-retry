@@ -39,11 +39,7 @@ fun interface BackoffPolicy {
      */
     infix operator fun plus(backoffPolicy: BackoffPolicy): BackoffPolicy {
         val self = this
-        return object : BackoffPolicy {
-            override fun backoff(context: Context): Duration {
-                return self.backoff(context) + backoffPolicy.backoff(context)
-            }
-        }
+        return BackoffPolicy { context -> self.backoff(context) + backoffPolicy.backoff(context) }
     }
 }
 
