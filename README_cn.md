@@ -14,22 +14,12 @@
 Retry可以通过[Maven 中心仓](https://mvnrepository.com/artifact/com.github.marks-yag/retry)获取。
 
 ## 示例
-Kotlin用户可以使用带缺省参数的构造函数直接创建`RetryPolicy`:
+
+Kotlin:
+
 ```kotlin
 fun main() {
-    val policy = RetryPolicy(
-        retryRule = MaxRetries(10),
-        backoffPolicy = FixedDelay(Duration.ofSeconds(1))
-    )
-    policy.call {
-        throw IOException("error")
-    }
-}
-```
-当然也可以使用`RetryBuilder`来创建`RetryPolicy`:
-```kotlin
-fun main() {
-    val policy = RetryBuilder(retryRule = MaxRetries(10), backoffPolicy = FixedDelay(Duration.ofSeconds(1)))
+    val policy = RetryPolicy.Builder(retryRule = MaxAttempts(10), backoffPolicy = FixedDelay(Duration.ofSeconds(1)))
         .addFailureListener(MyFailureListener())
         .build()
     policy.call {
@@ -37,11 +27,14 @@ fun main() {
     }
 }
 ```
-Java用户建议通过`RetryBuilder`来创建`RetryPolicy`:
+or Java:
+
 ```java
+import retry.RetryPolicy;
+
 public class Test {
     public static void main(String[] args) {
-        RetryPolicy policy = new RetryBuilder(MaxRetries(10), new FixedDelay(Duration.ofSeconds(1)))
+        RetryPolicy policy = new RetryPolicy.Builder(MaxAttempts(10), new FixedDelay(Duration.ofSeconds(1)))
             .addFailureListener(new MyFailureListener())
             .build();
         try {
@@ -68,30 +61,44 @@ public class Test {
 
 不同于另一些重试框架，**Retry**目前也**不提供**基于返回值的重试策略，而是**仅通过异常**来判断是否需要重试。调用者可以通过自己将不符合预期的返回值封装为异常抛出。
 
-# 重试条件
+# 重试规则
 `Rules`下面提供了一些内置的`Rule`：
-- `Rules.MaxRetries(amount)`：最大重试（不包含首次执行）次数。
 - `Rules.MaxAttempts(amount)`：最大尝试（包含首次执行）次数。
 - `Rules.MaxTimeElapsed(duration)`：最大尝试等待时间。
-- `Rules.InstanceOf(types)`：指定的异常类型。
+- `Rules.InstanceIn(types)`：指定的异常类型。
 - `Rules.TRUE`：总是返回true。
 - `Rules.FALSE`：总是返回false。
 - `Rules.UNRECOVERABLE_EXCEPTIONS`：按照通常认知，没有重试价值的异常类型（比如`InterruptedException`, `RuntimeException`和`Error`），也是`RetryPolicy`的默认终止条件。
 
-`Rule`支持逻辑组合，比如在Java中我们可以：
+`Rule`支持逻辑组合：
+Kotlin:
+```kotlin
+val rule = MaxAttempts(10) and MaxTimeElapsed(Duration.ofSeconds(10))
+```
+Java:
 ```java
-Rule rule = ExceptionOf(IOException.class)
-    .and(MaxAttempts(10))
-    .or(MaxTimeElapsed(Duration.ofSeconds(10)));
+Rule rule = MaxAttempts(10).and(MaxTimeElapsed(Duration.ofSeconds(10)));
+```
 
-# 内置退避策略
+# 退避策略
+`BackoffPolicies`下面提供了一些内置的`BackoffPolicy`：
 - `BackoffPolicies.FixedDelay(duration)`：固定的退避时间。
-- `BackoffPolicies.Exponential(initDuration, maxDuration)`：指数退避。
-- `BackoffPolicies.Random(initDuration, maxDuration)`：随机退避。
+- `BackoffPolicies.ExponentialDelay(initDuration, maxDuration)`：指数退避。
+- `BackoffPolicies.RandomDelay(initDuration, maxDuration)`：随机退避。
 - `BackoffPolicies.NONE`：不进行退避，它也是`RetryPolicy`的默认退避策略。
-- 
+
+`BackoffPolicy`支持叠加组合：
+Kotlin:
+```kotlin
+val backoffPolicy = FixedDelay(Duration.ofSeconds(10)) + RandomDelay(Duration.ofSeconds(0), Duration.ofSeconds(10))
+```
+Java:
+```java
+BackoffPolicy backoffPolicy = new FixedDelay(Duration.ofSeconds(10)).plus(new RandomDelay(Duration.ofSeconds(0), Duration.ofSeconds(10)));
+```
+
 # 内置失败监听器
-- `FailureListeners.SimpleLoggingFailureListener(log, stack)`：简单日志输出。同时也是`RetryPolicy`默认添加的失败监听器。
+- `FailureListeners.SimpleLoggingFailureListener(log, stack)`：简单日志输出。`RetryPolicy`默认内置了它用于重试日志输出。
 
 ## License
 [Apache License 2.0](LICENSE)
