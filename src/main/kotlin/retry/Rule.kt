@@ -15,36 +15,36 @@
  * under the License.
  */
 
-@file:JvmName("Conditions")
+@file:JvmName("Rules")
 package retry
 
 /**
- * Condition is a boolean expression that can be evaluated in the context of a given [Context].
+ * Rule is a boolean expression that can be evaluated in the context of a given [Context].
  */
-fun interface Condition {
+fun interface Rule {
 
     /**
-     * Evaluates the condition in the context of the given [Context].
-     * @param context the context to evaluate the condition in
-     * @return true if the condition is satisfied, false otherwise
+     * Evaluates the rule in the context of the given [Context].
+     * @param context the context to evaluate the rule in
+     * @return true if the rule is satisfied, false otherwise
      */
     fun check(context: Context) : Boolean
     
     /**
-     * Returns a string representation of the condition in the context of the given [Context].
-     * @param context the context to evaluate the condition in
-     * @return a string representation of the condition in the context of the given [Context]
+     * Returns a string representation of the rule in the context of the given [Context].
+     * @param context the context to evaluate the rule in
+     * @return a string representation of the rule in the context of the given [Context]
      */
     fun toString(context: Context): String = toString()
 
     /**
-     * Returns a new condition that is the logical AND of this condition and the given condition.
-     * @param cond the condition to AND with this condition
-     * @return a new condition that is the logical AND of this condition and the given condition
+     * Returns a new rule that is the logical AND of this rule and the given rule.
+     * @param cond the rule to AND with this rule
+     * @return a new rule that is the logical AND of this rule and the given rule
      */
-    infix fun and(cond: Condition): Condition {
+    infix fun and(cond: Rule): Rule {
         val self = this
-        return object: Condition {
+        return object: Rule {
             override fun check(context: Context): Boolean {
                 return self.check(context) && cond.check(context)
             }
@@ -60,13 +60,13 @@ fun interface Condition {
     }
 
     /**
-     * Returns a new condition that is the logical OR of this condition and the given condition.
-     * @param cond the condition to OR with this condition
-     * @return a new condition that is the logical OR of this condition and the given condition
+     * Returns a new rule that is the logical OR of this rule and the given rule.
+     * @param cond the rule to OR with this rule
+     * @return a new rule that is the logical OR of this rule and the given rule
      */
-    infix fun or(cond: Condition): Condition {
+    infix fun or(cond: Rule): Rule {
         val self = this
-        return object: Condition {
+        return object: Rule {
             override fun check(context: Context): Boolean {
                 return self.check(context) || cond.check(context)
             }
@@ -82,12 +82,12 @@ fun interface Condition {
     }
 
     /**
-     * Returns a new condition that is the logical NOT of this condition.
-     * @return a new condition that is the logical NOT of this condition
+     * Returns a new rule that is the logical NOT of this rule.
+     * @return a new rule that is the logical NOT of this rule
      */
-    operator fun not() : Condition {
+    operator fun not() : Rule {
         val self = this
-        return object: Condition {
+        return object: Rule {
             override fun check(context: Context): Boolean {
                 return !self.check(context)
             }

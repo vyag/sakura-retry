@@ -23,27 +23,25 @@ import retry.internal.RetryHandler
 import java.lang.reflect.Proxy
 import java.time.Duration
 import java.time.Instant
-import java.util.concurrent.Callable
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.TimeUnit
+import java.util.*
+import java.util.concurrent.*
+import java.util.function.Function
 
 /**
  * The retry class.
  *
- * @param retryCondition The condition to retry.
- * @param abortCondition The condition to abort.
+ * @param retryRule The rule to retry.
+ * @param abortRule The rule to abort.
  * @param backoffPolicy The back off strategy.
  * @param failureListeners The error handler.
  */
-class RetryPolicy @JvmOverloads constructor(
-    val retryCondition: Condition,
+class RetryPolicy private constructor(
+    val retryRule: Rule,
     val backoffPolicy: BackoffPolicy,
-    val abortCondition: Condition = Conditions.UNRECOVERABLE_EXCEPTIONS,
-    val failureListeners: List<FailureListener> = listOf(FailureListeners.logging(Conditions.TRUE, Conditions.TRUE))
-) {
+    val abortRule: Rule,
+    val failureListeners: List<FailureListener>) {
 
-    private val condition = !abortCondition and retryCondition
+    private val rule = !abortRule and retryRule
 
     @JvmSynthetic
     internal var backoffExecutor: BackoffExecutor = DefaultBackoffExecutor()
@@ -59,29 +57,28 @@ class RetryPolicy @JvmOverloads constructor(
     @JvmOverloads
     @Throws(Exception::class)
     fun <T> call(name: String = "call", function: Callable<T>): T {
-        var retryCount = 0
+        var attemptCount = 1
         val startTime = Instant.now()
         while (true) {
             try {
                 val result = function.call()
-                LOG.debug("Finally {} success after {} retries.", name, retryCount)
+                LOG.debug("Finally {} success after {} retries.", name, attemptCount)
                 return result
             } catch (t: Throwable) {
-                val context = Context(startTime, Instant.now(), retryCount, t)
-                val allowRetry = condition.check(context)
-                LOG.debug("Check retry condition: {}, then allow retry: {}.", condition.toString(context), allowRetry)
+                val context = Context(startTime, Instant.now(), attemptCount, t)
+                val allowRetry = rule.check(context)
+                LOG.debug("Check retry rule: {}, then allow retry: {}.", rule.toString(context), allowRetry)
                 val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                 for (failureListener in failureListeners) {
                     failureListener.onFailure(context, allowRetry, backOff)
                 }
                 if (allowRetry) {
                     backoffExecutor.backoff(backOff)
-                    if (condition.check(context)) {
-                        retryCount++
+                    if (rule.check(context)) {
+                        attemptCount++
                         continue
                     }
                 }
-                logGiveUp(name, retryCount, t)
                 throw t
             }
         }
@@ -97,7 +94,7 @@ class RetryPolicy @JvmOverloads constructor(
      */
     @JvmOverloads
     fun <T> submit(executor: ScheduledExecutorService, name: String = "call", function: Callable<T>): CompletableFuture<T> {
-        var retryCount = 0
+        var attemptCount = 1
         val startTime = Instant.now()
         val result = CompletableFuture<T>()
         class Task : Runnable {
@@ -105,19 +102,18 @@ class RetryPolicy @JvmOverloads constructor(
                 try {
                     result.complete(function.call())
                 } catch (t: Throwable) {
-                    val context = Context(startTime, Instant.now(), retryCount, t)
-                    val allowRetry = condition.check(context)
+                    val context = Context(startTime, Instant.now(), attemptCount, t)
+                    val allowRetry = rule.check(context)
                     val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                     for (failureListener in failureListeners) {
                         failureListener.onFailure(context, allowRetry, backOff)
                     }
                     if (allowRetry) {
-                        if (condition.check(context)) {
-                            retryCount++
+                        if (rule.check(context)) {
+                            attemptCount++
                         }
                         executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
                     } else {
-                        logGiveUp(name, retryCount, t)
                         result.completeExceptionally(t)
                     }
                 }
@@ -126,12 +122,6 @@ class RetryPolicy @JvmOverloads constructor(
         executor.execute(Task())
         return result
     }     
-    
-    private fun logGiveUp(name: String, retryCount: Int, t: Throwable) {
-        if (LOG.isDebugEnabled) {
-            LOG.debug("Give up {} after {} retries, error: {}.", name, retryCount, t.toString())
-        }
-    }
 
     /**
      * Creates a proxy for the given target object with retry.
@@ -148,6 +138,83 @@ class RetryPolicy @JvmOverloads constructor(
             RetryPolicy::class.java.classLoader, arrayOf(clazz),
             RetryHandler(this, target, name)
         ) as T)
+    }
+
+    /**
+     * The Java-style builder for [RetryPolicy].
+     */
+    class Builder(private val retryRule: Rule, private val backoffPolicy: BackoffPolicy) {
+
+        private var abortRule: Rule = DEFAULT_ABORT_RULE
+
+        private var failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList(DEFAULT_FAILURE_LISTENERS)
+
+        /**
+         * Sets the abort rule.
+         *
+         * @param abortRule the abort rule
+         */
+        fun abortRule(abortRule: Rule) = apply {
+            this.abortRule = abortRule
+        }
+
+        /**
+         * Updates the abort rule.
+         *
+         * @param updater the updater
+         */
+        fun updateAbortRule(updater: Function<Rule, Rule>) = apply {
+            this.abortRule = updater.apply(abortRule)
+        }
+
+        /**
+         * Adds the abort rule.
+         *
+         * @param abortRule the abort rule
+         */
+        fun addAbortRule(abortRule: Rule) = apply {
+            this.abortRule = this.abortRule or abortRule
+        }
+
+        /**
+         * Sets the failure listeners.
+         *
+         * @param failureListeners the failure listeners
+         */
+        fun failureListeners(failureListeners: MutableList<FailureListener>) = apply {
+            this.failureListeners = failureListeners
+        }
+
+        /**
+         * Add a failure listener.
+         *
+         * @param failureListener the failure listener
+         */
+        fun addFailureListener(failureListener: FailureListener) = apply {
+            this.failureListeners.add(failureListener)
+        }
+
+        /**
+         * Clear the failure listeners.
+         */
+        fun clearFailureListeners() = apply {
+            this.failureListeners.clear()
+        }
+
+        /**
+         * Builds the [RetryPolicy].
+         *
+         * @return the [RetryPolicy]
+         */
+        fun build() : RetryPolicy {
+            return RetryPolicy(retryRule = retryRule, backoffPolicy = backoffPolicy, abortRule = abortRule, Collections.unmodifiableList(failureListeners))
+        }
+
+        private companion object {
+            private val DEFAULT_ABORT_RULE: Rule = Rules.UNRECOVERABLE_EXCEPTIONS
+
+            private val DEFAULT_FAILURE_LISTENERS: List<FailureListener> = listOf(FailureListeners.logging(Rules.TRUE, Rules.TRUE))
+        }
     }
 
     private companion object {

@@ -21,7 +21,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Timeout
 import org.mockito.Mockito
 import retry.BackoffPolicies.FixedDelay
-import retry.Conditions.MaxRetries
+import retry.Rules.MaxAttempts
 import java.io.IOException
 import java.util.concurrent.*
 import kotlin.test.AfterTest
@@ -48,26 +48,26 @@ class RetrySubmitTest {
     @Test
     @Timeout(1)
     fun testRetrySuccess() {
-        val retryPolicy = RetryPolicy(
-            retryCondition = MaxRetries(3),
+        val retryPolicy = RetryPolicy.Builder(
+            retryRule = MaxAttempts(3),
             backoffPolicy = BackoffPolicies.NONE
-        )
+        ).build()
         val mock = Mockito.mock(Callable::class.java)
-        Mockito.doThrow(*Array(3) {
+        Mockito.doThrow(*Array(2) {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
         assertThat(retryPolicy.submit(executor, function = { mock.call() }).get()).isEqualTo("done")
-        Mockito.verify(mock, Mockito.times(4)).call()
+        Mockito.verify(mock, Mockito.times(3)).call()
     }
 
     @Test
     @Timeout(1)
     fun testRetryFail() {
-        val retryPolicy = RetryPolicy(
-            retryCondition = MaxRetries(2),
+        val retryPolicy = RetryPolicy.Builder(
+            retryRule = MaxAttempts(3),
             backoffPolicy = BackoffPolicies.NONE
-        )
+        ).build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(4) {
             IOException()
@@ -84,13 +84,13 @@ class RetrySubmitTest {
     @Test
     @Timeout(5)
     fun testRetrySuccessWithMultipleSubmits() {
-        val retryPolicy = RetryPolicy(
-            retryCondition = MaxRetries(3),
+        val retryPolicy = RetryPolicy.Builder(
+            retryRule = MaxAttempts(3),
             backoffPolicy = FixedDelay(1.seconds)
-        )
+        ).build()
         val mocks = Array(100) {
             val mock = Mockito.mock(Callable::class.java)
-            Mockito.doThrow(*Array(3) {
+            Mockito.doThrow(*Array(2) {
                 IOException()
             }).doReturn("done").`when`(mock).call()
             mock
@@ -107,7 +107,7 @@ class RetrySubmitTest {
         }
 
         for (it in mocks) {
-            Mockito.verify(it, Mockito.times(4)).call()
+            Mockito.verify(it, Mockito.times(3)).call()
         }
     }
 

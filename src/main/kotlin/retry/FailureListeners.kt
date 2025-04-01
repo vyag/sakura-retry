@@ -25,20 +25,20 @@ object FailureListeners {
     /**
      * A simple logging failure listener.
      *
-     * @param log if true, logs invocation errors
-     * @param stack if true, logs stack trace of invocation errors
+     * @param logRule if true, logs invocation errors
+     * @param stackRule if true, logs stack trace of invocation errors
      */
     data class SimpleLoggingFailureListener(
-        private val log: Condition,
-        private val stack: Condition
+        private val logRule: Rule,
+        private val stackRule: Rule
     ) : FailureListener {
 
         override fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
-            if (log.check(context)) {
+            if (logRule.check(context)) {
                 LOG.info(
                     "Invocation failed, context: {}, retry: {}, backOff: {}.",
                     *arrayListOf(context, allowRetry, backOffDuration.toReadableString()).let {
-                        if (stack.check(context)) {
+                        if (stackRule.check(context)) {
                             it.add(context.error)
                         }
                         it.toTypedArray()
@@ -53,6 +53,6 @@ object FailureListeners {
     }
     
     @JvmStatic
-    fun logging(logEnabled: Condition, stackEnabled: Condition) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
+    fun logging(logEnabled: Rule, stackEnabled: Rule) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
     
 }

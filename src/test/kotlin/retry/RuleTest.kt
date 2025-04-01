@@ -18,37 +18,37 @@
 package retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.Conditions.MaxRetries
-import retry.Conditions.MaxTimeElapsed
+import retry.Rules.MaxAttempts
+import retry.Rules.MaxTimeElapsed
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant
 import kotlin.test.Test
 
-class ConditionTest {
+class RuleTest {
 
     @Test
     fun testLogicOperator() {
-        assertThat((Conditions.FALSE and Conditions.TRUE)
+        assertThat((Rules.FALSE and Rules.TRUE)
             .check(Context(Instant.MIN, Instant.MIN, 1, IOException())))
             .isFalse()
 
-        assertThat((Conditions.FALSE or Conditions.TRUE)
+        assertThat((Rules.FALSE or Rules.TRUE)
             .check(Context(Instant.MIN, Instant.MAX, Int.MAX_VALUE, IOException())))
             .isTrue()
 
-        assertThat((!Conditions.FALSE)
+        assertThat((!Rules.FALSE)
            .check(Context(Instant.MIN, Instant.MAX, Int.MAX_VALUE, IOException())))
            .isTrue()
     }
     
     @Test
     fun testToString() {
-        assertThat((Conditions.FALSE and (!MaxRetries(5))).toString())
-            .isEqualTo("((false) && (!(context.retryCount < 5)))")
-        assertThat(((Conditions.TRUE or (!MaxRetries(5))).toString(Context(Instant.MIN, Instant.MAX, 1, IOException()))))
-            .isEqualTo("((true) || (!(context.retryCount=1 < 5)))")
-        assertThat(((Conditions.TRUE and (!MaxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(Instant.MIN, Instant.MIN, 1, IOException()))))
+        assertThat((Rules.FALSE and (!MaxAttempts(5))).toString())
+            .isEqualTo("((false) && (!(context.attemptCount < 5)))")
+        assertThat(((Rules.TRUE or (!MaxAttempts(5))).toString(Context(Instant.MIN, Instant.MAX, 1, IOException()))))
+            .isEqualTo("((true) || (!(context.attemptCount=1 < 5)))")
+        assertThat(((Rules.TRUE and (!MaxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(Instant.MIN, Instant.MIN, 1, IOException()))))
             .isEqualTo("((true) && (!(context.duration=PT0S < PT1M)))")
     }
 }

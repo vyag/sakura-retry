@@ -16,21 +16,14 @@
  */
 package retry
 
-import retry.Conditions.MaxRetries
-
 object RetryPolicies {
 
     /**
      * The policy that never retries.
      */
     @JvmField
-    val NONE = RetryPolicy(
-        retryCondition = Conditions.FALSE,
+    val NONE = RetryPolicy.Builder(
+        retryRule = Rules.FALSE,
         backoffPolicy = BackoffPolicies.NONE
-    )
-    
-    fun times(amount: Int) = RetryPolicy(
-        retryCondition = MaxRetries(amount),
-        backoffPolicy = BackoffPolicies.NONE
-    )
+    ).build()
 }

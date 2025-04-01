@@ -26,15 +26,15 @@ import java.time.Instant
  * 
  * @property startTime The start time of the retry operation.
  * @property now The current time.
- * @property retryCount The number of retries.
+ * @property attemptCount The number of attempts.
  * @property error The error that occurred during the retry operation.
  */
-data class Context(val startTime: Instant, val now: Instant, val retryCount: Int, val error: Throwable) {
+data class Context(val startTime: Instant, val now: Instant, val attemptCount: Int, val error: Throwable) {
     
     fun duration(): Duration = Duration.between(startTime, now)
     
     override fun toString(): String {
         val duration = Duration.between(startTime, now)
-        return "(startTime=${startTime}, now=${now}, retryCount=$retryCount, duration=${duration.toReadableString()}, error: $error)"
+        return "(startTime=${startTime}, now=${now}, attemptCount=$attemptCount, duration=${duration.toReadableString()}, error: $error)"
     }
 }

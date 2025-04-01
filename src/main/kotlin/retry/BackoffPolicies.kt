@@ -47,7 +47,7 @@ object BackoffPolicies {
      * @property initDuration The initial duration.
      * @property maxDuration The maximum duration.
      */
-    data class Exponential(
+    data class ExponentialDelay(
         val initDuration: Duration,
         val maxDuration: Duration
     ) : BackoffPolicy {
@@ -62,7 +62,7 @@ object BackoffPolicies {
 
         override fun backoff(context: Context): Duration {
             var value = initDuration.toMillis()
-            for (i in 0 until context.retryCount) {
+            for (i in 0 until context.attemptCount) {
                 if (value < Long.MAX_VALUE / 2) {
                     value = value shl 1
                 } else {
@@ -90,7 +90,7 @@ object BackoffPolicies {
      * @param minDuration The minimum duration.
      * @param maxDuration The maximum duration.
      */
-    data class Random(val minDuration: Duration, val maxDuration: Duration) : BackoffPolicy {
+    data class RandomDelay(val minDuration: Duration, val maxDuration: Duration) : BackoffPolicy {
 
         /**
          * Constructs a random backoff implementation.
@@ -112,6 +112,76 @@ object BackoffPolicies {
         private companion object {
             private val random = Random(System.currentTimeMillis())
         }
+    }
+
+    /**
+     * Convenience method to create a FixedDelay backoff policy.
+     * 
+     * @param duration The delay.
+     * @return The FixedDelay backoff policy.
+     */
+    @JvmStatic
+    fun fixedDelay(duration: Duration) : FixedDelay {
+        return FixedDelay(duration)
+    }
+    
+    /**
+     * Convenience method to create a FixedDelay backoff policy.
+     * 
+     * @param seconds The delay in seconds.
+     * @return The FixedDelay backoff policy.
+     */
+    @JvmStatic
+    fun fixedDelayInSeconds(seconds: Long) : FixedDelay {
+        return FixedDelay(Duration.ofSeconds(seconds))
+    }
+
+    /**
+     * Convenience method to create an ExponentialDelay backoff policy.
+     * 
+     * @param initDuration The initial duration.
+     * @param maxDuration The maximum duration.
+     * @return The ExponentialDelay backoff policy.
+     */
+    @JvmStatic
+    fun exponentialDelay(initDuration: Duration, maxDuration: Duration) : ExponentialDelay {
+        return ExponentialDelay(initDuration, maxDuration)
+    }
+    
+    /**
+     * Convenience method to create an ExponentialDelay backoff policy.
+     *
+     * @param initSeconds The initial duration in seconds.
+     * @param maxSeconds The maximum duration in seconds.
+     * @return The ExponentialDelay backoff policy.
+     */
+    @JvmStatic
+    fun exponentialDelayInSeconds(initSeconds: Long, maxSeconds: Long) : ExponentialDelay {
+        return ExponentialDelay(Duration.ofSeconds(initSeconds), Duration.ofSeconds(maxSeconds))
+    }
+    
+    /**
+     * Convenience method to create a RandomDelay backoff policy.
+     *
+     * @param minDuration The minimum duration.
+     * @param maxDuration The maximum duration.
+     * @return The RandomDelay backoff policy.
+     */
+    @JvmStatic
+    fun randomDelay(minDuration: Duration, maxDuration: Duration) : RandomDelay {
+        return RandomDelay(minDuration, maxDuration)
+    }
+    
+    /**
+     * Convenience method to create a RandomDelay backoff policy.
+     *
+     * @param minSeconds The minimum duration in seconds.
+     * @param maxSeconds The maximum duration in seconds.
+     * @return The RandomDelay backoff policy.
+     */
+    @JvmStatic
+    fun randomDelayInSeconds(minSeconds: Long, maxSeconds: Long) : RandomDelay {
+        return RandomDelay(Duration.ofSeconds(minSeconds), Duration.ofSeconds(maxSeconds))
     }
 
     /**
