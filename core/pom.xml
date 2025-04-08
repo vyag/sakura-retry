@@ -20,73 +20,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>com.github.marks-yag</groupId>
-    <artifactId>retry-parent</artifactId>
+    <parent>
+        <groupId>com.github.marks-yag</groupId>
+        <artifactId>retry-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>retry</artifactId>
     <url>https://github.com/marks-yag/retry</url>
     <version>1.0.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
-    <name>Retry</name>
+    <name>Retry Core</name>
 
-    <description>
-        An elegant(🌝) lightweight retry framework for JVM languages
-    </description>
-
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kotlin.version>2.1.0</kotlin.version>
-        <kotlin.code.style>official</kotlin.code.style>
-        <junit.version>5.10.0</junit.version>
-        <assertj.version>3.24.2</assertj.version>
-
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <slf4j.version>1.7.36</slf4j.version>
-        <logback.version>1.2.13</logback.version>
-        <mockito.version>4.5.1</mockito.version>
-    </properties>
-
-    <scm>
-        <connection>scm:git:git://github.com/marks-yag/retry.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/marks-yag/retry.git</developerConnection>
-        <url>https://github.com/marks-yag/retry</url>
-        <tag>HEAD</tag>
-    </scm>
-
-    <distributionManagement>
-        <site>
-            <url>https://github.com/marks-yag/retry</url>
-        </site>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-
-    <developers>
-        <developer>
-            <id>marks-yag</id>
-            <name>Mark</name>
-            <email>marks.yag@gmail.com</email>
-        </developer>
-    </developers>
-
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-    
-    <modules>
-        <module>core</module>
-    </modules>
 
     <dependencies>
         <dependency>
@@ -151,7 +96,7 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>core/src/main/kotlin</sourceDirectory>
+        <sourceDirectory>src/main/kotlin</sourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -176,8 +121,8 @@
                         </goals>
                         <configuration>
                             <sourceDirs>
-                                <sourceDir>core/src/test/kotlin</sourceDir>
-                                <sourceDir>core/src/test/java</sourceDir>
+                                <sourceDir>src/test/kotlin</sourceDir>
+                                <sourceDir>src/test/java</sourceDir>
                             </sourceDirs>
                         </configuration>
                     </execution>
