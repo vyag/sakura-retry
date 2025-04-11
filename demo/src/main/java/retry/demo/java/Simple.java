@@ -5,7 +5,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -15,21 +15,22 @@
  * under the License.
  */
 
-package retry
+package retry.demo.java;
 
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.RepeatedTest
-import retry.BackoffPolicies.randomDelayInSeconds
-import java.time.Instant
+import retry.BackoffPolicies;
+import retry.RetryPolicy;
 
-class RandomDelayTest {
+import static retry.Rules.maxAttempts;
 
-    private val error = Exception()
+public class Simple {
 
-    @RepeatedTest(1000)
-    fun testBackoffDistribution() {
-        val backoff = randomDelayInSeconds(-100, 100)
-        val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error)).toMillis()
-        assertThat(backoffDuration).isBetween(-100000, 100000)
+    public static void main(String[] args) throws Exception {
+        RetryPolicy policy = new RetryPolicy.Builder(maxAttempts(3), BackoffPolicies.NONE).build();
+        policy.call(
+            () -> {
+                System.out.println("Hello world!");
+                return null;
+            }
+        );
     }
 }

@@ -23,98 +23,6 @@ import kotlin.time.toJavaDuration
 object BackoffPolicies {
 
     /**
-     * Fixed delay back off.
-     *
-     * @param duration The delay.
-     */
-    data class FixedDelay(val duration: Duration) : BackoffPolicy {
-
-        /**
-         * Constructs a fixed delay back off.
-         *
-         * @param duration The dealy.
-         */
-        constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
-
-        override fun backoff(context: Context): Duration {
-            return duration
-        }
-    }
-
-    /**
-     * Exponential backoff implementation.
-     *
-     * @property initDuration The initial duration.
-     * @property maxDuration The maximum duration.
-     */
-    data class ExponentialDelay(
-        val initDuration: Duration,
-        val maxDuration: Duration
-    ) : BackoffPolicy {
-
-        /**
-         * Constructs an Exponential backoff implementation.
-         *
-         * @param initDuration The initial duration.
-         * @param maxDuration The maximum duration.
-         */
-        constructor(initDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(initDuration.toJavaDuration(), maxDuration.toJavaDuration())
-
-        override fun backoff(context: Context): Duration {
-            var value = initDuration.toMillis()
-            for (i in 0 until context.attemptCount) {
-                if (value < Long.MAX_VALUE / 2) {
-                    value = value shl 1
-                } else {
-                    value = Long.MAX_VALUE
-                    break
-                }
-                if (value > maxDuration.toMillis()) {
-                    break
-                }
-            }
-            value = minOf(value, maxDuration.toMillis())
-            return Duration.ofMillis(value)
-        }
-
-    }
-    
-    /**
-     * Constructs a random backoff implementation in the range of [minDuration] to [maxDuration].
-     * 
-     * [minDuration] must be less than or equal to [maxDuration], otherwise an [IllegalArgumentException] will be thrown.
-     * 
-     * Zero and negative durations are allowed.
-     *
-     * @throws IllegalArgumentException if [minDuration] is greater than [maxDuration].
-     * @param minDuration The minimum duration.
-     * @param maxDuration The maximum duration.
-     */
-    data class RandomDelay(val minDuration: Duration, val maxDuration: Duration) : BackoffPolicy {
-
-        /**
-         * Constructs a random backoff implementation.
-         *
-         * @param minDuration The minimum duration.
-         * @param maxDuration The maximum duration.
-         */
-        constructor(minDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(minDuration.toJavaDuration(), maxDuration.toJavaDuration())
-        
-        init {
-            require(minDuration <= maxDuration) { "minDuration must be less than or equal to maxDuration" }
-        }
-        
-        override fun backoff(context: Context): Duration {
-            val value = random.nextLong(minDuration.toMillis(), maxDuration.toMillis())
-            return Duration.ofMillis(value)
-        }
-        
-        private companion object {
-            private val random = Random(System.currentTimeMillis())
-        }
-    }
-
-    /**
      * Convenience method to create a FixedDelay backoff policy.
      * 
      * @param duration The delay.
@@ -122,6 +30,17 @@ object BackoffPolicies {
      */
     @JvmStatic
     fun fixedDelay(duration: Duration) : FixedDelay {
+        return FixedDelay(duration)
+    }
+
+    /**
+     * Convenience method to create a FixedDelay backoff policy.
+     *
+     * @param duration The delay.
+     * @return The FixedDelay backoff policy.
+     */
+    @JvmStatic
+    fun fixedDelay(duration: kotlin.time.Duration) : FixedDelay {
         return FixedDelay(duration)
     }
     
@@ -189,4 +108,96 @@ object BackoffPolicies {
      */
     @JvmField
     val NONE = BackoffPolicy { Duration.ZERO }
+}
+
+/**
+ * Fixed delay back off.
+ *
+ * @param duration The delay.
+ */
+data class FixedDelay(val duration: Duration) : BackoffPolicy {
+
+    /**
+     * Constructs a fixed delay back off.
+     *
+     * @param duration The dealy.
+     */
+    constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
+
+    override fun backoff(context: Context): Duration {
+        return duration
+    }
+}
+
+/**
+ * Exponential backoff implementation.
+ *
+ * @property initDuration The initial duration.
+ * @property maxDuration The maximum duration.
+ */
+data class ExponentialDelay(
+    val initDuration: Duration,
+    val maxDuration: Duration
+) : BackoffPolicy {
+
+    /**
+     * Constructs an Exponential backoff implementation.
+     *
+     * @param initDuration The initial duration.
+     * @param maxDuration The maximum duration.
+     */
+    constructor(initDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(initDuration.toJavaDuration(), maxDuration.toJavaDuration())
+
+    override fun backoff(context: Context): Duration {
+        var value = initDuration.toMillis()
+        for (i in 0 until context.attemptCount) {
+            if (value < Long.MAX_VALUE / 2) {
+                value = value shl 1
+            } else {
+                value = Long.MAX_VALUE
+                break
+            }
+            if (value > maxDuration.toMillis()) {
+                break
+            }
+        }
+        value = minOf(value, maxDuration.toMillis())
+        return Duration.ofMillis(value)
+    }
+
+}
+
+/**
+ * Constructs a random backoff implementation in the range of [minDuration] to [maxDuration].
+ *
+ * [minDuration] must be less than or equal to [maxDuration], otherwise an [IllegalArgumentException] will be thrown.
+ *
+ * Zero and negative durations are allowed.
+ *
+ * @throws IllegalArgumentException if [minDuration] is greater than [maxDuration].
+ * @param minDuration The minimum duration.
+ * @param maxDuration The maximum duration.
+ */
+data class RandomDelay(val minDuration: Duration, val maxDuration: Duration) : BackoffPolicy {
+
+    /**
+     * Constructs a random backoff implementation.
+     *
+     * @param minDuration The minimum duration.
+     * @param maxDuration The maximum duration.
+     */
+    constructor(minDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(minDuration.toJavaDuration(), maxDuration.toJavaDuration())
+
+    init {
+        require(minDuration <= maxDuration) { "minDuration must be less than or equal to maxDuration" }
+    }
+
+    override fun backoff(context: Context): Duration {
+        val value = random.nextLong(minDuration.toMillis(), maxDuration.toMillis())
+        return Duration.ofMillis(value)
+    }
+
+    private companion object {
+        private val random = Random(System.currentTimeMillis())
+    }
 }

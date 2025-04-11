@@ -17,15 +17,11 @@
 
 package retry;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import retry.BackoffPolicies.FixedDelay;
-import retry.Rules.MaxAttempts;
-import retry.Rules.MaxTimeElapsed;
-
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuilderTest {
     

@@ -19,8 +19,6 @@ package retry
 
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
-import retry.BackoffPolicies.FixedDelay
-import retry.Rules.MaxAttempts
 import retry.internal.BackoffExecutor
 import java.io.IOException
 import java.time.Duration

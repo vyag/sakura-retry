@@ -18,8 +18,8 @@
 package retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.Rules.MaxAttempts
-import retry.Rules.MaxTimeElapsed
+import retry.Rules.maxAttempts
+import retry.Rules.maxTimeElapsed
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant
@@ -44,11 +44,11 @@ class RuleTest {
     
     @Test
     fun testToString() {
-        assertThat((Rules.FALSE and (!MaxAttempts(5))).toString())
+        assertThat((Rules.FALSE and (!maxAttempts(5))).toString())
             .isEqualTo("((false) && (!(context.attemptCount < 5)))")
-        assertThat(((Rules.TRUE or (!MaxAttempts(5))).toString(Context(Instant.MIN, Instant.MAX, 1, IOException()))))
+        assertThat(((Rules.TRUE or (!maxAttempts(5))).toString(Context(Instant.MIN, Instant.MAX, 1, IOException()))))
             .isEqualTo("((true) || (!(context.attemptCount=1 < 5)))")
-        assertThat(((Rules.TRUE and (!MaxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(Instant.MIN, Instant.MIN, 1, IOException()))))
+        assertThat(((Rules.TRUE and (!maxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(Instant.MIN, Instant.MIN, 1, IOException()))))
             .isEqualTo("((true) && (!(context.duration=PT0S < PT1M)))")
     }
 }

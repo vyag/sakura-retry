@@ -21,38 +21,38 @@ import retry.internal.Utils.toReadableString
 import java.time.Duration
 
 object FailureListeners {
-
-    /**
-     * A simple logging failure listener.
-     *
-     * @param logRule if true, logs invocation errors
-     * @param stackRule if true, logs stack trace of invocation errors
-     */
-    data class SimpleLoggingFailureListener(
-        private val logRule: Rule,
-        private val stackRule: Rule
-    ) : FailureListener {
-
-        override fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
-            if (logRule.check(context)) {
-                LOG.info(
-                    "Invocation failed, context: {}, retry: {}, backOff: {}.",
-                    *arrayListOf(context, allowRetry, backOffDuration.toReadableString()).let {
-                        if (stackRule.check(context)) {
-                            it.add(context.error)
-                        }
-                        it.toTypedArray()
-                    }
-                )
-            }
-        }
-
-        private companion object {
-            private val LOG = LoggerFactory.getLogger(SimpleLoggingFailureListener::class.java)
-        }
-    }
     
     @JvmStatic
     fun logging(logEnabled: Rule, stackEnabled: Rule) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
     
+}
+
+/**
+ * A simple logging failure listener.
+ *
+ * @param logRule if true, logs invocation errors
+ * @param stackRule if true, logs stack trace of invocation errors
+ */
+data class SimpleLoggingFailureListener(
+    private val logRule: Rule,
+    private val stackRule: Rule
+) : FailureListener {
+
+    override fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
+        if (logRule.check(context)) {
+            LOG.info(
+                "Invocation failed, context: {}, retry: {}, backOff: {}.",
+                *arrayListOf(context, allowRetry, backOffDuration.toReadableString()).let {
+                    if (stackRule.check(context)) {
+                        it.add(context.failure)
+                    }
+                    it.toTypedArray()
+                }
+            )
+        }
+    }
+
+    private companion object {
+        private val LOG = LoggerFactory.getLogger(SimpleLoggingFailureListener::class.java)
+    }
 }
