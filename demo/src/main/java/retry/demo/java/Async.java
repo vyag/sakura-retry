@@ -32,8 +32,8 @@ public class Async {
 
     public static void main(String[] args) throws Exception {
         Random random = new Random(System.currentTimeMillis());
-
-        try (ScheduledExecutorService executor = Executors.newScheduledThreadPool(4)) {
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
+        try {
             RetryPolicy policy = new RetryPolicy.Builder(maxAttempts(99), BackoffPolicies.NONE).build();
 
             CompletableFuture<String> result1 = policy.submit(executor, () -> {
@@ -49,6 +49,9 @@ public class Async {
             });
             System.out.println(result1.get());
             System.out.println(result2.get());
+        } finally {
+            executor.shutdown();
+            executor.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS);
         }
     }
 }
