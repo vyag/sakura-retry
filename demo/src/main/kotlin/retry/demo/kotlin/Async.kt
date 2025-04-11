@@ -22,6 +22,7 @@ import retry.Rules.maxAttempts
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 object Async {
     @Throws(Exception::class)
@@ -29,7 +30,8 @@ object Async {
     fun main(args: Array<String>) {
         val random = Random(System.currentTimeMillis())
 
-        Executors.newScheduledThreadPool(4).use { executor ->
+        val executor = Executors.newScheduledThreadPool(4)
+        try {
             val policy = RetryPolicy.Builder(maxAttempts(99), BackoffPolicies.NONE).build()
             
             val result1 = policy.submit<String>(executor) {
@@ -43,6 +45,9 @@ object Async {
             }
             println(result1.get())
             println(result2.get())
+        } finally {
+            executor.shutdown()
+            executor.awaitTermination(10, TimeUnit.SECONDS)
         }
     }
 }
