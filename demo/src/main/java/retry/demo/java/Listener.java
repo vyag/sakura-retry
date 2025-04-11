@@ -43,14 +43,16 @@ public class Listener {
         @Override
         public void onFailure(@NotNull Context context, boolean allowRetry, Duration backOffDuration) {
             if (!(context.getFailure() instanceof IOException)) {
-                System.out.println("Send to alarm center");
+                System.out.println("Cleanup");
             }
         }
     }
 
     public static void main(String[] args) throws Exception {
         RetryPolicy policy = new RetryPolicy.Builder(maxAttempts(3), BackoffPolicies.NONE)
-            .addFailureListener(new AlarmSender()).build();
+            .addFailureListener(new AlarmSender())
+            .addFailureListener(new Cleaner())
+            .build();
         policy.call(
             () -> {
                 throw new IOException();
