@@ -62,7 +62,7 @@ class RetryPolicy private constructor(
         while (true) {
             try {
                 val result = function.call()
-                LOG.debug("Finally {} success after {} retries.", name, attemptCount)
+                LOG.debug("Finally {} success after {} attempts.", name, attemptCount)
                 return result
             } catch (t: Throwable) {
                 val context = Context(startTime, Instant.now(), attemptCount, t)

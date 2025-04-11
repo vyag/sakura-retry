@@ -22,89 +22,6 @@ import kotlin.time.toJavaDuration
 object Rules {
 
     /**
-     * The rule check if the attempt count is less than the given number.
-     *
-     * @param amount the maximum number of attempts
-     */
-    data class MaxAttempts(val amount: Int) : Rule {
-        
-        init {
-            require(amount > 1) { "amount must be greater than 1" }
-        }
-
-        override fun check(context: Context): Boolean {
-            return context.attemptCount < amount
-        }
-
-        override fun toString(): String {
-            return "context.attemptCount < $amount"
-        }
-
-        override fun toString(context: Context): String {
-            return "context.attemptCount=${context.attemptCount} < $amount"
-        }
-    }
-
-    /**
-     * The rule check if the duration is less than the given duration.
-     *
-     * @param duration The duration.
-     */
-    data class MaxTimeElapsed(val duration: Duration) : Rule {
-
-        /**
-         * Constructs a max time elapsed rule.
-         *
-         * @param duration The duration.
-         */
-        constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
-        
-        init {
-            require(duration > Duration.ZERO) { "duration must be greater than 0" }
-        }
-
-        override fun check(context: Context): Boolean {
-            return context.duration().toMillis() < duration.toMillis()
-        }
-
-        override fun toString(): String {
-            return "context.duration < $duration"
-        }
-
-        override fun toString(context: Context): String {
-            return "context.duration=${context.duration()} < $duration"
-        }
-    }
-
-    /**
-     * The rule check if the error is an instance of one of the given classes.
-     *
-     * @param errors the classes of the errors
-     */
-    data class ExceptionIn(val errors: Set<Class<out Throwable>>) : Rule {
-
-        /**
-         * The rule check if the error is an instance of one of the given classes.
-         *
-         * @param errors the classes of the errors
-         */
-        constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
-
-        override fun check(context: Context): Boolean {
-            val error = context.error
-            return errors.contains(error.javaClass) || errors.any { it.isInstance(error) }
-        }
-
-        override fun toString(): String {
-            return "context.error is in $errors"
-        }
-
-        override fun toString(context: Context): String {
-            return "context.error=${context.error} is in $errors"
-        }
-    }
-
-    /**
      * A rule that always returns true.
      */
     @JvmField
@@ -138,7 +55,7 @@ object Rules {
      * @param amount the maximum number of attempts
      */
     @JvmStatic
-    fun maxAttempts(amount: Int): Rule {
+    fun maxAttempts(amount: Int): MaxAttempts {
         return MaxAttempts(amount)
     }
     
@@ -148,7 +65,17 @@ object Rules {
      * @param duration The duration.
      */
     @JvmStatic
-    fun maxTimeElapsed(duration: Duration): Rule {
+    fun maxTimeElapsed(duration: Duration): MaxTimeElapsed {
+        return MaxTimeElapsed(duration)
+    }
+
+    /**
+     * Convenience method to create a MaxTimeElapsed rule.
+     *
+     * @param duration The duration.
+     */
+    @JvmStatic
+    fun maxTimeElapsed(duration: kotlin.time.Duration): MaxTimeElapsed {
         return MaxTimeElapsed(duration)
     }
     
@@ -158,7 +85,7 @@ object Rules {
      * @param seconds
      */
     @JvmStatic
-    fun maxTimeElapsedInSeconds(seconds: Long): Rule {
+    fun maxTimeElapsedInSeconds(seconds: Long): MaxTimeElapsed {
         return MaxTimeElapsed(Duration.ofSeconds(seconds))
     }
     
@@ -168,7 +95,7 @@ object Rules {
      * @param errors the classes of the errors
      */
     @JvmStatic
-    fun exceptionIn(vararg errors: Class<out Throwable>): Rule {
+    fun exceptionIn(vararg errors: Class<out Throwable>): ExceptionIn {
         return ExceptionIn(*errors)
     }
 
@@ -185,4 +112,87 @@ object Rules {
      */
     @JvmField
     val UNRECOVERABLE_EXCEPTIONS = ExceptionIn(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
+}
+
+/**
+ * The rule check if the attempt count is less than the given number.
+ *
+ * @param amount the maximum number of attempts
+ */
+data class MaxAttempts(val amount: Int) : Rule {
+
+    init {
+        require(amount > 1) { "amount must be greater than 1" }
+    }
+
+    override fun check(context: Context): Boolean {
+        return context.attemptCount < amount
+    }
+
+    override fun toString(): String {
+        return "context.attemptCount < $amount"
+    }
+
+    override fun toString(context: Context): String {
+        return "context.attemptCount=${context.attemptCount} < $amount"
+    }
+}
+
+/**
+ * The rule check if the duration is less than the given duration.
+ *
+ * @param duration The duration.
+ */
+data class MaxTimeElapsed(val duration: Duration) : Rule {
+
+    /**
+     * Constructs a max time elapsed rule.
+     *
+     * @param duration The duration.
+     */
+    constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
+
+    init {
+        require(duration > Duration.ZERO) { "duration must be greater than 0" }
+    }
+
+    override fun check(context: Context): Boolean {
+        return context.getDuration().toMillis() < duration.toMillis()
+    }
+
+    override fun toString(): String {
+        return "context.duration < $duration"
+    }
+
+    override fun toString(context: Context): String {
+        return "context.duration=${context.getDuration()} < $duration"
+    }
+}
+
+/**
+ * The rule check if the error is an instance of one of the given classes.
+ *
+ * @param errors the classes of the errors
+ */
+data class ExceptionIn(val errors: Set<Class<out Throwable>>) : Rule {
+
+    /**
+     * The rule check if the error is an instance of one of the given classes.
+     *
+     * @param errors the classes of the errors
+     */
+    constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
+
+    override fun check(context: Context): Boolean {
+        val error = context.failure
+        return errors.contains(error.javaClass) || errors.any { it.isInstance(error) }
+    }
+
+    override fun toString(): String {
+        return "context.error is in $errors"
+    }
+
+    override fun toString(context: Context): String {
+        return "context.error=${context.failure} is in $errors"
+    }
 }

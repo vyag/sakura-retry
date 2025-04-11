@@ -19,7 +19,6 @@ package retry
 
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
-import retry.Rules.MaxAttempts
 import java.io.IOException
 import java.util.concurrent.Callable
 import kotlin.test.Test

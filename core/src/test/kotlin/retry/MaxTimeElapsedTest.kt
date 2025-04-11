@@ -17,14 +17,14 @@
 package retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.Rules.MaxTimeElapsed
+import retry.Rules.maxTimeElapsed
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
 class MaxTimeElapsedTest {
 
-    private val cond = MaxTimeElapsed(1.seconds)
+    private val cond = maxTimeElapsed(1.seconds)
     
     @Test
     fun testShouldMatchBeforeDeadline() {
