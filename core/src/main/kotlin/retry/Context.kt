@@ -29,7 +29,8 @@ import java.time.Instant
  * @property attemptCount The number of attempts.
  * @property failure The failure that occurred during the retry operation.
  */
-data class Context(val startTime: Instant, val now: Instant, val attemptCount: Int, val failure: Throwable) {
+@ConsistentCopyVisibility
+data class Context internal constructor(val startTime: Instant, val now: Instant, val attemptCount: Int, val failure: Throwable) {
     
     fun getDuration(): Duration = Duration.between(startTime, now)
     

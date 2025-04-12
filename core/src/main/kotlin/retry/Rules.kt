@@ -17,6 +17,8 @@
 package retry
 
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.function.BooleanSupplier
 import kotlin.time.toJavaDuration
 
 object Rules {
@@ -98,6 +100,28 @@ object Rules {
     fun exceptionIn(vararg errors: Class<out Throwable>): ExceptionIn {
         return ExceptionIn(*errors)
     }
+    
+    /**
+     * Convenience method to create a Rule with provided condition.
+     *
+     * @param cond the condition.
+     */
+    @JvmStatic
+    fun condition(cond: BooleanSupplier) : Rule {
+        return object: Rule {
+            
+            private val last = AtomicBoolean()
+            
+            override fun check(context: Context): Boolean {
+                last.set(cond.asBoolean)
+                return last.get()
+            }
+
+            override fun toString(): String {
+                return "Last: $last"
+            }
+        }
+    }
 
     /**
      * A rule that returns true if the error is unrecoverable:
@@ -111,7 +135,7 @@ object Rules {
      * @see [ExceptionIn]
      */
     @JvmField
-    val UNRECOVERABLE_EXCEPTIONS = ExceptionIn(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
+    val UNRECOVERABLE_EXCEPTIONS = exceptionIn(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
 }
 
 /**
