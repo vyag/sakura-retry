@@ -17,8 +17,6 @@
 package retry
 
 import java.time.Duration
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.function.BooleanSupplier
 import kotlin.time.toJavaDuration
 
 object Rules {
@@ -100,28 +98,6 @@ object Rules {
     fun exceptionIn(vararg errors: Class<out Throwable>): ExceptionIn {
         return ExceptionIn(*errors)
     }
-    
-    /**
-     * Convenience method to create a Rule with provided condition.
-     *
-     * @param cond the condition.
-     */
-    @JvmStatic
-    fun condition(cond: BooleanSupplier) : Rule {
-        return object: Rule {
-            
-            private val last = AtomicBoolean()
-            
-            override fun check(context: Context): Boolean {
-                last.set(cond.asBoolean)
-                return last.get()
-            }
-
-            override fun toString(): String {
-                return "Last: $last"
-            }
-        }
-    }
 
     /**
      * A rule that returns true if the error is unrecoverable:
@@ -181,7 +157,7 @@ data class MaxTimeElapsed(val duration: Duration) : Rule {
     }
 
     override fun check(context: Context): Boolean {
-        return context.getDuration().toMillis() < duration.toMillis()
+        return context.getDuration() < duration
     }
 
     override fun toString(): String {
@@ -194,29 +170,29 @@ data class MaxTimeElapsed(val duration: Duration) : Rule {
 }
 
 /**
- * The rule check if the error is an instance of one of the given classes.
+ * The rule check if the failures is an instance of one of the given classes.
  *
- * @param errors the classes of the errors
+ * @param failures the classes of the failures
  */
-data class ExceptionIn(val errors: Set<Class<out Throwable>>) : Rule {
+data class ExceptionIn(val failures: Set<Class<out Throwable>>) : Rule {
 
     /**
-     * The rule check if the error is an instance of one of the given classes.
+     * The rule check if the failure is an instance of one of the given classes.
      *
-     * @param errors the classes of the errors
+     * @param failures the classes of the failures
      */
-    constructor(vararg errors: Class<out Throwable>) : this(errors.toSet())
+    constructor(vararg failures: Class<out Throwable>) : this(failures.toSet())
 
     override fun check(context: Context): Boolean {
-        val error = context.failure
-        return errors.contains(error.javaClass) || errors.any { it.isInstance(error) }
+        val failure = context.failure
+        return failures.contains(failure.javaClass) || failures.any { it.isInstance(failure) }
     }
 
     override fun toString(): String {
-        return "context.error is in $errors"
+        return "context.failure is in $failures"
     }
 
     override fun toString(context: Context): String {
-        return "context.error=${context.failure} is in $errors"
+        return "context.failure=${context.failure} is in $failures"
     }
 }

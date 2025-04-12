@@ -9,23 +9,36 @@ class DefaultBackoffExecutorTest {
     
     @Test
     fun testValidBackoff() {
-        var count = 0
+        val durations = ArrayList<Duration>()
         val backoff = DefaultBackoffExecutor {
-            count++
+            durations.add(it)
         }
         backoff.backoff(Duration.ofSeconds(1))
-        assertThat(count).isEqualTo(1)
+        assertThat(durations).containsExactly(Duration.ofSeconds(1))
     }
     
     @Test
     fun testInvalidBackoff() {
-        var count = 0
+        val durations = ArrayList<Duration>()
         val backoff = DefaultBackoffExecutor {
-            count++
+            durations.add(it)
         }
         backoff.backoff(Duration.ofSeconds(-1))
-        assertThat(count).isEqualTo(0)
+        assertThat(durations).isEmpty()
         backoff.backoff(Duration.ofSeconds(0))
-        assertThat(count).isEqualTo(0)
+        assertThat(durations).isEmpty()
+    }
+    
+    @Test
+    fun testVeryLongBackoff() {
+        val durations = ArrayList<Duration>()
+        val backoff = DefaultBackoffExecutor {
+            durations.add(it)
+        }
+        backoff.backoff(Duration.ofSeconds(Long.MAX_VALUE))
+        assertThat(durations).hasSize(1000)
+        repeat(1000) {
+            assertThat(durations[it]).isEqualTo(Duration.ofMillis(Long.MAX_VALUE))
+        }
     }
 }
