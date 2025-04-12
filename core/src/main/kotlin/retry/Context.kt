@@ -32,6 +32,10 @@ import java.time.Instant
 @ConsistentCopyVisibility
 data class Context internal constructor(val startTime: Instant, val now: Instant, val attemptCount: Int, val failure: Throwable) {
     
+    init {
+        require(attemptCount > 0) { "attemptCount must be greater than 0" }
+    }
+    
     fun getDuration(): Duration = Duration.between(startTime, now)
     
     override fun toString(): String {

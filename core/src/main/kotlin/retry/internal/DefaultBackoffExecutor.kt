@@ -26,7 +26,13 @@ class DefaultBackoffExecutor(
 
     override fun backoff(duration: Duration) {
         if (!duration.isNegative && !duration.isZero) {
-            executor.invoke(duration)
+            val maxDuration = Duration.ofMillis(Long.MAX_VALUE)
+            var left = duration
+            while (left > Duration.ZERO) {
+                val delta = minOf(maxDuration, left)
+                executor.invoke(delta)    
+                left -= delta
+            }
         }
     }
 
