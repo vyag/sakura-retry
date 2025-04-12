@@ -150,15 +150,16 @@ data class ExponentialDelay(
 
     override fun backoff(context: Context): Duration {
         var value = initDuration.toMillis()
-        for (i in 0 until context.attemptCount) {
+        
+        repeat (context.attemptCount - 1) {
             if (value < Long.MAX_VALUE / 2) {
                 value = value shl 1
             } else {
                 value = Long.MAX_VALUE
-                break
+                return@repeat
             }
             if (value > maxDuration.toMillis()) {
-                break
+                return@repeat
             }
         }
         value = minOf(value, maxDuration.toMillis())
