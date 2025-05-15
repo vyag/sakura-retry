@@ -15,7 +15,6 @@
  * under the License.
  */
 
-@file:JvmName("Rules")
 package retry
 
 /**
