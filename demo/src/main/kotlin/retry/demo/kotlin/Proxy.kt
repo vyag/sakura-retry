@@ -22,27 +22,23 @@ import retry.RetryPolicy
 import java.io.IOException
 import java.util.*
 
-object Proxy {
+fun main() {
+    val policy = RetryPolicy.Builder(MaxAttempts(99), BackoffPolicies.NONE).build()
+    val api: Api = policy.proxy(Api::class.java, Impl())
+    println(api.execute())
+}
+
+interface Api {
     @Throws(IOException::class)
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val policy = RetryPolicy.Builder(MaxAttempts(99), BackoffPolicies.NONE).build()
-        val api: Api = policy.proxy(Api::class.java, Impl())
-        println(api.execute())
-    }
+    fun execute(): String
+}
 
-    interface Api {
-        @Throws(IOException::class)
-        fun execute(): String
-    }
+class Impl : Api {
+    var random: Random = Random(System.currentTimeMillis())
 
-    class Impl : Api {
-        var random: Random = Random(System.currentTimeMillis())
-
-        @Throws(IOException::class)
-        override fun execute(): String {
-            val r = random.nextInt(10)
-            return if (r >= 6) "exe-$r" else throw IOException("exe failed")
-        }
+    @Throws(IOException::class)
+    override fun execute(): String {
+        val r = random.nextInt(10)
+        return if (r >= 6) "exe-$r" else throw IOException("exe failed")
     }
 }

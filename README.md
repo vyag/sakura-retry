@@ -14,40 +14,12 @@ An elegant(🌝) lightweight retry framework for JVM languages, supporting:
 # Getting Started
 Retry is available on [Maven Central](https://mvnrepository.com/artifact/com.github.marks-yag/retry).
 
-Kotlin:
-
-```kotlin
-fun main() {
-    val policy = RetryPolicy.Builder(retryRule = MaxAttempts(10), backoffPolicy = FixedDelay(Duration.ofSeconds(1)))
-        .addFailureListener(MyFailureListener())
-        .build()
-    policy.call {
-        throw IOException("error")
-    }
-}
-```
-Or java:
-
-```java
-import retry.RetryPolicy;
-
-public class Test {
-    public static void main(String[] args) {
-        RetryPolicy policy = new RetryPolicy.Builder(new MaxAttempts(10), new FixedDelay(Duration.ofSeconds(1)))
-            .addFailureListener(new MyFailureListener())
-            .build();
-        try {
-            policy.call(() -> {
-                throw new IOException("error");
-            });
-        } catch (IOException e) {
-            // handle IOException
-        } catch (Exception e) {
-            // handle other exceptions
-        }
-    }
-}
-```
+- [Kotlin Simple Demo](demo/src/main/kotlin/retry/demo/kotlin/Simple.kt)
+- [Java Simple Demo](demo/src/main/java/retry/demo/java/Simple.java)
+- [Kotlin Async Retry Demo](demo/src/main/kotlin/retry/demo/kotlin/Async.kt)
+- [Java Async Retry Demo](demo/src/main/java/retry/demo/java/Async.java)
+- [Kotlin Proxy Retry Demo](demo/src/main/kotlin/retry/demo/kotlin/Proxy.kt)
+- [Java Proxy Retry Demo](demo/src/main/java/retry/demo/java/Proxy.java)
 
 # Design Principles
 Unlike SpringRetry, Retry does not provide annotation-based retry policies, but recommends users to define reusable retry policies through programming and apply them to the business logic that needs retries. This approach decouples the specific business logic implementation from the retry policy, allowing users to dynamically select different retry policies for the same business logic without limitations imposed by annotation declarations at compile time.

@@ -24,30 +24,28 @@ import retry.Rules.maxAttempts
 import java.io.IOException
 import java.time.Duration
 
-object Listener {
-    @Throws(Exception::class)
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val policy = RetryPolicy.Builder(maxAttempts(3), BackoffPolicies.NONE)
-            .addFailureListener(AlarmSender()).build()
-        policy.call {
-            throw IOException()
+fun main() {
+    val policy = RetryPolicy.Builder(maxAttempts(3), BackoffPolicies.NONE)
+        .addFailureListener(AlarmSender())
+        .addFailureListener(Cleaner())
+        .build()
+    policy.call {
+        throw IOException()
+    }
+}
+
+class AlarmSender : FailureListener {
+    override fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
+        if (!allowRetry) {
+            println("Send to alarm center")
         }
     }
+}
 
-    class AlarmSender : FailureListener {
-        override fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
-            if (!allowRetry) {
-                println("Send to alarm center")
-            }
-        }
-    }
-
-    class Cleaner : FailureListener {
-        override fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
-            if (context.failure !is IOException) {
-                println("Send to alarm center")
-            }
+class Cleaner : FailureListener {
+    override fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
+        if (context.failure !is IOException) {
+            println("Cleanup")
         }
     }
 }
