@@ -13,42 +13,12 @@
 # 开始使用
 Retry可以通过[Maven 中心仓](https://mvnrepository.com/artifact/com.github.marks-yag/retry)获取。
 
-## 示例
-
-Kotlin:
-
-```kotlin
-fun main() {
-    val policy = RetryPolicy.Builder(retryRule = MaxAttempts(10), backoffPolicy = FixedDelay(Duration.ofSeconds(1)))
-        .addFailureListener(MyFailureListener())
-        .build()
-    policy.call {
-        throw IOException("error")
-    }
-}
-```
-or Java:
-
-```java
-import retry.RetryPolicy;
-
-public class Test {
-    public static void main(String[] args) {
-        RetryPolicy policy = new RetryPolicy.Builder(MaxAttempts(10), new FixedDelay(Duration.ofSeconds(1)))
-            .addFailureListener(new MyFailureListener())
-            .build();
-        try {
-            policy.call(() -> {
-                throw new IOException("error");
-            });
-        } catch (IOException e) {
-            // handle IOException
-        } catch (Exception e) {
-            // handle other exceptions
-        }
-    }
-}
-```
+- [Kotlin简单示例](demo/src/main/kotlin/retry/demo/kotlin/Simple.kt)
+- [Java简单示例](demo/src/main/java/retry/demo/java/Simple.java)
+- [Kotlin异步重试示例](demo/src/main/kotlin/retry/demo/kotlin/Async.kt)
+- [Java异步重试示例](demo/src/main/java/retry/demo/java/Async.java)
+- [Kotlin代理重试示例](demo/src/main/kotlin/retry/demo/kotlin/Proxy.kt)
+- [Java代理重试示例](demo/src/main/java/retry/demo/java/Proxy.java)
 
 # 设计理念
 不同于SpringRetry，**Retry并未提供**注解式的重试策略声明，而是推荐用户通过编程式的方式来定义可复用的重试策略，并灵活地应用于需要重试的业务逻辑。这样的好处是：具体业务逻辑实现与重试策略解耦，我们可以根据需要为同样的业务逻辑动态选择不同的重试策略，不会受到注解声明编译期常量的限制。
@@ -100,5 +70,5 @@ BackoffPolicy backoffPolicy = new FixedDelay(Duration.ofSeconds(10)).plus(new Ra
 # 内置失败监听器
 - `FailureListeners.SimpleLoggingFailureListener(log, stack)`：简单日志输出。`RetryPolicy`默认内置了它用于重试日志输出。
 
-## License
+# License
 [Apache License 2.0](LICENSE)

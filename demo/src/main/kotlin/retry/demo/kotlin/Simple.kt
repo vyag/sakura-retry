@@ -20,13 +20,10 @@ import retry.BackoffPolicies
 import retry.RetryPolicy
 import retry.Rules.maxAttempts
 
-object Simple {
-    @Throws(Exception::class)
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val policy = RetryPolicy.Builder(maxAttempts(3), BackoffPolicies.NONE).build()
-        policy.call {
-            println("Hello world!")
-        }
+fun main() {
+    val policy = RetryPolicy.Builder(maxAttempts(3), BackoffPolicies.NONE).build()
+    policy.call {
+        println("Hello world!")
     }
 }
+

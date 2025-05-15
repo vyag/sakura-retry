@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static retry.Rules.maxAttempts;
 
@@ -51,7 +52,7 @@ public class Async {
             System.out.println(result2.get());
         } finally {
             executor.shutdown();
-            executor.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS);
+            executor.awaitTermination(10, TimeUnit.SECONDS);
         }
     }
 }

@@ -21,16 +21,12 @@ import retry.BackoffPolicies.randomDelayInSeconds
 import retry.RetryPolicy
 import retry.Rules.maxAttempts
 
-object Backoff {
-    @Throws(Exception::class)
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val policy = RetryPolicy.Builder(
-            maxAttempts(3),
-            exponentialDelayInSeconds(1, 10) + (randomDelayInSeconds(1, 2))
-        ).build()
-        policy.call {
-            println("Hello world!")
-        }
+fun main() {
+    val policy = RetryPolicy.Builder(
+        maxAttempts(3),
+        exponentialDelayInSeconds(1, 10) + (randomDelayInSeconds(1, 2))
+    ).build()
+    policy.call {
+        println("Hello world!")
     }
 }

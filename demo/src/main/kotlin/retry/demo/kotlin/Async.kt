@@ -24,30 +24,25 @@ import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-object Async {
-    @Throws(Exception::class)
-    @JvmStatic
-    fun main(args: Array<String>) {
-        val random = Random(System.currentTimeMillis())
+fun main() {
+    val random = Random(System.currentTimeMillis())
+    val executor = Executors.newScheduledThreadPool(4)
+    try {
+        val policy = RetryPolicy.Builder(maxAttempts(99), BackoffPolicies.NONE).build()
 
-        val executor = Executors.newScheduledThreadPool(4)
-        try {
-            val policy = RetryPolicy.Builder(maxAttempts(99), BackoffPolicies.NONE).build()
-            
-            val result1 = policy.submit<String>(executor) {
-                val r = random.nextInt(10)
-                if (r >= 6) "foo-$r" else throw IOException("foo failed")
-            }
-
-            val result2 = policy.submit<String>(executor) {
-                val r = random.nextInt(10)
-                if (r >= 6) "bar-$r" else throw IOException("bar failed")
-            }
-            println(result1.get())
-            println(result2.get())
-        } finally {
-            executor.shutdown()
-            executor.awaitTermination(10, TimeUnit.SECONDS)
+        val result1 = policy.submit<String>(executor) {
+            val r = random.nextInt(10)
+            if (r >= 6) "foo-$r" else throw IOException("foo failed")
         }
+
+        val result2 = policy.submit<String>(executor) {
+            val r = random.nextInt(10)
+            if (r >= 6) "bar-$r" else throw IOException("bar failed")
+        }
+        println(result1.get())
+        println(result2.get())
+    } finally {
+        executor.shutdown()
+        executor.awaitTermination(10, TimeUnit.SECONDS)
     }
 }
