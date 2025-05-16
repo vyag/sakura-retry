@@ -38,7 +38,7 @@ data class SimpleLoggingFailureListener(
     private val stackRule: Rule
 ) : FailureListener {
 
-    override fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration) {
+    override fun onFailure(call: String?, context: Context, allowRetry: Boolean, backOffDuration: Duration) {
         if (logRule.check(context)) {
             LOG.info(
                 "Invocation failed, context: {}, retry: {}, backOff: {}.",

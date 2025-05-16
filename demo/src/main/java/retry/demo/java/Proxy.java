@@ -23,27 +23,24 @@ import retry.RetryPolicy;
 
 import java.io.IOException;
 import java.util.Random;
+import java.util.concurrent.Callable;
 
 public class Proxy {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         RetryPolicy policy = new RetryPolicy.Builder(new MaxAttempts(99), BackoffPolicies.NONE).build();
-        Api api = policy.proxy(Api.class, new Impl());
-        System.out.println(api.execute());
+        Callable<?> call = policy.proxy(Callable.class, new Impl());
+        System.out.println(call.call());
     }
 
-    public interface Api {
-        String execute() throws IOException;
-    }
-
-    public static class Impl implements Api {
+    public static class Impl implements Callable<Double> {
         Random random = new Random(System.currentTimeMillis());
 
         @Override
-        public String execute() throws IOException {
-            int r = random.nextInt(10);
-            if (r < 6) throw new IOException("exe failed");
-            return "exe-" + r;
+        public Double call() throws IOException {
+            double d = random.nextDouble(10);
+            if (d < 8) throw new IOException("Too small");
+            return d;
         }
     }
 }

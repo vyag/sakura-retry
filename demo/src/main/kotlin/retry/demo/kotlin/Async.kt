@@ -16,33 +16,30 @@
  */
 package retry.demo.kotlin
 
-import retry.BackoffPolicies
+import retry.BackoffPolicies.fixedDelayInSeconds
+import retry.Context
 import retry.RetryPolicy
-import retry.Rules.maxAttempts
+import retry.Rules
 import java.io.IOException
+import java.time.Duration
 import java.util.*
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 fun main() {
     val random = Random(System.currentTimeMillis())
-    val executor = Executors.newScheduledThreadPool(4)
-    try {
-        val policy = RetryPolicy.Builder(maxAttempts(99), BackoffPolicies.NONE).build()
-
-        val result1 = policy.submit<String>(executor) {
-            val r = random.nextInt(10)
-            if (r >= 6) "foo-$r" else throw IOException("foo failed")
+    Executors.newScheduledThreadPool(4).use { executor ->
+        val policy = RetryPolicy.Builder(Rules.TRUE, fixedDelayInSeconds(1))
+            .addFailureListener { call: String?, context: Context, allowRetry: Boolean, backOffDuration: Duration ->
+                println("Call $call, attempt ${context.attemptCount} failed: (${context.failure.message})")
+            }.build()
+        (0 until 3).map { 
+            policy.submit(executor, "call$it") {
+                random.nextDouble(10.0).takeUnless { it < 7 } ?: throw IOException("Too small")    
+            } 
+        }.map { 
+            it.thenAccept(::println)
+        }.forEach {
+            it.join()
         }
-
-        val result2 = policy.submit<String>(executor) {
-            val r = random.nextInt(10)
-            if (r >= 6) "bar-$r" else throw IOException("bar failed")
-        }
-        println(result1.get())
-        println(result2.get())
-    } finally {
-        executor.shutdown()
-        executor.awaitTermination(10, TimeUnit.SECONDS)
     }
 }

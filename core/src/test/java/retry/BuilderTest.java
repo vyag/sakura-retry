@@ -30,7 +30,7 @@ public class BuilderTest {
         Rule retryRule = new MaxAttempts(5);
         BackoffPolicy backoff = new FixedDelay(Duration.ofSeconds(1));
         Rule abortRule = new MaxTimeElapsed(Duration.ofSeconds(10));
-        FailureListener failureListener = (context, allowRetry, backOffDuration) -> {};
+        FailureListener failureListener = (call, context, allowRetry, backOffDuration) -> {};
         RetryPolicy retryPolicy = new RetryPolicy.Builder(retryRule, backoff)
             .abortRule(abortRule)
             .addFailureListener(failureListener)
