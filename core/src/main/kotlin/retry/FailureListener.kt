@@ -26,10 +26,11 @@ fun interface FailureListener {
     /**
      * Invoked when an attempt fails. 
      *
+     * @param call the call that failed
      * @param context the context of the retry
      * @param allowRetry true if the retry is allowed
      * @param backOffDuration the back off duration
      */
-    fun onFailure(context: Context, allowRetry: Boolean, backOffDuration: Duration)
+    fun onFailure(call: String?, context: Context, allowRetry: Boolean, backOffDuration: Duration)
 
 }

@@ -19,40 +19,31 @@ package retry.demo.java;
 
 import retry.BackoffPolicies;
 import retry.RetryPolicy;
+import retry.Rules;
 
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import static retry.Rules.maxAttempts;
+import java.util.stream.IntStream;
 
 public class Async {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Random random = new Random(System.currentTimeMillis());
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(4);
-        try {
-            RetryPolicy policy = new RetryPolicy.Builder(maxAttempts(99), BackoffPolicies.NONE).build();
-
-            CompletableFuture<String> result1 = policy.submit(executor, () -> {
-                int r = random.nextInt(10);
-                if (r < 6) throw new IOException("foo failed");
-                return "foo-" + r;
-            });
-
-            CompletableFuture<String> result2 = policy.submit(executor, () -> {
-                int r = random.nextInt(10);
-                if (r < 6) throw new IOException("bar failed");
-                return "bar-" + r;
-            });
-            System.out.println(result1.get());
-            System.out.println(result2.get());
-        } finally {
-            executor.shutdown();
-            executor.awaitTermination(10, TimeUnit.SECONDS);
+        try (ScheduledExecutorService executor = Executors.newScheduledThreadPool(4)) {
+            RetryPolicy policy = new RetryPolicy.Builder(Rules.TRUE, BackoffPolicies.fixedDelayInSeconds(1))
+                .addFailureListener((call, context, allowRetry, backOffDuration) ->
+                    System.out.println("Call " + call + ", attempt " + context.getAttemptCount() + " failed: (" + context.getFailure().getMessage() + ")"))
+                .build();
+            IntStream.range(0, 3).mapToObj(value -> policy.submit(executor, "call-" + value, () -> {
+                double d = random.nextDouble(10);
+                if (d < 8) throw new IOException("Too small");
+                return d;
+            })).map(i -> i.thenAccept(System.out::println))
+                .toList()
+                .forEach(CompletableFuture::join);
         }
     }
 }

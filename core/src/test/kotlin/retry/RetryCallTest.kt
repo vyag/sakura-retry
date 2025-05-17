@@ -80,7 +80,7 @@ class RetryCallTest {
         val retryPolicy = RetryPolicy.Builder(
             retryRule = MaxAttempts(10),
             backoffPolicy = BackoffPolicies.NONE
-        ).addFailureListener { _, _, _ -> 
+        ).addFailureListener { _, _, _, _ -> 
             broken.set(false)
         }.build()
         var count = 0

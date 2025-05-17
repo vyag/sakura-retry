@@ -17,28 +17,21 @@
 package retry.demo.kotlin
 
 import retry.BackoffPolicies
-import retry.MaxAttempts
 import retry.RetryPolicy
+import retry.Rules
 import java.io.IOException
 import java.util.*
+import java.util.concurrent.Callable
 
 fun main() {
-    val policy = RetryPolicy.Builder(MaxAttempts(99), BackoffPolicies.NONE).build()
-    val api: Api = policy.proxy(Api::class.java, Impl())
-    println(api.execute())
+    val policy = RetryPolicy.Builder(Rules.maxTimeElapsedInSeconds(1), BackoffPolicies.NONE).build()
+    val call = policy.proxy(Callable::class.java, Impl())
+    println(call.call())
 }
 
-interface Api {
-    @Throws(IOException::class)
-    fun execute(): String
-}
-
-class Impl : Api {
+class Impl : Callable<Double> {
     var random: Random = Random(System.currentTimeMillis())
 
     @Throws(IOException::class)
-    override fun execute(): String {
-        val r = random.nextInt(10)
-        return if (r >= 6) "exe-$r" else throw IOException("exe failed")
-    }
+    override fun call(): Double = random.nextDouble(10.0).takeUnless { it < 7 } ?: throw IOException("Too small")
 }

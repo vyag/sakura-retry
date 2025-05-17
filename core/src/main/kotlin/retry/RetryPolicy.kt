@@ -56,7 +56,7 @@ class RetryPolicy private constructor(
      */
     @JvmOverloads
     @Throws(Exception::class)
-    fun <T> call(name: String = "call", function: Callable<T>): T {
+    fun <T> call(name: String? = null, function: Callable<T>): T {
         var attemptCount = 1
         val startTime = Instant.now()
         while (true) {
@@ -67,10 +67,9 @@ class RetryPolicy private constructor(
             } catch (t: Throwable) {
                 val context = Context(startTime, Instant.now(), attemptCount, t)
                 val allowRetry = rule.check(context)
-                LOG.debug("Check retry rule: {}, then allow retry: {}.", rule.toString(context), allowRetry)
                 val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                 for (failureListener in failureListeners) {
-                    failureListener.onFailure(context, allowRetry, backOff)
+                    failureListener.onFailure(name, context, allowRetry, backOff)
                 }
                 if (allowRetry) {
                     backoffExecutor.backoff(backOff)
@@ -93,7 +92,7 @@ class RetryPolicy private constructor(
      * @return The [java.util.concurrent.Future] result of the function.
      */
     @JvmOverloads
-    fun <T> submit(executor: ScheduledExecutorService, name: String = "call", function: Callable<T>): CompletableFuture<T> {
+    fun <T> submit(executor: ScheduledExecutorService, name: String? = null, function: Callable<T>): CompletableFuture<T> {
         var attemptCount = 1
         val startTime = Instant.now()
         val result = CompletableFuture<T>()
@@ -106,7 +105,7 @@ class RetryPolicy private constructor(
                     val allowRetry = rule.check(context)
                     val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                     for (failureListener in failureListeners) {
-                        failureListener.onFailure(context, allowRetry, backOff)
+                        failureListener.onFailure(name, context, allowRetry, backOff)
                     }
                     if (allowRetry) {
                         if (rule.check(context)) {
@@ -147,7 +146,7 @@ class RetryPolicy private constructor(
 
         private var abortRule: Rule = DEFAULT_ABORT_RULE
 
-        private var failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList(DEFAULT_FAILURE_LISTENERS)
+        private var failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList()
 
         /**
          * Sets the abort rule.
@@ -212,8 +211,6 @@ class RetryPolicy private constructor(
 
         private companion object {
             private val DEFAULT_ABORT_RULE: Rule = Rules.UNRECOVERABLE_EXCEPTIONS
-
-            private val DEFAULT_FAILURE_LISTENERS: List<FailureListener> = listOf(FailureListeners.logging(Rules.TRUE, Rules.TRUE))
         }
     }
 
