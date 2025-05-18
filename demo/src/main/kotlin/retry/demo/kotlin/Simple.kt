@@ -17,11 +17,14 @@
 package retry.demo.kotlin
 
 import retry.BackoffPolicies
+import retry.FailureListeners
 import retry.RetryPolicy
 import retry.Rules.maxAttempts
 
 fun main() {
-    val policy = RetryPolicy.Builder(maxAttempts(3), BackoffPolicies.NONE).build()
+    val policy = RetryPolicy.Builder(maxAttempts(3), BackoffPolicies.NONE)
+        .addFailureListener(FailureListeners.logging())
+        .build()
     policy.call {
         println("Hello world!")
     }
