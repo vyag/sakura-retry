@@ -23,7 +23,8 @@ import java.time.Duration
 object FailureListeners {
     
     @JvmStatic
-    fun logging(logEnabled: Rule, stackEnabled: Rule) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
+    @JvmOverloads
+    fun logging(logEnabled: Rule = Rules.TRUE, stackEnabled: Rule = Rules.FALSE) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
     
 }
 
