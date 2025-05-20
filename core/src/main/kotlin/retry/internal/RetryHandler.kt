@@ -17,15 +17,15 @@
 
 package retry.internal
 
-import retry.RetryPolicy
+import retry.RetryTemplate
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
-internal class RetryHandler<T>(private val retryPolicy: RetryPolicy, private val target: T, private val name: String) : InvocationHandler {
+internal class RetryHandler<T>(private val retryTemplate: RetryTemplate, private val target: T, private val name: String) : InvocationHandler {
 
     override fun invoke(proxy: Any, method: Method, args: Array<out Any?>?): Any? {
-        return retryPolicy.call("$name.${method.name}") {
+        return retryTemplate.call("$name.${method.name}") {
             try {
                 if (args == null) {
                     method.invoke(target)

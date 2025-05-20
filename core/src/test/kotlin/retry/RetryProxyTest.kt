@@ -28,20 +28,20 @@ class RetryProxyTest {
 
     @Test
     fun testNoError() {
-        val retryPolicy = RetryPolicy.Builder(
-            retryRule = MaxAttempts(10),
+        val retryTemplate = RetryTemplate.Builder(
+            retryPolicy = MaxAttempts(10),
             backoffPolicy = BackoffPolicies.NONE
         ).build()
         val mock = Mockito.mock(Callable::class.java)
-        val foo = retryPolicy.proxy(Callable::class.java, mock)
+        val foo = retryTemplate.proxy(Callable::class.java, mock)
         foo.call()
         Mockito.verify(mock, Mockito.times(1)).call()
     }
 
     @Test
     fun testRetrySuccess() {
-        val retryPolicy = RetryPolicy.Builder(
-            retryRule = MaxAttempts(10),
+        val retryTemplate = RetryTemplate.Builder(
+            retryPolicy = MaxAttempts(10),
             backoffPolicy = BackoffPolicies.NONE
         ).build()
         val mock = Mockito.mock(Callable::class.java)
@@ -49,21 +49,21 @@ class RetryProxyTest {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        val foo = retryPolicy.proxy(Callable::class.java, mock)
+        val foo = retryTemplate.proxy(Callable::class.java, mock)
         assertThat(foo.call()).isEqualTo("done")
         Mockito.verify(mock, Mockito.times(10)).call()
     }
 
     @Test
     fun testRetryFailed() {
-        val retryPolicy = RetryPolicy.Builder(
-            retryRule = MaxAttempts(10),
+        val retryTemplate = RetryTemplate.Builder(
+            retryPolicy = MaxAttempts(10),
             backoffPolicy = BackoffPolicies.NONE
         ).build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 
-        val foo = retryPolicy.proxy(Callable::class.java, mock)
+        val foo = retryTemplate.proxy(Callable::class.java, mock)
         assertFailsWith(IOException::class) {
             foo.call()
         }

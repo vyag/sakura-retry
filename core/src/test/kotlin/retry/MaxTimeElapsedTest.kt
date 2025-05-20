@@ -17,7 +17,7 @@
 package retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.Rules.maxTimeElapsed
+import retry.RetryPolicies.maxTimeElapsed
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds

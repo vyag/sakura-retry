@@ -24,38 +24,26 @@ Retry is available on [Maven Central](https://mvnrepository.com/artifact/com.git
 # Design Principles
 Unlike SpringRetry, Retry does not provide annotation-based retry policies, but recommends users to define reusable retry policies through programming and apply them to the business logic that needs retries. This approach decouples the specific business logic implementation from the retry policy, allowing users to dynamically select different retry policies for the same business logic without limitations imposed by annotation declarations at compile time.
 Retry policies are defined by combining the following elements, and provide built-in implementations:
-- Retry rule: Defines when to retry.
-- Termination rule: Defines when to terminate retries. When the retry rule is not met or the termination rule is met, retries will stop.
-- Backoff strategy: Defines the waiting time interval between retries.
+- Retry policy: Defines when to retry.
+- Termination policy: Defines when to terminate retries. When the retry policy is not met or the termination policy is met, retries will stop.
+- Backoff policy: Defines the waiting time interval between retries.
 - Failure listener: Defines the processing logic when retries fail. Includes logging output, custom recovery logic, etc.
 
 Unlike some other retry frameworks, **Retry** does not provide retry policies based on return values, but **only through exceptions**. You can check unexpected return values and throw exceptions by yourself.
 
-# Retry Rules
-There are some built-in retry rules under `Rules`:
-- `Rules.MaxAttempts(amount)`: Maximum number of attempts (including the first execution).
-- `Rules.MaxTimeElapsed(duration)`: Maximum time elapsed for attempts.
-- `Rules.ExceptionIn(types)`: Specified exception types.
-- `Rules.TRUE`: Always returns true.
-- `Rules.FALSE`: Always returns false.
-- `Rules.UNRECOVERABLE_EXCEPTIONS`: Unrecoverable exception types (like `InterruptedException`, `RuntimeException`, and `Error`), which are also the default termination rule for `RetryPolicy`.
-
-You can combine multiple rules to create more complex retry rules:
+# Retry RetryPolicies
+There are some built-in retry policies under `RetryPolicies`. You can combine multiple policies to create more complex retry policies:
 Kotlin:
 ```kotlin
-val rule = MaxAttempts(10) and MaxTimeElapsed(Duration.ofSeconds(10))
+val policy = MaxAttempts(10) and MaxTimeElapsed(Duration.ofSeconds(10))
 ```
 Java:
 ```java
-RetryRule rule = new MaxAttempts(10).and(new MaxTimeElapsed(Duration.ofSeconds(10)));
+RetryRetryPolicy policy = new MaxAttempts(10).and(new MaxTimeElapsed(Duration.ofSeconds(10)));
 ```
 
 # Backoff Strategies
-There are some built-in backoff strategies under `BackoffPolicies`:
-- `BackoffPolicies.FixedDelay(duration)`: Fixed delay backoff.
-- `BackoffPolicies.ExponentialDelay(initDuration, maxDuration)`: Exponential delay backoff.
-- `BackoffPolicies.RandomDelay(minDuration, maxDuration)`: Random delay backoff.
-- `BackoffPolicies.NONE`: No backoff, which is also the default backoff strategy for `RetryPolicy`.
+There are some built-in backoff strategies under `BackoffPolicies`.
 
 You can combine multiple backoff strategies to create more complex backoff strategies:
 Kotlin:
@@ -66,9 +54,6 @@ Java:
 ```java
 BackoffPolicy backoffPolicy = new FixedDelay(Duration.ofSeconds(10)).plus(new RandomDelay(Duration.ofSeconds(0), Duration.ofSeconds(10)));
 ```
-
-# Built-in Failure Listeners
-- `FailureListeners.SimpleLoggingFailureListener(log, stack)`: Simple logging output. `RetryPolicy` has built-in it for retry logging output.
 
 ## License
 [Apache License 2.0](LICENSE)

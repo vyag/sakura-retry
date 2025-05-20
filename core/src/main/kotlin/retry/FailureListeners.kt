@@ -24,27 +24,27 @@ object FailureListeners {
     
     @JvmStatic
     @JvmOverloads
-    fun logging(logEnabled: Rule = Rules.TRUE, stackEnabled: Rule = Rules.FALSE) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
+    fun logging(logEnabled: RetryPolicy = RetryPolicies.TRUE, stackEnabled: RetryPolicy = RetryPolicies.FALSE) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
     
 }
 
 /**
  * A simple logging failure listener.
  *
- * @param logRule if true, logs invocation errors
- * @param stackRule if true, logs stack trace of invocation errors
+ * @param logRetryPolicy if true, logs invocation errors
+ * @param stackRetryPolicy if true, logs stack trace of invocation errors
  */
 data class SimpleLoggingFailureListener(
-    private val logRule: Rule,
-    private val stackRule: Rule
+    private val logRetryPolicy: RetryPolicy,
+    private val stackRetryPolicy: RetryPolicy
 ) : FailureListener {
 
     override fun onFailure(call: String?, context: Context, allowRetry: Boolean, backOffDuration: Duration) {
-        if (logRule.check(context)) {
+        if (logRetryPolicy.check(context)) {
             LOG.info(
                 "Invocation failed, context: {}, retry: {}, backOff: {}.",
                 *arrayListOf(context, allowRetry, backOffDuration.toReadableString()).let {
-                    if (stackRule.check(context)) {
+                    if (stackRetryPolicy.check(context)) {
                         it.add(context.failure)
                     }
                     it.toTypedArray()
