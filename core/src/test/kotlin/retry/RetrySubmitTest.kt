@@ -46,8 +46,8 @@ class RetrySubmitTest {
     @Test
     @Timeout(1)
     fun testRetrySuccess() {
-        val retryPolicy = RetryPolicy.Builder(
-            retryRule = MaxAttempts(3),
+        val retryTemplate = RetryTemplate.Builder(
+            retryPolicy = MaxAttempts(3),
             backoffPolicy = BackoffPolicies.NONE
         ).build()
         val mock = Mockito.mock(Callable::class.java)
@@ -55,15 +55,15 @@ class RetrySubmitTest {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        assertThat(retryPolicy.submit(executor, function = { mock.call() }).get()).isEqualTo("done")
+        assertThat(retryTemplate.submit(executor, function = { mock.call() }).get()).isEqualTo("done")
         Mockito.verify(mock, Mockito.times(3)).call()
     }
 
     @Test
     @Timeout(1)
     fun testRetryFail() {
-        val retryPolicy = RetryPolicy.Builder(
-            retryRule = MaxAttempts(3),
+        val retryTemplate = RetryTemplate.Builder(
+            retryPolicy = MaxAttempts(3),
             backoffPolicy = BackoffPolicies.NONE
         ).build()
         val mock = Mockito.mock(Callable::class.java)
@@ -72,7 +72,7 @@ class RetrySubmitTest {
         }).doReturn("done").`when`(mock).call()
 
         val error = assertFailsWith<ExecutionException> {
-            retryPolicy.submit(executor, function = { mock.call() }).get()
+            retryTemplate.submit(executor, function = { mock.call() }).get()
         }
         assertThat(error.cause).isInstanceOf(IOException::class.java)
 
@@ -82,8 +82,8 @@ class RetrySubmitTest {
     @Test
     @Timeout(5)
     fun testRetrySuccessWithMultipleSubmits() {
-        val retryPolicy = RetryPolicy.Builder(
-            retryRule = MaxAttempts(3),
+        val retryTemplate = RetryTemplate.Builder(
+            retryPolicy = MaxAttempts(3),
             backoffPolicy = FixedDelay(1.seconds)
         ).build()
         val mocks = Array(100) {
@@ -95,7 +95,7 @@ class RetrySubmitTest {
         }
 
         val results = Array(100) {
-            retryPolicy.submit(executor, "call-$it") { 
+            retryTemplate.submit(executor, "call-$it") { 
                 mocks[it].call() 
             }
         }

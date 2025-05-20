@@ -17,14 +17,14 @@
 package retry.demo.kotlin
 
 import retry.BackoffPolicies
-import retry.RetryPolicy
-import retry.Rules
+import retry.RetryTemplate
+import retry.RetryPolicies
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Callable
 
 fun main() {
-    val policy = RetryPolicy.Builder(Rules.maxTimeElapsedInSeconds(1), BackoffPolicies.NONE).build()
+    val policy = RetryTemplate.Builder(RetryPolicies.maxTimeElapsedInSeconds(1), BackoffPolicies.NONE).build()
     val call = policy.proxy(Callable::class.java, Impl())
     println(call.call())
 }

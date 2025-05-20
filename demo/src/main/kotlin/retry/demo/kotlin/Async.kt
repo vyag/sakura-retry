@@ -18,8 +18,8 @@ package retry.demo.kotlin
 
 import retry.BackoffPolicies.fixedDelayInSeconds
 import retry.Context
-import retry.RetryPolicy
-import retry.Rules
+import retry.RetryTemplate
+import retry.RetryPolicies
 import java.io.IOException
 import java.time.Duration
 import java.util.*
@@ -28,7 +28,7 @@ import java.util.concurrent.Executors
 fun main() {
     val random = Random(System.currentTimeMillis())
     Executors.newScheduledThreadPool(4).use { executor ->
-        val policy = RetryPolicy.Builder(Rules.TRUE, fixedDelayInSeconds(1))
+        val policy = RetryTemplate.Builder(RetryPolicies.TRUE, fixedDelayInSeconds(1))
             .addFailureListener { call: String?, context: Context, allowRetry: Boolean, backOffDuration: Duration ->
                 println("Call $call, attempt ${context.attemptCount} failed: (${context.failure.message})")
             }.build()

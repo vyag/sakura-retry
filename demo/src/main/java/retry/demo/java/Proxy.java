@@ -19,7 +19,7 @@ package retry.demo.java;
 
 import retry.BackoffPolicies;
 import retry.MaxAttempts;
-import retry.RetryPolicy;
+import retry.RetryTemplate;
 
 import java.io.IOException;
 import java.util.Random;
@@ -28,7 +28,7 @@ import java.util.concurrent.Callable;
 public class Proxy {
 
     public static void main(String[] args) throws Exception {
-        RetryPolicy policy = new RetryPolicy.Builder(new MaxAttempts(99), BackoffPolicies.NONE).build();
+        RetryTemplate policy = new RetryTemplate.Builder(new MaxAttempts(99), BackoffPolicies.NONE).build();
         Callable<?> call = policy.proxy(Callable.class, new Impl());
         System.out.println(call.call());
     }

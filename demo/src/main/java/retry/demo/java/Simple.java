@@ -19,14 +19,14 @@ package retry.demo.java;
 
 import retry.BackoffPolicies;
 import retry.FailureListeners;
-import retry.RetryPolicy;
+import retry.RetryTemplate;
 
-import static retry.Rules.maxAttempts;
+import static retry.RetryPolicies.maxAttempts;
 
 public class Simple {
 
     public static void main(String[] args) throws Exception {
-        RetryPolicy policy = new RetryPolicy.Builder(maxAttempts(3), BackoffPolicies.NONE)
+        RetryTemplate policy = new RetryTemplate.Builder(maxAttempts(3), BackoffPolicies.NONE)
             .addFailureListener(FailureListeners.logging())
             .build();
         policy.call(

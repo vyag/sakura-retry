@@ -18,8 +18,8 @@
 package retry.demo.java;
 
 import retry.BackoffPolicies;
-import retry.RetryPolicy;
-import retry.Rules;
+import retry.RetryTemplate;
+import retry.RetryPolicies;
 
 import java.io.IOException;
 import java.util.Random;
@@ -33,7 +33,7 @@ public class Async {
     public static void main(String[] args) {
         Random random = new Random(System.currentTimeMillis());
         try (ScheduledExecutorService executor = Executors.newScheduledThreadPool(4)) {
-            RetryPolicy policy = new RetryPolicy.Builder(Rules.TRUE, BackoffPolicies.fixedDelayInSeconds(1))
+            RetryTemplate policy = new RetryTemplate.Builder(RetryPolicies.TRUE, BackoffPolicies.fixedDelayInSeconds(1))
                 .addFailureListener((call, context, allowRetry, backOffDuration) ->
                     System.out.println("Call " + call + ", attempt " + context.getAttemptCount() + " failed: (" + context.getFailure().getMessage() + ")"))
                 .build();

@@ -18,37 +18,37 @@
 package retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.Rules.maxAttempts
-import retry.Rules.maxTimeElapsed
+import retry.RetryPolicies.maxAttempts
+import retry.RetryPolicies.maxTimeElapsed
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant
 import kotlin.test.Test
 
-class RuleTest {
+class RetryPolicyTest {
 
     @Test
     fun testLogicOperator() {
-        assertThat((Rules.FALSE and Rules.TRUE)
+        assertThat((RetryPolicies.FALSE and RetryPolicies.TRUE)
             .check(Context(Instant.MIN, Instant.MIN, 1, IOException())))
             .isFalse()
 
-        assertThat((Rules.FALSE or Rules.TRUE)
+        assertThat((RetryPolicies.FALSE or RetryPolicies.TRUE)
             .check(Context(Instant.MIN, Instant.MAX, Int.MAX_VALUE, IOException())))
             .isTrue()
 
-        assertThat((!Rules.FALSE)
+        assertThat((!RetryPolicies.FALSE)
            .check(Context(Instant.MIN, Instant.MAX, Int.MAX_VALUE, IOException())))
            .isTrue()
     }
     
     @Test
     fun testToString() {
-        assertThat((Rules.FALSE and (!maxAttempts(5))).toString())
+        assertThat((RetryPolicies.FALSE and (!maxAttempts(5))).toString())
             .isEqualTo("((false) && (!(context.attemptCount < 5)))")
-        assertThat(((Rules.TRUE or (!maxAttempts(5))).toString(Context(Instant.MIN, Instant.MAX, 1, IOException()))))
+        assertThat(((RetryPolicies.TRUE or (!maxAttempts(5))).toString(Context(Instant.MIN, Instant.MAX, 1, IOException()))))
             .isEqualTo("((true) || (!(context.attemptCount=1 < 5)))")
-        assertThat(((Rules.TRUE and (!maxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(Instant.MIN, Instant.MIN, 1, IOException()))))
+        assertThat(((RetryPolicies.TRUE and (!maxTimeElapsed(Duration.ofMinutes(1)))).toString(Context(Instant.MIN, Instant.MIN, 1, IOException()))))
             .isEqualTo("((true) && (!(context.duration=PT0S < PT1M)))")
     }
 }
