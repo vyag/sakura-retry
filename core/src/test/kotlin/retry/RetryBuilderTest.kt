@@ -29,7 +29,6 @@ class RetryBuilderTest {
     fun testDefault() {
         val retry = RetryPolicy.Builder(Rules.TRUE, BackoffPolicies.NONE).build()
         assertThat(retry.retryRule).isEqualTo(default.retryRule)
-        assertThat(retry.abortRule).isEqualTo(default.abortRule)
         assertThat(retry.backoffPolicy).isEqualTo(default.backoffPolicy)
         assertThat(retry.failureListeners).isEqualTo(default.failureListeners)
         assertThat(retry).isNotSameAs(default)
@@ -43,11 +42,9 @@ class RetryBuilderTest {
         val failureListener = Mockito.mock(FailureListener::class.java)
         
         val retry = RetryPolicy.Builder(retryRule, backoff)
-            .abortRule(abortRule)
             .addFailureListener(failureListener)
             .build()
         assertThat(retry.retryRule).isSameAs(retryRule)
-        assertThat(retry.abortRule).isSameAs(abortRule)
         assertThat(retry.backoffPolicy).isSameAs(backoff)
         assertThat(retry.failureListeners).containsAll(default.failureListeners)
         assertThat(retry.failureListeners).contains(failureListener)

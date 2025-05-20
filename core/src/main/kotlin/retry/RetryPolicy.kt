@@ -38,10 +38,7 @@ import java.util.function.Function
 class RetryPolicy private constructor(
     val retryRule: Rule,
     val backoffPolicy: BackoffPolicy,
-    val abortRule: Rule,
     val failureListeners: List<FailureListener>) {
-
-    private val rule = !abortRule and retryRule
 
     @JvmSynthetic
     internal var backoffExecutor: BackoffExecutor = DefaultBackoffExecutor()
@@ -66,14 +63,14 @@ class RetryPolicy private constructor(
                 return result
             } catch (t: Throwable) {
                 val context = Context(startTime, Instant.now(), attemptCount, t)
-                val allowRetry = rule.check(context)
+                val allowRetry = retryRule.check(context)
                 val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                 for (failureListener in failureListeners) {
                     failureListener.onFailure(name, context, allowRetry, backOff)
                 }
                 if (allowRetry) {
                     backoffExecutor.backoff(backOff)
-                    if (rule.check(context)) {
+                    if (retryRule.check(context)) {
                         attemptCount++
                         continue
                     }
@@ -102,13 +99,13 @@ class RetryPolicy private constructor(
                     result.complete(function.call())
                 } catch (t: Throwable) {
                     val context = Context(startTime, Instant.now(), attemptCount, t)
-                    val allowRetry = rule.check(context)
+                    val allowRetry = retryRule.check(context)
                     val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                     for (failureListener in failureListeners) {
                         failureListener.onFailure(name, context, allowRetry, backOff)
                     }
                     if (allowRetry) {
-                        if (rule.check(context)) {
+                        if (retryRule.check(context)) {
                             attemptCount++
                         }
                         executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
@@ -144,36 +141,7 @@ class RetryPolicy private constructor(
      */
     class Builder(private val retryRule: Rule, private val backoffPolicy: BackoffPolicy) {
 
-        private var abortRule: Rule = DEFAULT_ABORT_RULE
-
         private var failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList()
-
-        /**
-         * Sets the abort rule.
-         *
-         * @param abortRule the abort rule
-         */
-        fun abortRule(abortRule: Rule) = apply {
-            this.abortRule = abortRule
-        }
-
-        /**
-         * Updates the abort rule.
-         *
-         * @param updater the updater
-         */
-        fun updateAbortRule(updater: Function<Rule, Rule>) = apply {
-            this.abortRule = updater.apply(abortRule)
-        }
-
-        /**
-         * Adds the abort rule.
-         *
-         * @param abortRule the abort rule
-         */
-        fun addAbortRule(abortRule: Rule) = apply {
-            this.abortRule = this.abortRule or abortRule
-        }
 
         /**
          * Sets the failure listeners.
@@ -206,11 +174,7 @@ class RetryPolicy private constructor(
          * @return the [RetryPolicy]
          */
         fun build() : RetryPolicy {
-            return RetryPolicy(retryRule = retryRule, backoffPolicy = backoffPolicy, abortRule = abortRule, Collections.unmodifiableList(failureListeners))
-        }
-
-        private companion object {
-            private val DEFAULT_ABORT_RULE: Rule = Rules.UNRECOVERABLE_EXCEPTIONS
+            return RetryPolicy(retryRule = retryRule, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners))
         }
     }
 

@@ -29,14 +29,11 @@ public class BuilderTest {
     public void testBuild() {
         Rule retryRule = new MaxAttempts(5);
         BackoffPolicy backoff = new FixedDelay(Duration.ofSeconds(1));
-        Rule abortRule = new MaxTimeElapsed(Duration.ofSeconds(10));
         FailureListener failureListener = (call, context, allowRetry, backOffDuration) -> {};
         RetryPolicy retryPolicy = new RetryPolicy.Builder(retryRule, backoff)
-            .abortRule(abortRule)
             .addFailureListener(failureListener)
             .build();
         assertThat(retryPolicy.getRetryRule()).isSameAs(retryRule);
-        assertThat(retryPolicy.getAbortRule()).isSameAs(abortRule);
         assertThat(retryPolicy.getBackoffPolicy()).isSameAs(backoff);
         assertThat(retryPolicy.getFailureListeners()).containsAll(new RetryPolicy.Builder(Rules.TRUE, BackoffPolicies.NONE).build().getFailureListeners());
         assertThat(retryPolicy.getFailureListeners()).contains(failureListener);

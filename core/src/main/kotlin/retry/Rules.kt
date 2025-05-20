@@ -111,7 +111,7 @@ object Rules {
      * @see [ExceptionIn]
      */
     @JvmField
-    val UNRECOVERABLE_EXCEPTIONS = exceptionIn(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
+    val UNRECOVERABLE = exceptionIn(InterruptedException::class.java, RuntimeException::class.java, Error::class.java)
 }
 
 /**
