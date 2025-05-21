@@ -111,6 +111,9 @@
                         </goals>
                         <configuration>
                             <jvmTarget>1.8</jvmTarget>
+                            <args>
+                                <arg>-Xjvm-default=all</arg>
+                            </args>
                         </configuration>
                     </execution>
                     <execution>
