@@ -14,7 +14,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package retry
+package com.github.vyag.retry
 
 import java.time.Duration
 

@@ -22,15 +22,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.marks-yag</groupId>
-        <artifactId>retry-parent</artifactId>
+        <artifactId>sakura-retry-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>retry-demo</artifactId>
-    <url>https://github.com/marks-yag/retry</url>
+    <artifactId>sakura-retry-demo</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Retry Demo</name>
+    <name>Sakura Retry Demo</name>
     
     <properties>
         <maven.compiler.source>21</maven.compiler.source>
@@ -40,7 +39,7 @@
     <dependencies>
         <dependency>
             <groupId>com.github.marks-yag</groupId>
-            <artifactId>retry</artifactId>
+            <artifactId>sakura-retry</artifactId>
             <version>${project.version}</version>
         </dependency>
 

@@ -14,12 +14,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package retry
+package com.github.vyag.retry
 
 import org.slf4j.LoggerFactory
-import retry.internal.BackoffExecutor
-import retry.internal.DefaultBackoffExecutor
-import retry.internal.RetryHandler
+import com.github.vyag.retry.internal.BackoffExecutor
+import com.github.vyag.retry.internal.DefaultBackoffExecutor
+import com.github.vyag.retry.internal.RetryHandler
 import java.lang.reflect.Proxy
 import java.time.Duration
 import java.time.Instant
@@ -84,7 +84,7 @@ class RetryTemplate private constructor(
      * @param executor The executor to submit the function.
      * @param name The optional name of the function.
      * @param function The function to submit.
-     * @return The [java.util.concurrent.Future] result of the function.
+     * @return The [Future] result of the function.
      */
     @JvmOverloads
     fun <T> submit(executor: ScheduledExecutorService, name: String? = null, function: Callable<T>): CompletableFuture<T> {

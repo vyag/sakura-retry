@@ -22,16 +22,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.github.marks-yag</groupId>
-        <artifactId>retry-parent</artifactId>
+        <artifactId>sakura-retry-parent</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
-    <artifactId>retry</artifactId>
-    <url>https://github.com/marks-yag/retry</url>
+    <artifactId>sakura-retry</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>Retry Core</name>
-
+    <name>Sakura Retry</name>
 
     <dependencies>
         <dependency>
@@ -125,30 +123,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.pitest</groupId>
-                <artifactId>pitest-maven</artifactId>
-                <version>1.18.2</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.pitest</groupId>
-                        <artifactId>pitest-junit5-plugin</artifactId>
-                        <version>1.2.2</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <targetClasses>
-                        <param>retry.*</param>
-                    </targetClasses>
-                    <avoidCallsTo>
-                        <avoidCallsTo>kotlin.jvm.internal</avoidCallsTo>
-                        <avoidCallsTo>kotlinx.coroutines</avoidCallsTo>
-                        <avoidCallsTo>org.slf4j</avoidCallsTo>
-                    </avoidCallsTo>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
