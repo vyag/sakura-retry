@@ -14,12 +14,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package retry.demo.kotlin
+package com.github.vyag.retry.demo.kotlin
 
-import retry.BackoffPolicies.fixedDelayInSeconds
-import retry.Context
-import retry.RetryTemplate
-import retry.RetryPolicies
+import com.github.vyag.retry.BackoffPolicies.fixedDelayInSeconds
+import com.github.vyag.retry.Context
+import com.github.vyag.retry.RetryTemplate
+import com.github.vyag.retry.RetryPolicies
 import java.io.IOException
 import java.time.Duration
 import java.util.*

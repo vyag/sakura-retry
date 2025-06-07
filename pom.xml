@@ -22,15 +22,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.marks-yag</groupId>
-    <artifactId>retry-parent</artifactId>
-    <url>https://github.com/marks-yag/retry</url>
+    <artifactId>sakura-retry-parent</artifactId>
+    <url>https://github.com/vyag/sakura-retry</url>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Retry</name>
+    <name>Sakura Retry Parent</name>
 
     <description>
-        An elegant(🌝) lightweight retry framework for JVM languages
+        An elegant(useless🌝) lightweight retry framework for JVM languages
     </description>
 
     <properties>
@@ -48,15 +48,15 @@
     </properties>
 
     <scm>
-        <connection>scm:git:git://github.com/marks-yag/retry.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/marks-yag/retry.git</developerConnection>
-        <url>https://github.com/marks-yag/retry</url>
+        <connection>scm:git:git://github.com/vyag/sakura-retry.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/vyag/sakura-retry.git</developerConnection>
+        <url>https://github.com/vyag/sakura-retry</url>
         <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>
         <site>
-            <url>https://github.com/marks-yag/retry</url>
+            <url>https://github.com/vyag/sakura-retry</url>
         </site>
         <snapshotRepository>
             <id>ossrh</id>
@@ -70,7 +70,7 @@
 
     <developers>
         <developer>
-            <id>marks-yag</id>
+            <id>vyag</id>
             <name>Mark</name>
             <email>marks.yag@gmail.com</email>
         </developer>
@@ -91,29 +91,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.pitest</groupId>
-                <artifactId>pitest-maven</artifactId>
-                <version>1.18.2</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.pitest</groupId>
-                        <artifactId>pitest-junit5-plugin</artifactId>
-                        <version>1.2.2</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <targetClasses>
-                        <param>retry.*</param>
-                    </targetClasses>
-                    <avoidCallsTo>
-                        <avoidCallsTo>kotlin.jvm.internal</avoidCallsTo>
-                        <avoidCallsTo>kotlinx.coroutines</avoidCallsTo>
-                        <avoidCallsTo>org.slf4j</avoidCallsTo>
-                    </avoidCallsTo>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>

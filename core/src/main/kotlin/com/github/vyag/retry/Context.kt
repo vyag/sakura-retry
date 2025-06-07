@@ -15,9 +15,9 @@
  * under the License.
  */
 
-package retry
+package com.github.vyag.retry
 
-import retry.internal.Utils.toReadableString
+import com.github.vyag.retry.internal.Utils.toReadableString
 import java.time.Duration
 import java.time.Instant
 

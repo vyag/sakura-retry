@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package retry
+package com.github.vyag.retry
 
 /**
  * RetryPolicy is a boolean expression that can be evaluated in the context of a given [Context].

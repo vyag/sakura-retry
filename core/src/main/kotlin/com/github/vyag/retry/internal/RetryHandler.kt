@@ -15,9 +15,9 @@
  * under the License.
  */
 
-package retry.internal
+package com.github.vyag.retry.internal
 
-import retry.RetryTemplate
+import com.github.vyag.retry.RetryTemplate
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method

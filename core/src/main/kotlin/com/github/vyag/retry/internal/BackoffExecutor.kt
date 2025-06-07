@@ -14,23 +14,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package retry
+
+package com.github.vyag.retry.internal
 
 import java.time.Duration
 
-/**
- * The interface for failure listener.
- */
-fun interface FailureListener {
+internal fun interface BackoffExecutor {
 
-    /**
-     * Invoked when an attempt fails. 
-     *
-     * @param call the call that failed
-     * @param context the context of the retry
-     * @param allowRetry true if the retry is allowed
-     * @param backOffDuration the back off duration
-     */
-    fun onFailure(call: String?, context: Context, allowRetry: Boolean, backOffDuration: Duration)
-
+    fun backoff(duration: Duration)
+    
 }

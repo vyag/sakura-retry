@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package retry.internal
+package com.github.vyag.retry.internal
 
 import java.time.Duration
 import java.util.*

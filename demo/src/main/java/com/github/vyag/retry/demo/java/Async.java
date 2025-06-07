@@ -15,11 +15,11 @@
  * under the License.
  */
 
-package retry.demo.java;
+package com.github.vyag.retry.demo.java;
 
-import retry.BackoffPolicies;
-import retry.RetryTemplate;
-import retry.RetryPolicies;
+import com.github.vyag.retry.BackoffPolicies;
+import com.github.vyag.retry.RetryTemplate;
+import com.github.vyag.retry.RetryPolicies;
 
 import java.io.IOException;
 import java.util.Random;
