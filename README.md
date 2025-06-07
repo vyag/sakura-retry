@@ -1,6 +1,6 @@
 [![Maven Central Version](https://img.shields.io/maven-central/v/com.github.marks-yag/sakura-retry)](https://maven-badges.herokuapp.com/maven-central/com.github.marks-yag/sakura-retry)
 ![Maven Central Last Update](https://img.shields.io/maven-central/last-update/com.github.marks-yag/sakura-retry)
-[![Java CI with Maven](https://github.com/marks-yag/sakura-retry/actions/workflows/maven.yml/badge.svg)](https://github.com/marks-yag/sakura-retry/actions/workflows/maven.yml)
+[![Java CI with Maven](https://github.com/vyag/sakura-retry/actions/workflows/maven.yml/badge.svg)](https://github.com/vyag/sakura-retry/actions/workflows/maven.yml)
 
 [中文](README_cn.md) | English
 
