@@ -23,10 +23,10 @@
     <parent>
         <groupId>com.github.marks-yag</groupId>
         <artifactId>sakura-retry-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0.RC3</version>
     </parent>
     <artifactId>sakura-retry-demo</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0.RC3</version>
     <packaging>jar</packaging>
 
     <name>Sakura Retry Demo</name>
