@@ -16,15 +16,19 @@
  */
 package sakura.retry.demo.kotlin
 
-import sakura.retry.BackoffPolicies
-import sakura.retry.RetryTemplate
+import sakura.retry.MaxAttempts
 import sakura.retry.RetryPolicies
+import sakura.retry.RetryPolicies.maxAttempts
+import sakura.retry.RetryPolicies.maxTimeElapsedInSeconds
+import sakura.retry.RetryTemplate
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Callable
 
 fun main() {
-    val policy = RetryTemplate.Builder(RetryPolicies.maxTimeElapsedInSeconds(1), BackoffPolicies.NONE).build()
+    val policy = RetryTemplate.Builder()
+        .setRetryPolicy(maxAttempts(99))
+        .build()
     val call = policy.proxy(Callable::class.java, Impl())
     println(call.call())
 }

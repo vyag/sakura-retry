@@ -19,14 +19,14 @@ package sakura.retry.demo.kotlin
 import sakura.retry.BackoffPolicies.fixedDelayInSeconds
 import sakura.retry.BackoffPolicies.randomDelayInSeconds
 import sakura.retry.FailureListeners.logging
-import sakura.retry.RetryTemplate
 import sakura.retry.RetryPolicies.maxAttempts
 import sakura.retry.RetryPolicies.runtimeException
+import sakura.retry.RetryTemplate
 
 fun main() {
-    val retryPolicy = maxAttempts(10) and !runtimeException()
-    val backoffPolicy = fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)
-    val template = RetryTemplate.Builder(retryPolicy, backoffPolicy)
+    val template = RetryTemplate.Builder()
+        .setRetryPolicy(maxAttempts(3))
+        .setBackoffPolicy(fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)) 
         .addFailureListener(logging())
         .build()
     template.call {

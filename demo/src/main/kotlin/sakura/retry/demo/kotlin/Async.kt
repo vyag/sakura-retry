@@ -19,7 +19,6 @@ package sakura.retry.demo.kotlin
 import sakura.retry.BackoffPolicies.fixedDelayInSeconds
 import sakura.retry.Context
 import sakura.retry.RetryTemplate
-import sakura.retry.RetryPolicies
 import java.io.IOException
 import java.time.Duration
 import java.util.*
@@ -28,8 +27,9 @@ import java.util.concurrent.Executors
 fun main() {
     val random = Random(System.currentTimeMillis())
     Executors.newScheduledThreadPool(4).use { executor ->
-        val policy = RetryTemplate.Builder(RetryPolicies.TRUE, fixedDelayInSeconds(1))
-            .addFailureListener { call: String?, context: Context, allowRetry: Boolean, backOffDuration: Duration ->
+        val policy = RetryTemplate.Builder()
+            .setBackoffPolicy(fixedDelayInSeconds(1))
+            .addFailureListener { call: String?, context: Context, _: Boolean, _: Duration ->
                 println("Call $call, attempt ${context.attemptCount} failed: (${context.failure.message})")
             }.build()
         (0 until 3).map { 
