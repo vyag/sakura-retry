@@ -14,22 +14,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package retry
+package sakura.retry
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.RepeatedTest
-import retry.BackoffPolicies.randomDelayInSeconds
+import sakura.retry.RetryPolicies.maxTimeElapsed
 import java.time.Instant
+import kotlin.test.Test
+import kotlin.time.Duration.Companion.seconds
 
-class RandomDelayTest {
+class MaxTimeElapsedTest {
 
-    private val error = Exception()
+    private val cond = maxTimeElapsed(1.seconds)
+    
+    @Test
+    fun testShouldMatchBeforeDeadline() {
+        assertThat(cond.check(Context(Instant.EPOCH, Instant.ofEpochMilli(999), Int.MAX_VALUE, RuntimeException()))).isTrue()
+    }
 
-    @RepeatedTest(1000)
-    fun testBackoffDistribution() {
-        val backoff = randomDelayInSeconds(-100, 100)
-        val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error)).toMillis()
-        assertThat(backoffDuration).isBetween(-100000, 100000)
+    @Test
+    fun testShouldNotMatchAfterDeadline() {
+        assertThat(cond.check(Context(Instant.EPOCH, Instant.ofEpochMilli(1000), 1, RuntimeException()))).isFalse()
+        assertThat(cond.check(Context(Instant.EPOCH, Instant.ofEpochMilli(1001), 1, RuntimeException()))).isFalse()
     }
 }

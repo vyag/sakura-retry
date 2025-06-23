@@ -17,7 +17,6 @@
 
 package sakura.retry.demo.java;
 
-import sakura.retry.FailureListeners;
 import sakura.retry.RetryTemplate;
 
 import static sakura.retry.BackoffPolicies.fixedDelayInSeconds;
@@ -33,10 +32,9 @@ public class Simple {
             .setBackoffPolicy(fixedDelayInSeconds(10).plus(randomDelayInSeconds(0, 1)))
             .addFailureListener(logging())
             .build();
-        policy.call(
+        policy.execute(
             () -> {
                 System.out.println("Hello world!");
-                return null;
             }
         );
     }

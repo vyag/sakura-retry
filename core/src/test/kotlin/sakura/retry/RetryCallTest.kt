@@ -15,11 +15,11 @@
  * under the License.
  */
 
-package retry
+package sakura.retry
 
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
-import retry.internal.BackoffExecutor
+import sakura.retry.internal.BackoffExecutor
 import java.io.IOException
 import java.time.Duration
 import java.util.concurrent.Callable
@@ -32,10 +32,7 @@ class RetryCallTest {
 
     @Test
     fun testNoError() {
-        val retry = RetryTemplate.Builder(
-            retryPolicy = RetryPolicies.TRUE,
-            backoffPolicy = BackoffPolicies.NONE
-        ).build()
+        val retry = RetryTemplate.Builder().setRetryPolicy(RetryPolicies.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         retry.call {
             mock.call()
@@ -45,10 +42,7 @@ class RetryCallTest {
 
     @Test
     fun testRetrySuccess() {
-        val retryTemplate = RetryTemplate.Builder(
-            retryPolicy = MaxAttempts(10),
-            backoffPolicy = BackoffPolicies.NONE
-        ).build()
+        val retryTemplate = RetryTemplate.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(9) {
             IOException()
@@ -62,10 +56,7 @@ class RetryCallTest {
 
     @Test
     fun testRetryFailed() {
-        val retryTemplate = RetryTemplate.Builder(
-            retryPolicy = MaxAttempts(10),
-            backoffPolicy = BackoffPolicies.NONE
-        ).build()
+        val retryTemplate = RetryTemplate.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 
@@ -80,12 +71,12 @@ class RetryCallTest {
     @Test
     fun testRetryWithRecovery() {
         val broken = AtomicBoolean(true)
-        val retryTemplate = RetryTemplate.Builder(
-            retryPolicy = MaxAttempts(10),
-            backoffPolicy = BackoffPolicies.NONE
-        ).addFailureListener { _, _, _, _ -> 
-            broken.set(false)
-        }.build()
+        val retryTemplate = RetryTemplate.Builder()
+            .setRetryPolicy(MaxAttempts(10))
+            .setBackoffPolicy(BackoffPolicies.NONE)
+            .addFailureListener { _, _, _, _ -> 
+                broken.set(false)
+            }.build()
         var count = 0
         val result = retryTemplate.call {
             count++
@@ -106,10 +97,7 @@ class RetryCallTest {
             backoffCount++
         }
 
-        val retryTemplate = RetryTemplate.Builder(
-            retryPolicy = MaxAttempts(10),
-            backoffPolicy = FixedDelay(Duration.ofSeconds(1))
-        ).build()
+        val retryTemplate = RetryTemplate.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(FixedDelay(Duration.ofSeconds(1))).build()
         retryTemplate.backoffExecutor = fakeSleeper
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()

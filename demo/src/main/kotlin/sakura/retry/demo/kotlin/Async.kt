@@ -33,7 +33,7 @@ fun main() {
                 println("Call $call, attempt ${context.attemptCount} failed: (${context.failure.message})")
             }.build()
         (0 until 3).map { 
-            policy.submit(executor, "call$it") {
+            policy.call(executor, "call$it") {
                 random.nextDouble(10.0).takeUnless { it < 7 } ?: throw IOException("Too small")    
             } 
         }.map { 

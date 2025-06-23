@@ -16,10 +16,7 @@
  */
 package sakura.retry.demo.kotlin
 
-import sakura.retry.MaxAttempts
-import sakura.retry.RetryPolicies
 import sakura.retry.RetryPolicies.maxAttempts
-import sakura.retry.RetryPolicies.maxTimeElapsedInSeconds
 import sakura.retry.RetryTemplate
 import java.io.IOException
 import java.util.*

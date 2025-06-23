@@ -15,11 +15,11 @@
  * under the License.
  */
 
-package retry
+package sakura.retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.RetryPolicies.maxAttempts
-import retry.RetryPolicies.maxTimeElapsed
+import sakura.retry.RetryPolicies.maxAttempts
+import sakura.retry.RetryPolicies.maxTimeElapsed
 import java.io.IOException
 import java.time.Duration
 import java.time.Instant

@@ -15,7 +15,7 @@
  * under the License.
  */
 
-package retry
+package sakura.retry
 
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
@@ -28,10 +28,7 @@ class RetryProxyTest {
 
     @Test
     fun testNoError() {
-        val retryTemplate = RetryTemplate.Builder(
-            retryPolicy = MaxAttempts(10),
-            backoffPolicy = BackoffPolicies.NONE
-        ).build()
+        val retryTemplate = RetryTemplate.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         val foo = retryTemplate.proxy(Callable::class.java, mock)
         foo.call()
@@ -40,10 +37,7 @@ class RetryProxyTest {
 
     @Test
     fun testRetrySuccess() {
-        val retryTemplate = RetryTemplate.Builder(
-            retryPolicy = MaxAttempts(10),
-            backoffPolicy = BackoffPolicies.NONE
-        ).build()
+        val retryTemplate = RetryTemplate.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(9) {
             IOException()
@@ -56,10 +50,7 @@ class RetryProxyTest {
 
     @Test
     fun testRetryFailed() {
-        val retryTemplate = RetryTemplate.Builder(
-            retryPolicy = MaxAttempts(10),
-            backoffPolicy = BackoffPolicies.NONE
-        ).build()
+        val retryTemplate = RetryTemplate.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 

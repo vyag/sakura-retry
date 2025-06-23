@@ -14,26 +14,24 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package retry
+
+package sakura.retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.RetryPolicies.maxTimeElapsed
+import sakura.retry.BackoffPolicies.fixedDelay
+import java.time.Duration
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
-class MaxTimeElapsedTest {
+class BackoffCombinationTest {
 
-    private val cond = maxTimeElapsed(1.seconds)
-    
-    @Test
-    fun testShouldMatchBeforeDeadline() {
-        assertThat(cond.check(Context(Instant.EPOCH, Instant.ofEpochMilli(999), Int.MAX_VALUE, RuntimeException()))).isTrue()
-    }
+    private val error = Exception()
 
     @Test
-    fun testShouldNotMatchAfterDeadline() {
-        assertThat(cond.check(Context(Instant.EPOCH, Instant.ofEpochMilli(1000), 1, RuntimeException()))).isFalse()
-        assertThat(cond.check(Context(Instant.EPOCH, Instant.ofEpochMilli(1001), 1, RuntimeException()))).isFalse()
+    fun testBackoffCombination() {
+        val backoff = fixedDelay(1.seconds) + FixedDelay(1.seconds)
+        val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error))
+        assertThat(backoffDuration).isEqualTo(Duration.ofSeconds(2))
     }
 }

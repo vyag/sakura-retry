@@ -25,13 +25,13 @@ object RetryPolicies {
      * A policy that always returns true.
      */
     @JvmField
-    val ALWAYS = object: RetryPolicy {
+    val TRUE = object: RetryPolicy {
         override fun check(context: Context): Boolean {
             return true
         }
 
         override fun toString(): String {
-            return "always"
+            return "true"
         }
     }
 
@@ -39,13 +39,13 @@ object RetryPolicies {
      * A policy that always returns false.
      */
     @JvmField
-    val NEVER = object: RetryPolicy {
+    val FALSE = object: RetryPolicy {
         override fun check(context: Context): Boolean {
             return false
         }
 
         override fun toString(): String {
-            return "never"
+            return "false"
         }
     }
     

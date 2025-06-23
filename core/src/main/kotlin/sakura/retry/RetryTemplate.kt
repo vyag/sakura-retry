@@ -42,7 +42,7 @@ class RetryTemplate private constructor(
     internal var backoffExecutor: BackoffExecutor = DefaultBackoffExecutor()
 
     /**
-     * Calls the given function with retry.
+     * Call the given function with retry.
      * 
      * @param name The optional name of the function.
      * @param function The function to call.
@@ -79,7 +79,24 @@ class RetryTemplate private constructor(
     }
 
     /**
-     * Submits the given function with retry.
+     * Execute the given task with retry.
+     *
+     * @param name The optional name of the task.
+     * @param runnable The task to execute.
+     * @throws Exception The original exception by the task if the retry is aborted.
+     * 
+     * @see call
+     */
+    @JvmOverloads
+    @Throws(Exception::class)
+    fun execute(name: String? = null, runnable: Runnable) {
+        call(name) {
+            runnable.run()
+        }
+    }
+
+    /**
+     * Submit the given function with retry.
      *
      * @param executor The executor to submit the function.
      * @param name The optional name of the function.
@@ -87,7 +104,7 @@ class RetryTemplate private constructor(
      * @return The [Future] result of the function.
      */
     @JvmOverloads
-    fun <T> submit(executor: ScheduledExecutorService, name: String? = null, function: Callable<T>): CompletableFuture<T> {
+    fun <T> call(executor: ScheduledExecutorService, name: String? = null, function: Callable<T>): CompletableFuture<T> {
         var attemptCount = 1
         val startTime = Instant.now()
         val result = CompletableFuture<T>()
@@ -115,9 +132,27 @@ class RetryTemplate private constructor(
         }
         executor.execute(Task())
         return result
-    }     
+    }
 
     /**
+     * Submit the given task with retry.
+     *
+     * @param executor The executor to submit the task.
+     * @param name The optional name of the task.
+     * @param task The task to execute.
+     * @return The [Future] result of the task.
+     * 
+     * @see call
+     */
+    @JvmOverloads
+    fun execute(executor: ScheduledExecutorService, name: String? = null, task: Runnable): CompletableFuture<Void?> {
+        return call(executor, name) {
+            task.run()
+            null
+        }
+    }
+
+        /**
      * Creates a proxy for the given target object with retry.
      *
      * @param clazz The interface class of the target object.
@@ -139,9 +174,9 @@ class RetryTemplate private constructor(
      */
     class Builder {
 
-        private var retryPolicy: RetryPolicy = RetryPolicies.ALWAYS
+        private var retryPolicy: RetryPolicy = RetryPolicies.TRUE
         
-        private var backoffPolicy: BackoffPolicy = BackoffPolicies.IMMEDIATELY
+        private var backoffPolicy: BackoffPolicy = BackoffPolicies.NONE
 
         private val failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList()
         

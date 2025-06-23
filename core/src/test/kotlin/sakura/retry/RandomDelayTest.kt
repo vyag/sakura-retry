@@ -15,23 +15,21 @@
  * under the License.
  */
 
-package retry
+package sakura.retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.BackoffPolicies.fixedDelay
-import java.time.Duration
+import org.junit.jupiter.api.RepeatedTest
+import sakura.retry.BackoffPolicies.randomDelayInSeconds
 import java.time.Instant
-import kotlin.test.Test
-import kotlin.time.Duration.Companion.seconds
 
-class BackoffCombinationTest {
+class RandomDelayTest {
 
     private val error = Exception()
 
-    @Test
-    fun testBackoffCombination() {
-        val backoff = fixedDelay(1.seconds) + FixedDelay(1.seconds)
-        val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error))
-        assertThat(backoffDuration).isEqualTo(Duration.ofSeconds(2))
+    @RepeatedTest(1000)
+    fun testBackoffDistribution() {
+        val backoff = randomDelayInSeconds(-100, 100)
+        val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error)).toMillis()
+        assertThat(backoffDuration).isBetween(-100000, 100000)
     }
 }

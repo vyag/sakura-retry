@@ -1,7 +1,7 @@
-package retry
+package sakura.retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.internal.DefaultBackoffExecutor
+import sakura.retry.internal.DefaultBackoffExecutor
 import java.time.Duration
 import kotlin.test.Test
 
