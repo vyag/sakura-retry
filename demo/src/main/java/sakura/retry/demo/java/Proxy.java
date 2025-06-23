@@ -17,18 +17,20 @@
 
 package sakura.retry.demo.java;
 
-import sakura.retry.BackoffPolicies;
-import sakura.retry.MaxAttempts;
 import sakura.retry.RetryTemplate;
 
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.Callable;
 
+import static sakura.retry.RetryPolicies.maxAttempts;
+
 public class Proxy {
 
     public static void main(String[] args) throws Exception {
-        RetryTemplate policy = new RetryTemplate.Builder(new MaxAttempts(99), BackoffPolicies.NONE).build();
+        RetryTemplate policy = new RetryTemplate.Builder()
+            .setRetryPolicy(maxAttempts(99))
+            .build();
         Callable<?> call = policy.proxy(Callable.class, new Impl());
         System.out.println(call.call());
     }

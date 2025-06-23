@@ -19,7 +19,6 @@ package sakura.retry.demo.java;
 
 import sakura.retry.BackoffPolicies;
 import sakura.retry.RetryTemplate;
-import sakura.retry.RetryPolicies;
 
 import java.io.IOException;
 import java.util.Random;
@@ -28,12 +27,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.IntStream;
 
+import static sakura.retry.BackoffPolicies.fixedDelayInSeconds;
+
 public class Async {
 
     public static void main(String[] args) {
         Random random = new Random(System.currentTimeMillis());
         try (ScheduledExecutorService executor = Executors.newScheduledThreadPool(4)) {
-            RetryTemplate policy = new RetryTemplate.Builder(RetryPolicies.TRUE, BackoffPolicies.fixedDelayInSeconds(1))
+            RetryTemplate policy = new RetryTemplate.Builder()
+                .setBackoffPolicy(fixedDelayInSeconds(1))
                 .addFailureListener((call, context, allowRetry, backOffDuration) ->
                     System.out.println("Call " + call + ", attempt " + context.getAttemptCount() + " failed: (" + context.getFailure().getMessage() + ")"))
                 .build();

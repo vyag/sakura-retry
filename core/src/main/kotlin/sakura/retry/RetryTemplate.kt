@@ -137,14 +137,39 @@ class RetryTemplate private constructor(
     /**
      * The Java-style builder for [RetryTemplate].
      */
-    class Builder(private val retryPolicy: RetryPolicy, private val backoffPolicy: BackoffPolicy) {
+    class Builder {
+
+        private var retryPolicy: RetryPolicy = RetryPolicies.TRUE
+        
+        private var backoffPolicy: BackoffPolicy = BackoffPolicies.NONE
 
         private val failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList()
+        
+        /**
+         * Set the retry policy.
+         * 
+         * @param retryPolicy the retry policy
+         * @return the builder
+         */
+        fun setRetryPolicy(retryPolicy: RetryPolicy) = apply {
+            this.retryPolicy = retryPolicy
+        }
+        
+        /**
+         * Set the backoff policy.
+         *
+         * @param backoffPolicy the backoff policy
+         * @return the builder
+         */
+        fun setBackoffPolicy(backoffPolicy: BackoffPolicy) = apply {
+            this.backoffPolicy = backoffPolicy
+        }
 
         /**
          * Add a failure listener.
          *
          * @param failureListener the failure listener
+         * @return the builder
          */
         fun addFailureListener(failureListener: FailureListener) = apply {
             this.failureListeners.add(failureListener)
