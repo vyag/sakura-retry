@@ -104,6 +104,11 @@ object RetryPolicies {
         return ExceptionType(RuntimeException::class.java)
     }
     
+    @JvmStatic
+    fun exceptionType(failure: Class<out Throwable>): ExceptionType {
+        return ExceptionType(failure)
+    }
+    
     /**
      * Convenience method to create an ExceptionType policy.
      *
