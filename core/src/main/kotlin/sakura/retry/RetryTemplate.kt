@@ -139,9 +139,9 @@ class RetryTemplate private constructor(
      */
     class Builder {
 
-        private var retryPolicy: RetryPolicy = RetryPolicies.TRUE
+        private var retryPolicy: RetryPolicy = RetryPolicies.ALWAYS
         
-        private var backoffPolicy: BackoffPolicy = BackoffPolicies.NONE
+        private var backoffPolicy: BackoffPolicy = BackoffPolicies.IMMEDIATELY
 
         private val failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList()
         
