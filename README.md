@@ -22,9 +22,9 @@ Available on [Maven Central](https://mvnrepository.com/artifact/com.github.marks
 
 ```kotlin
 fun main() {
-    val retryPolicy = maxAttempts(10) and !runtimeException()
-    val backoffPolicy = fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)
-    val template = RetryTemplate.Builder(retryPolicy, backoffPolicy)
+    val template = RetryTemplate.Builder()
+        .setRetryPolicy(maxAttempts(3))
+        .setBackoffPolicy(fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1))
         .addFailureListener(logging())
         .build()
     template.call {
