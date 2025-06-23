@@ -24,7 +24,7 @@ object FailureListeners {
     
     @JvmStatic
     @JvmOverloads
-    fun logging(logEnabled: RetryPolicy = RetryPolicies.TRUE, stackEnabled: RetryPolicy = RetryPolicies.FALSE) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
+    fun logging(logEnabled: RetryPolicy = RetryPolicies.ALWAYS, stackEnabled: RetryPolicy = RetryPolicies.NEVER) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
     
 }
 
