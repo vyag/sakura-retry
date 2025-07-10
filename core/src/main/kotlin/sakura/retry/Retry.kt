@@ -120,9 +120,6 @@ class Retry private constructor(
                         failureListener.onFailure(name, context, allowRetry, backOff)
                     }
                     if (allowRetry) {
-                        if (retryPolicy.check(context)) {
-                            attemptCount++
-                        }
                         executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
                     } else {
                         result.completeExceptionally(t)
