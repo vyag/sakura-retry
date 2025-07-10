@@ -32,7 +32,7 @@ class RetryCallTest {
 
     @Test
     fun testNoError() {
-        val retry = Retry.Builder().setRetryPolicy(RetryPolicies.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
+        val retry = Retry.Builder().setCondition(Conditions.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         retry.call {
             mock.call()
@@ -42,7 +42,7 @@ class RetryCallTest {
 
     @Test
     fun testRetrySuccess() {
-        val retry = Retry.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
+        val retry = Retry.Builder().setCondition(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(9) {
             IOException()
@@ -56,7 +56,7 @@ class RetryCallTest {
 
     @Test
     fun testRetryFailed() {
-        val retry = Retry.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
+        val retry = Retry.Builder().setCondition(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 
@@ -72,7 +72,7 @@ class RetryCallTest {
     fun testRetryWithRecovery() {
         val broken = AtomicBoolean(true)
         val retry = Retry.Builder()
-            .setRetryPolicy(MaxAttempts(10))
+            .setCondition(MaxAttempts(10))
             .setBackoffPolicy(BackoffPolicies.NONE)
             .addFailureListener { _, _, _, _ -> 
                 broken.set(false)
@@ -97,7 +97,7 @@ class RetryCallTest {
             backoffCount++
         }
 
-        val retry = Retry.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(FixedDelay(Duration.ofSeconds(1))).build()
+        val retry = Retry.Builder().setCondition(MaxAttempts(10)).setBackoffPolicy(FixedDelay(Duration.ofSeconds(1))).build()
         retry.backoffExecutor = fakeSleeper
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()

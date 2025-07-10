@@ -23,13 +23,13 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.Callable;
 
-import static sakura.retry.RetryPolicies.maxAttempts;
+import static sakura.retry.Conditions.maxAttempts;
 
 public class Proxy {
 
     public static void main(String[] args) throws Exception {
         Retry policy = new Retry.Builder()
-            .setRetryPolicy(maxAttempts(99))
+            .setCondition(maxAttempts(99))
             .build();
         Callable<?> call = policy.proxy(Callable.class, new Impl());
         System.out.println(call.call());

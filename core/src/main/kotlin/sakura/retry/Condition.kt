@@ -18,9 +18,9 @@
 package sakura.retry
 
 /**
- * RetryPolicy is a boolean expression that can be evaluated in the context of a given [Context].
+ * Condition is a boolean expression that can be evaluated in the context of a given [Context].
  */
-fun interface RetryPolicy {
+fun interface Condition {
 
     /**
      * Evaluates the policy in the context of the given [Context].
@@ -41,9 +41,9 @@ fun interface RetryPolicy {
      * @param cond the policy to AND with this policy
      * @return a new policy that is the logical AND of this policy and the given policy
      */
-    infix fun and(cond: RetryPolicy): RetryPolicy {
+    infix fun and(cond: Condition): Condition {
         val self = this
-        return object: RetryPolicy {
+        return object: Condition {
             override fun check(context: Context): Boolean {
                 return self.check(context) && cond.check(context)
             }
@@ -63,9 +63,9 @@ fun interface RetryPolicy {
      * @param cond the policy to OR with this policy
      * @return a new policy that is the logical OR of this policy and the given policy
      */
-    infix fun or(cond: RetryPolicy): RetryPolicy {
+    infix fun or(cond: Condition): Condition {
         val self = this
-        return object: RetryPolicy {
+        return object: Condition {
             override fun check(context: Context): Boolean {
                 return self.check(context) || cond.check(context)
             }
@@ -84,9 +84,9 @@ fun interface RetryPolicy {
      * Returns a new policy that is the logical NOT of this policy.
      * @return a new policy that is the logical NOT of this policy
      */
-    operator fun not() : RetryPolicy {
+    operator fun not() : Condition {
         val self = this
-        return object: RetryPolicy {
+        return object: Condition {
             override fun check(context: Context): Boolean {
                 return !self.check(context)
             }

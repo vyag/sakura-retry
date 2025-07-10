@@ -22,13 +22,13 @@ import sakura.retry.Retry;
 import static sakura.retry.BackoffPolicies.fixedDelayInSeconds;
 import static sakura.retry.BackoffPolicies.randomDelayInSeconds;
 import static sakura.retry.FailureListeners.logging;
-import static sakura.retry.RetryPolicies.maxAttempts;
+import static sakura.retry.Conditions.maxAttempts;
 
 public class Simple {
 
     public static void main(String[] args) throws Exception {
         Retry policy = new Retry.Builder()
-            .setRetryPolicy(maxAttempts(3))
+            .setCondition(maxAttempts(3))
             .setBackoffPolicy(fixedDelayInSeconds(10).plus(randomDelayInSeconds(0, 1)))
             .addFailureListener(logging())
             .build();

@@ -34,7 +34,7 @@ import java.util.concurrent.*
  * @param failureListeners The error handler.
  */
 class Retry private constructor(
-    val retryPolicy: RetryPolicy,
+    val retryPolicy: Condition,
     val backoffPolicy: BackoffPolicy,
     val failureListeners: List<FailureListener>) {
 
@@ -174,20 +174,20 @@ class Retry private constructor(
      */
     class Builder {
 
-        private var retryPolicy: RetryPolicy = RetryPolicies.TRUE
+        private var condition: Condition = Conditions.TRUE
         
         private var backoffPolicy: BackoffPolicy = BackoffPolicies.NONE
 
         private val failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList()
         
         /**
-         * Set the retry policy.
+         * Set the condition.
          * 
-         * @param retryPolicy the retry policy
+         * @param condition the condition
          * @return the builder
          */
-        fun setRetryPolicy(retryPolicy: RetryPolicy) = apply {
-            this.retryPolicy = retryPolicy
+        fun setCondition(condition: Condition) = apply {
+            this.condition = condition
         }
         
         /**
@@ -216,7 +216,7 @@ class Retry private constructor(
          * @return the [Retry]
          */
         fun build() : Retry {
-            return Retry(retryPolicy = retryPolicy, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners))
+            return Retry(retryPolicy = condition, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners))
         }
     }
 

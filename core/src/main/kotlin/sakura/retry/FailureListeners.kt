@@ -24,7 +24,7 @@ object FailureListeners {
     
     @JvmStatic
     @JvmOverloads
-    fun logging(logEnabled: RetryPolicy = RetryPolicies.TRUE, stackEnabled: RetryPolicy = RetryPolicies.FALSE) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
+    fun logging(logEnabled: Condition = Conditions.TRUE, stackEnabled: Condition = Conditions.FALSE) = SimpleLoggingFailureListener(logEnabled, stackEnabled)
     
 }
 
@@ -35,8 +35,8 @@ object FailureListeners {
  * @param stackRetryPolicy if true, logs stack trace of invocation errors
  */
 data class SimpleLoggingFailureListener(
-    private val logRetryPolicy: RetryPolicy,
-    private val stackRetryPolicy: RetryPolicy
+    private val logRetryPolicy: Condition,
+    private val stackRetryPolicy: Condition
 ) : FailureListener {
 
     override fun onFailure(call: String?, context: Context, allowRetry: Boolean, backOffDuration: Duration) {

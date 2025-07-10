@@ -28,7 +28,7 @@ class RetryProxyTest {
 
     @Test
     fun testNoError() {
-        val retry = Retry.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
+        val retry = Retry.Builder().setCondition(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         val foo = retry.proxy(Callable::class.java, mock)
         foo.call()
@@ -37,7 +37,7 @@ class RetryProxyTest {
 
     @Test
     fun testRetrySuccess() {
-        val retry = Retry.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
+        val retry = Retry.Builder().setCondition(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(9) {
             IOException()
@@ -50,7 +50,7 @@ class RetryProxyTest {
 
     @Test
     fun testRetryFailed() {
-        val retry = Retry.Builder().setRetryPolicy(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
+        val retry = Retry.Builder().setCondition(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
 
