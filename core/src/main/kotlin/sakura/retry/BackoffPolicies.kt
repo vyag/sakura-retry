@@ -107,7 +107,7 @@ object BackoffPolicies {
      * No backoff.
      */
     @JvmField
-    val IMMEDIATELY = BackoffPolicy { Duration.ZERO }
+    val NONE = BackoffPolicy { Duration.ZERO }
 }
 
 /**

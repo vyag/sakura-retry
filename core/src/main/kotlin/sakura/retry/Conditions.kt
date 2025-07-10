@@ -19,38 +19,38 @@ package sakura.retry
 import java.time.Duration
 import kotlin.time.toJavaDuration
 
-object RetryPolicies {
+object Conditions {
 
     /**
-     * A policy that always returns true.
+     * A condition that always returns true.
      */
     @JvmField
-    val ALWAYS = object: RetryPolicy {
+    val TRUE = object: Condition {
         override fun check(context: Context): Boolean {
             return true
         }
 
         override fun toString(): String {
-            return "always"
+            return "true"
         }
     }
 
     /**
-     * A policy that always returns false.
+     * A condition that always returns false.
      */
     @JvmField
-    val NEVER = object: RetryPolicy {
+    val FALSE = object: Condition {
         override fun check(context: Context): Boolean {
             return false
         }
 
         override fun toString(): String {
-            return "never"
+            return "false"
         }
     }
     
     /**
-     * Convenience method to create a MaxAttempts policy.
+     * Convenience method to create a MaxAttempts condition.
      *
      * @param amount the maximum number of attempts
      * @see [MaxAttempts]
@@ -61,7 +61,7 @@ object RetryPolicies {
     }
     
     /**
-     * Convenience method to create a MaxTimeElapsed policy.
+     * Convenience method to create a MaxTimeElapsed condition.
      *
      * @param duration The duration.
      * @see [MaxTimeElapsed]
@@ -72,7 +72,7 @@ object RetryPolicies {
     }
 
     /**
-     * Convenience method to create a MaxTimeElapsed policy.
+     * Convenience method to create a MaxTimeElapsed condition.
      *
      * @param duration The duration.
      * @see [MaxTimeElapsed]
@@ -83,7 +83,7 @@ object RetryPolicies {
     }
     
     /**
-     * Convenience method to create a MaxTimeElapsed policy.
+     * Convenience method to create a MaxTimeElapsed condition.
      *
      * @param seconds the duration in seconds
      * @see [MaxTimeElapsed]
@@ -94,9 +94,9 @@ object RetryPolicies {
     }
     
     /**
-     * Convenience method to create an ExceptionType policy.
+     * Convenience method to create an ExceptionType condition.
      * 
-     * @return the policy
+     * @return the condition
      * @see [ExceptionType]
      */
     @JvmStatic
@@ -110,9 +110,9 @@ object RetryPolicies {
     }
     
     /**
-     * Convenience method to create an ExceptionType policy.
+     * Convenience method to create an ExceptionType condition.
      *
-     * @return the policy
+     * @return the condition
      * @see [ExceptionType]
      */
     @JvmStatic
@@ -121,9 +121,9 @@ object RetryPolicies {
     }
     
     /**
-     * Convenience method to create an ExceptionType policy.
+     * Convenience method to create an ExceptionType condition.
      *
-     * @return the policy
+     * @return the condition
      * @see [ExceptionType]
      */
     @JvmStatic
@@ -133,11 +133,11 @@ object RetryPolicies {
 }
 
 /**
- * The policy check if the attempt count is less than the given number.
+ * The condition check if the attempt count is less than the given number.
  *
  * @param amount the maximum number of attempts
  */
-data class MaxAttempts(val amount: Int) : RetryPolicy {
+data class MaxAttempts(val amount: Int) : Condition {
 
     init {
         require(amount > 1) { "amount must be greater than 1" }
@@ -157,14 +157,14 @@ data class MaxAttempts(val amount: Int) : RetryPolicy {
 }
 
 /**
- * The policy check if the duration is less than the given duration.
+ * The condition check if the duration is less than the given duration.
  *
  * @param duration The duration.
  */
-data class MaxTimeElapsed(val duration: Duration) : RetryPolicy {
+data class MaxTimeElapsed(val duration: Duration) : Condition {
 
     /**
-     * Constructs a max time elapsed policy.
+     * Constructs a max time elapsed condition.
      *
      * @param duration The duration.
      */
@@ -188,14 +188,14 @@ data class MaxTimeElapsed(val duration: Duration) : RetryPolicy {
 }
 
 /**
- * The policy check if the failures is an instance of one of the given classes.
+ * The condition check if the failures is an instance of one of the given classes.
  *
  * @param failures the classes of the failures
  */
-data class ExceptionType(val failures: Set<Class<out Throwable>>) : RetryPolicy {
+data class ExceptionType(val failures: Set<Class<out Throwable>>) : Condition {
 
     /**
-     * The policy check if the failure is an instance of one of the given classes.
+     * The condition check if the failure is an instance of one of the given classes.
      *
      * @param failures the classes of the failures
      */

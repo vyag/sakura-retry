@@ -17,26 +17,24 @@
 
 package sakura.retry.demo.java;
 
-import sakura.retry.FailureListeners;
-import sakura.retry.RetryTemplate;
+import sakura.retry.Retry;
 
 import static sakura.retry.BackoffPolicies.fixedDelayInSeconds;
 import static sakura.retry.BackoffPolicies.randomDelayInSeconds;
 import static sakura.retry.FailureListeners.logging;
-import static sakura.retry.RetryPolicies.maxAttempts;
+import static sakura.retry.Conditions.maxAttempts;
 
 public class Simple {
 
     public static void main(String[] args) throws Exception {
-        RetryTemplate policy = new RetryTemplate.Builder()
-            .setRetryPolicy(maxAttempts(3))
+        Retry policy = new Retry.Builder()
+            .setCondition(maxAttempts(3))
             .setBackoffPolicy(fixedDelayInSeconds(10).plus(randomDelayInSeconds(0, 1)))
             .addFailureListener(logging())
             .build();
-        policy.call(
+        policy.execute(
             () -> {
                 System.out.println("Hello world!");
-                return null;
             }
         );
     }

@@ -17,15 +17,15 @@
 
 package sakura.retry.internal
 
-import sakura.retry.RetryTemplate
+import sakura.retry.Retry
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 
-internal class RetryHandler<T>(private val retryTemplate: RetryTemplate, private val target: T, private val name: String) : InvocationHandler {
+internal class RetryHandler<T>(private val retry: Retry, private val target: T, private val name: String) : InvocationHandler {
 
     override fun invoke(proxy: Any, method: Method, args: Array<out Any?>?): Any? {
-        return retryTemplate.call("$name.${method.name}") {
+        return retry.call("$name.${method.name}") {
             try {
                 if (args == null) {
                     method.invoke(target)

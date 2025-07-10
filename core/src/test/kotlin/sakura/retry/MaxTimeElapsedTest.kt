@@ -14,10 +14,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package retry
+package sakura.retry
 
 import org.assertj.core.api.Assertions.assertThat
-import retry.RetryPolicies.maxTimeElapsed
+import sakura.retry.Conditions.maxTimeElapsed
 import java.time.Instant
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds

@@ -22,12 +22,12 @@ Available on [Maven Central](https://mvnrepository.com/artifact/com.github.marks
 
 ```kotlin
 fun main() {
-    val template = RetryTemplate.Builder()
-        .setRetryPolicy(maxAttempts(3))
+    val retry = Retry.Builder()
+        .setCondition(maxAttempts(3))
         .setBackoffPolicy(fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1))
         .addFailureListener(logging())
         .build()
-    template.call {
+    retry.call {
         println("maybe fail")
     }
 }
@@ -35,14 +35,11 @@ fun main() {
 
 **Basic Concepts:**
 
-- **RetryPolicy**: Determines whether to trigger or terminate retries.
+- **Condition**: Determines whether to trigger or terminate retries.
 - **BackoffPolicy**: Defines the waiting interval between retries.
 - **FailureListener**: Handles (e.g., logging, alerting) upon execution failures.
 
-**Policy Composition:**
-
-- **RetryPolicy** supports logical composition (e.g., `maxAttempts(10) and !runtimeException()`) to express complex retry strategies through a single concept.
-- **BackoffPolicy** allows combinable configurations (e.g., `fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)`), which represents a 10-second fixed delay with an additional 0–1 second random jitter.
+**RetryPolicy** supports logical composition (e.g., `maxAttempts(10) and !runtimeException()`) to express complex retry strategies through a single concept. **BackoffPolicy** allows combinable configurations (e.g., `fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)`), which represents a 10-second fixed delay with an additional 0–1 second random jitter.
 
 Find more examples [here](demo/src/main).
 
