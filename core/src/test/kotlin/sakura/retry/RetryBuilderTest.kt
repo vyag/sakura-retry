@@ -23,11 +23,11 @@ import kotlin.test.Test
 
 class RetryBuilderTest {
     
-    private val default = RetryTemplate.Builder().setRetryPolicy(RetryPolicies.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
+    private val default = Retry.Builder().setRetryPolicy(RetryPolicies.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
     
     @Test
     fun testDefault() {
-        val retry = RetryTemplate.Builder().setRetryPolicy(RetryPolicies.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
+        val retry = Retry.Builder().setRetryPolicy(RetryPolicies.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
         assertThat(retry.retryPolicy).isEqualTo(default.retryPolicy)
         assertThat(retry.backoffPolicy).isEqualTo(default.backoffPolicy)
         assertThat(retry.failureListeners).isEqualTo(default.failureListeners)
@@ -40,7 +40,7 @@ class RetryBuilderTest {
         val backoff = FixedDelay(Duration.ZERO)
         val failureListener = Mockito.mock(FailureListener::class.java)
         
-        val retry = RetryTemplate.Builder().setRetryPolicy(retryPolicy).setBackoffPolicy(backoff)
+        val retry = Retry.Builder().setRetryPolicy(retryPolicy).setBackoffPolicy(backoff)
             .addFailureListener(failureListener)
             .build()
         assertThat(retry.retryPolicy).isSameAs(retryPolicy)

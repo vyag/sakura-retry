@@ -17,7 +17,7 @@
 
 package sakura.retry.demo.java;
 
-import sakura.retry.RetryTemplate;
+import sakura.retry.Retry;
 
 import static sakura.retry.BackoffPolicies.fixedDelayInSeconds;
 import static sakura.retry.BackoffPolicies.randomDelayInSeconds;
@@ -27,7 +27,7 @@ import static sakura.retry.RetryPolicies.maxAttempts;
 public class Simple {
 
     public static void main(String[] args) throws Exception {
-        RetryTemplate policy = new RetryTemplate.Builder()
+        Retry policy = new Retry.Builder()
             .setRetryPolicy(maxAttempts(3))
             .setBackoffPolicy(fixedDelayInSeconds(10).plus(randomDelayInSeconds(0, 1)))
             .addFailureListener(logging())

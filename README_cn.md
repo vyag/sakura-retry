@@ -22,12 +22,12 @@ Sakura Retry并不试图解决其它老牌重试框架不能解决的问题，�
 
 ```kotlin
 fun main() {
-    val template = RetryTemplate.Builder()
+    val retry = RetryTemplate.Builder()
         .setRetryPolicy(maxAttempts(3))
         .setBackoffPolicy(fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1))
         .addFailureListener(logging())
         .build()
-    template.call {
+    retry.call {
         println("maybe fail")
     }
 }

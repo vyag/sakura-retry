@@ -20,10 +20,10 @@ import sakura.retry.BackoffPolicies.fixedDelayInSeconds
 import sakura.retry.BackoffPolicies.randomDelayInSeconds
 import sakura.retry.FailureListeners.logging
 import sakura.retry.RetryPolicies.maxAttempts
-import sakura.retry.RetryTemplate
+import sakura.retry.Retry
 
 fun main() {
-    val template = RetryTemplate.Builder()
+    val template = Retry.Builder()
         .setRetryPolicy(maxAttempts(3))
         .setBackoffPolicy(fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)) 
         .addFailureListener(logging())

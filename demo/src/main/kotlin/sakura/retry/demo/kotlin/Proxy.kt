@@ -17,13 +17,13 @@
 package sakura.retry.demo.kotlin
 
 import sakura.retry.RetryPolicies.maxAttempts
-import sakura.retry.RetryTemplate
+import sakura.retry.Retry
 import java.io.IOException
 import java.util.*
 import java.util.concurrent.Callable
 
 fun main() {
-    val policy = RetryTemplate.Builder()
+    val policy = Retry.Builder()
         .setRetryPolicy(maxAttempts(99))
         .build()
     val call = policy.proxy(Callable::class.java, Impl())

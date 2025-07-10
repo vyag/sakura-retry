@@ -33,7 +33,7 @@ import java.util.concurrent.*
  * @param backoffPolicy The back off strategy.
  * @param failureListeners The error handler.
  */
-class RetryTemplate private constructor(
+class Retry private constructor(
     val retryPolicy: RetryPolicy,
     val backoffPolicy: BackoffPolicy,
     val failureListeners: List<FailureListener>) {
@@ -164,13 +164,13 @@ class RetryTemplate private constructor(
     fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
         @Suppress("UNCHECKED_CAST")
         return (Proxy.newProxyInstance(
-            RetryTemplate::class.java.classLoader, arrayOf(clazz),
+            Retry::class.java.classLoader, arrayOf(clazz),
             RetryHandler(this, target, name)
         ) as T)
     }
 
     /**
-     * The Java-style builder for [RetryTemplate].
+     * The Java-style builder for [Retry].
      */
     class Builder {
 
@@ -211,18 +211,18 @@ class RetryTemplate private constructor(
         }
 
         /**
-         * Builds the [RetryTemplate].
+         * Builds the [Retry].
          *
-         * @return the [RetryTemplate]
+         * @return the [Retry]
          */
-        fun build() : RetryTemplate {
-            return RetryTemplate(retryPolicy = retryPolicy, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners))
+        fun build() : Retry {
+            return Retry(retryPolicy = retryPolicy, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners))
         }
     }
 
     private companion object {
 
-        private val LOG = LoggerFactory.getLogger(RetryTemplate::class.java)
+        private val LOG = LoggerFactory.getLogger(Retry::class.java)
 
     }
 }

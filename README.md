@@ -22,12 +22,12 @@ Available on [Maven Central](https://mvnrepository.com/artifact/com.github.marks
 
 ```kotlin
 fun main() {
-    val template = RetryTemplate.Builder()
+    val retry = RetryTemplate.Builder()
         .setRetryPolicy(maxAttempts(3))
         .setBackoffPolicy(fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1))
         .addFailureListener(logging())
         .build()
-    template.call {
+    retry.call {
         println("maybe fail")
     }
 }
