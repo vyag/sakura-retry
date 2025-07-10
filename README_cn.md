@@ -22,8 +22,8 @@ Sakura Retry并不试图解决其它老牌重试框架不能解决的问题，�
 
 ```kotlin
 fun main() {
-    val retry = RetryTemplate.Builder()
-        .setRetryPolicy(maxAttempts(3))
+    val retry = Retry.Builder()
+        .setCondition(maxAttempts(3))
         .setBackoffPolicy(fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1))
         .addFailureListener(logging())
         .build()
@@ -35,14 +35,11 @@ fun main() {
 
 **基本概念：**
 
-- RetryPolicy：是否允许或终止重试。
+- Condition：是否允许或终止重试。
 - BackoffPolicy：重试之间的等待间隔。
 - FailureListener：自定义的重试失败处理，比如日志输出、故障告警等。
 
-**Policy组合：**
-
-- `RetryPolicy`设计为可以通过逻辑运算进行自由组合，比如：`maxAttempts(10) and !runtimeException()`，这样就可以通过`RetryPolicy`一个概念来表达复杂的重试策略。
-- `BackoffPolicy`也可以进行自由叠加，比如：`fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)`表示一个10秒的固定延迟，加上一个0到1秒的随机扰动。
+其中，`Condition`设计为可以通过逻辑运算进行自由组合，比如：`maxAttempts(10) and !runtimeException()`，这样就可以通过`Condition`一个概念来表达复杂的重试策略。`BackoffPolicy`也可以进行自由叠加，比如：`fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)`表示一个10秒的固定延迟，加上一个0到1秒的随机扰动。
 
 更多的例子请查看 [这里](demo/src/main)
 
