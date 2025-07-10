@@ -25,7 +25,7 @@ import java.time.Duration
 import java.time.Instant
 import kotlin.test.Test
 
-class RetryPolicyTest {
+class ConditionTest {
 
     @Test
     fun testLogicOperator() {
