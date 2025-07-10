@@ -25,6 +25,7 @@ import java.time.Duration
 import java.time.Instant
 import java.util.*
 import java.util.concurrent.*
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * The retry class.
@@ -105,7 +106,7 @@ class Retry private constructor(
      */
     @JvmOverloads
     fun <T> call(executor: ScheduledExecutorService, name: String? = null, function: Callable<T>): CompletableFuture<T> {
-        var attemptCount = 1
+        val attemptCount = AtomicInteger(1)
         val startTime = Instant.now()
         val result = CompletableFuture<T>()
         class Task : Runnable {
@@ -113,16 +114,14 @@ class Retry private constructor(
                 try {
                     result.complete(function.call())
                 } catch (t: Throwable) {
-                    val context = Context(startTime, Instant.now(), attemptCount, t)
+                    val context = Context(startTime, Instant.now(), attemptCount.get(), t)
                     val allowRetry = retryPolicy.check(context)
                     val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                     for (failureListener in failureListeners) {
                         failureListener.onFailure(name, context, allowRetry, backOff)
                     }
                     if (allowRetry) {
-                        if (retryPolicy.check(context)) {
-                            attemptCount++
-                        }
+                        attemptCount.incrementAndGet()
                         executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
                     } else {
                         result.completeExceptionally(t)
