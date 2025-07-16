@@ -38,7 +38,7 @@
         <kotlin.version>2.1.0</kotlin.version>
         <kotlin.code.style>official</kotlin.code.style>
         <junit.version>5.10.0</junit.version>
-        <assertj.version>3.24.2</assertj.version>
+        <assertj.version>3.27.3</assertj.version>
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

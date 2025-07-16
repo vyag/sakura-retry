@@ -37,22 +37,31 @@ import java.util.concurrent.atomic.AtomicInteger
 class Retry private constructor(
     val retryPolicy: Condition,
     val backoffPolicy: BackoffPolicy,
-    val failureListeners: List<FailureListener>) {
+    val failureListeners: List<FailureListener>,
+    val name : String?) {
 
     @JvmSynthetic
     internal var backoffExecutor: BackoffExecutor = DefaultBackoffExecutor()
+    
+    /**
+     * Copy the retry instance with a new name.
+     *
+     * @param newName The new name.
+     * @return The new retry instance.
+     */
+    fun withName(newName: String) : Retry {
+        return Retry(retryPolicy, backoffPolicy, failureListeners, newName)
+    }
 
     /**
      * Call the given function with retry.
      * 
-     * @param name The optional name of the function.
      * @param function The function to call.
      * @return The result of the function.
      * @throws Exception The original exception by the function call if the retry is aborted.
      */
-    @JvmOverloads
     @Throws(Exception::class)
-    fun <T> call(name: String? = null, function: Callable<T>): T {
+    fun <T> call(function: Callable<T>): T {
         var attemptCount = 1
         val startTime = Instant.now()
         while (true) {
@@ -82,30 +91,64 @@ class Retry private constructor(
     /**
      * Execute the given task with retry.
      *
-     * @param name The optional name of the task.
      * @param runnable The task to execute.
      * @throws Exception The original exception by the task if the retry is aborted.
      * 
      * @see call
      */
-    @JvmOverloads
     @Throws(Exception::class)
-    fun execute(name: String? = null, runnable: Runnable) {
-        call(name) {
+    fun execute(runnable: Runnable) {
+        call {
             runnable.run()
         }
     }
 
+    fun <T> submit(executor: ScheduledExecutorService, function: Callable<CompletableFuture<T>>): CompletableFuture<T> {
+        val attemptCount = AtomicInteger(1)
+        val startTime = Instant.now()
+        val result = CompletableFuture<T>()
+        class Task : Runnable {
+            override fun run() {
+                try {
+                    function.call().whenComplete { t, u ->
+                        if (u == null) {
+                            result.complete(t)
+                        } else {
+                            handleFailure(u)
+                        }
+                    }
+                } catch (t: Throwable) {
+                    handleFailure(t)
+                }
+            }
+
+            private fun handleFailure(u: Throwable) {
+                val context = Context(startTime, Instant.now(), attemptCount.get(), u)
+                val allowRetry = retryPolicy.check(context)
+                val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
+                for (failureListener in failureListeners) {
+                    failureListener.onFailure(name, context, allowRetry, backOff)
+                }
+                if (allowRetry) {
+                    attemptCount.incrementAndGet()
+                    executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
+                } else {
+                    result.completeExceptionally(u)
+                }
+            }
+        }
+        executor.execute(Task())
+        return result
+    }
+    
     /**
      * Submit the given function with retry.
      *
      * @param executor The executor to submit the function.
-     * @param name The optional name of the function.
      * @param function The function to submit.
      * @return The [Future] result of the function.
      */
-    @JvmOverloads
-    fun <T> call(executor: ScheduledExecutorService, name: String? = null, function: Callable<T>): CompletableFuture<T> {
+    fun <T> call(executor: ScheduledExecutorService, function: Callable<T>): CompletableFuture<T> {
         val attemptCount = AtomicInteger(1)
         val startTime = Instant.now()
         val result = CompletableFuture<T>()
@@ -137,15 +180,13 @@ class Retry private constructor(
      * Submit the given task with retry.
      *
      * @param executor The executor to submit the task.
-     * @param name The optional name of the task.
      * @param task The task to execute.
      * @return The [Future] result of the task.
      * 
      * @see call
      */
-    @JvmOverloads
-    fun execute(executor: ScheduledExecutorService, name: String? = null, task: Runnable): CompletableFuture<Void?> {
-        return call(executor, name) {
+    fun execute(executor: ScheduledExecutorService, task: Runnable): CompletableFuture<Void?> {
+        return call(executor) {
             task.run()
             null
         }
@@ -159,12 +200,11 @@ class Retry private constructor(
      * @param name The optional name of the target object.
      * @return The proxy object.
      */
-    @JvmOverloads
-    fun <T> proxy(clazz: Class<T>, target: T, name: String = target.toString()): T {
+    fun <T> proxy(clazz: Class<T>, target: T): T {
         @Suppress("UNCHECKED_CAST")
         return (Proxy.newProxyInstance(
             Retry::class.java.classLoader, arrayOf(clazz),
-            RetryHandler(this, target, name)
+            RetryHandler(this, target)
         ) as T)
     }
 
@@ -178,6 +218,8 @@ class Retry private constructor(
         private var backoffPolicy: BackoffPolicy = BackoffPolicies.NONE
 
         private val failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList()
+        
+        private var name: String? = null
         
         /**
          * Set the condition.
@@ -210,12 +252,22 @@ class Retry private constructor(
         }
 
         /**
+         * Set the name.
+         *
+         * @param name the name
+         * @return the builder
+         */
+        fun setName(name: String) = apply {
+            this.name = name
+        }
+
+        /**
          * Builds the [Retry].
          *
          * @return the [Retry]
          */
         fun build() : Retry {
-            return Retry(retryPolicy = condition, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners))
+            return Retry(retryPolicy = condition, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners), name)
         }
     }
 

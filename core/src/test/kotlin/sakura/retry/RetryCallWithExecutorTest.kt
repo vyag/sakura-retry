@@ -28,7 +28,7 @@ import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.seconds
 
-class RetrySubmitTest {
+class RetryCallWithExecutorTest {
     
     private lateinit var executor: ScheduledExecutorService
     
@@ -86,7 +86,7 @@ class RetrySubmitTest {
         }
 
         val results = Array(100) {
-            retry.call(executor, "call-$it") { 
+            retry.withName("call-$it").call(executor) { 
                 mocks[it].call() 
             }
         }

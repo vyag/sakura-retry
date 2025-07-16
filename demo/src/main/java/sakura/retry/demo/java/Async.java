@@ -38,7 +38,7 @@ public class Async {
                 .addFailureListener((call, context, allowRetry, backOffDuration) ->
                     System.out.println("Call " + call + ", attempt " + context.getAttemptCount() + " failed: (" + context.getFailure().getMessage() + ")"))
                 .build();
-            IntStream.range(0, 3).mapToObj(value -> policy.call(executor, "call-" + value, () -> {
+            IntStream.range(0, 3).mapToObj(value -> policy.withName("call-" + value).call(executor, () -> {
                 double d = random.nextDouble(10);
                 if (d < 8) throw new IOException("Too small");
                 return d;
