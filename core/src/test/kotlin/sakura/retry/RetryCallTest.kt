@@ -24,6 +24,7 @@ import java.io.IOException
 import java.time.Duration
 import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -34,9 +35,10 @@ class RetryCallTest {
     fun testNoError() {
         val retry = Retry.Builder().setCondition(Conditions.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
-        retry.call {
+        Mockito.doReturn("done").`when`(mock).call()
+        assertThat(retry.call {
             mock.call()
-        }
+        }).isEqualTo("done")
         Mockito.verify(mock, Mockito.times(1)).call()
     }
 

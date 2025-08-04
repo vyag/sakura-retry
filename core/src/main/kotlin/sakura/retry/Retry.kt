@@ -26,6 +26,7 @@ import java.time.Instant
 import java.util.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Supplier
 
 /**
  * The retry class.
@@ -88,29 +89,14 @@ class Retry private constructor(
         }
     }
 
-    /**
-     * Execute the given task with retry.
-     *
-     * @param runnable The task to execute.
-     * @throws Exception The original exception by the task if the retry is aborted.
-     * 
-     * @see call
-     */
-    @Throws(Exception::class)
-    fun execute(runnable: Runnable) {
-        call {
-            runnable.run()
-        }
-    }
-
-    fun <T> submit(executor: ScheduledExecutorService, function: Callable<CompletableFuture<T>>): CompletableFuture<T> {
+    fun <T> callAsyncWithSupplier(executor: ScheduledExecutorService, function: Supplier<CompletionStage<T>>): CompletableFuture<T> {
         val attemptCount = AtomicInteger(1)
         val startTime = Instant.now()
         val result = CompletableFuture<T>()
-        class Task : Runnable {
+        executor.execute(object: Runnable {
             override fun run() {
                 try {
-                    function.call().whenComplete { t, u ->
+                    function.get().whenComplete { t, u ->
                         if (u == null) {
                             result.complete(t)
                         } else {
@@ -136,8 +122,7 @@ class Retry private constructor(
                     result.completeExceptionally(u)
                 }
             }
-        }
-        executor.execute(Task())
+        })
         return result
     }
     
@@ -148,11 +133,11 @@ class Retry private constructor(
      * @param function The function to submit.
      * @return The [Future] result of the function.
      */
-    fun <T> call(executor: ScheduledExecutorService, function: Callable<T>): CompletableFuture<T> {
+    fun <T> callAsync(executor: ScheduledExecutorService, function: Callable<T>): CompletableFuture<T> {
         val attemptCount = AtomicInteger(1)
         val startTime = Instant.now()
         val result = CompletableFuture<T>()
-        class Task : Runnable {
+        executor.execute(object: Runnable {
             override fun run() {
                 try {
                     result.complete(function.call())
@@ -171,28 +156,11 @@ class Retry private constructor(
                     }
                 }
             }
-        }
-        executor.execute(Task())
+        })
         return result
     }
 
     /**
-     * Submit the given task with retry.
-     *
-     * @param executor The executor to submit the task.
-     * @param task The task to execute.
-     * @return The [Future] result of the task.
-     * 
-     * @see call
-     */
-    fun execute(executor: ScheduledExecutorService, task: Runnable): CompletableFuture<Void?> {
-        return call(executor) {
-            task.run()
-            null
-        }
-    }
-
-        /**
      * Creates a proxy for the given target object with retry.
      *
      * @param clazz The interface class of the target object.

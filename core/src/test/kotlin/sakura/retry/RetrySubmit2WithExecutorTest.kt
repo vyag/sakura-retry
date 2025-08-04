@@ -27,20 +27,30 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 
-class RetryCallWithExecutorTest {
+class RetrySubmit2WithExecutorTest {
     
-    private lateinit var executor: ScheduledExecutorService
+    private lateinit var retryExecutor: ScheduledExecutorService
+    
+    private lateinit var bizExecutor: ExecutorService
     
     @BeforeTest
     fun init() {
-        executor = Executors.newScheduledThreadPool(5)
+        retryExecutor = ScheduledThreadPoolExecutor(5) { r ->
+            Thread(r, "retry-thread")
+        }
+
+
+        bizExecutor = ThreadPoolExecutor(5, 5, 0, TimeUnit.SECONDS, LinkedBlockingQueue()) { r ->
+            Thread(r, "biz-thread")
+        }
     }
     
     @AfterTest
     fun cleanup() {
-        executor.shutdown()
-        executor.awaitTermination(Long.MAX_VALUE, TimeUnit.MILLISECONDS)
+        retryExecutor.close()
+        bizExecutor.close()
     }
 
     @Test
@@ -52,7 +62,28 @@ class RetryCallWithExecutorTest {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        assertThat(retry.call(executor, function = { mock.call() }).get()).isEqualTo("done")
+        val result = retry.callAsyncWithSupplier(retryExecutor) {
+            CompletableFuture.supplyAsync(mock::call, bizExecutor)
+        }
+        assertThat(result).succeedsWithin(1.seconds.toJavaDuration()).isEqualTo("done")
+        Mockito.verify(mock, Mockito.times(3)).call()
+    }
+
+    @Test
+    @Timeout(1)
+    fun testRetrySuccess2() {
+        val retry = Retry.Builder().setCondition(MaxAttempts(3)).setBackoffPolicy(BackoffPolicies.NONE).build()
+        val mock = Mockito.mock(Callable::class.java)
+        Mockito.doThrow(*Array(2) {
+            IOException()
+        }).doReturn("done").`when`(mock).call()
+
+        val result = retry.callAsyncWithSupplier(retryExecutor) {
+            CompletableFuture.supplyAsync {
+                mock.call()
+            }
+        }
+        assertThat(result).succeedsWithin(1.seconds.toJavaDuration()).isEqualTo("done")
         Mockito.verify(mock, Mockito.times(3)).call()
     }
 
@@ -66,7 +97,11 @@ class RetryCallWithExecutorTest {
         }).doReturn("done").`when`(mock).call()
 
         val error = assertFailsWith<ExecutionException> {
-            retry.call(executor, function = { mock.call() }).get()
+            retry.callAsyncWithSupplier(retryExecutor) {
+                CompletableFuture.supplyAsync {
+                    mock.call()
+                }
+            }.get()
         }
         assertThat(error.cause).isInstanceOf(IOException::class.java)
 
@@ -86,8 +121,10 @@ class RetryCallWithExecutorTest {
         }
 
         val results = Array(100) {
-            retry.withName("call-$it").call(executor) { 
-                mocks[it].call() 
+            retry.withName("call-$it").callAsyncWithSupplier(retryExecutor) {
+                CompletableFuture.supplyAsync {
+                    mocks[it].call()
+                }
             }
         }
 
