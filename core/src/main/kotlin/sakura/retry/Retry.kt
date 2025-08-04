@@ -94,6 +94,7 @@ class Retry private constructor(
      *
      * @param runnable The runnable to execute.
      */
+    @Throws(Exception::class)
     fun execute(runnable: Runnable) {
         call(runnable::run)
     }
