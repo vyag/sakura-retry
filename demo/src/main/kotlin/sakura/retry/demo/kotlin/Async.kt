@@ -27,13 +27,13 @@ import java.util.concurrent.Executors
 fun main() {
     val random = Random(System.currentTimeMillis())
     Executors.newScheduledThreadPool(4).use { executor ->
-        val policy = Retry.Builder()
+        val retry = Retry.Builder()
             .setBackoffPolicy(fixedDelayInSeconds(1))
             .addFailureListener { call: String?, context: Context, _: Boolean, _: Duration ->
                 println("Call $call, attempt ${context.attemptCount} failed: (${context.failure.message})")
             }.build()
         (0 until 3).map { 
-            policy.withName("call-$it").callAsyncWithSupplier(executor) {
+            retry.withName("call-$it").callAsync(executor) {
                 random.nextDouble(10.0).takeUnless { it < 7 } ?: throw IOException("Too small")    
             } 
         }.map { 

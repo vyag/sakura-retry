@@ -89,6 +89,15 @@ class Retry private constructor(
         }
     }
 
+    /**
+     * Execute the given runnable with retry.
+     *
+     * @param runnable The runnable to execute.
+     */
+    fun execute(runnable: Runnable) {
+        call(runnable::run)
+    }
+
     fun <T> callAsyncWithSupplier(executor: ScheduledExecutorService, function: Supplier<CompletionStage<T>>): CompletableFuture<T> {
         val attemptCount = AtomicInteger(1)
         val startTime = Instant.now()
@@ -187,8 +196,6 @@ class Retry private constructor(
 
         private val failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList()
         
-        private var name: String? = null
-        
         /**
          * Set the condition.
          * 
@@ -220,22 +227,12 @@ class Retry private constructor(
         }
 
         /**
-         * Set the name.
-         *
-         * @param name the name
-         * @return the builder
-         */
-        fun setName(name: String) = apply {
-            this.name = name
-        }
-
-        /**
          * Builds the [Retry].
          *
          * @return the [Retry]
          */
         fun build() : Retry {
-            return Retry(retryPolicy = condition, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners), name)
+            return Retry(retryPolicy = condition, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners), null)
         }
     }
 

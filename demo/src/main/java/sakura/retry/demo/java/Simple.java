@@ -27,12 +27,12 @@ import static sakura.retry.FailureListeners.logging;
 public class Simple {
 
     public static void main(String[] args) throws Exception {
-        Retry policy = new Retry.Builder()
+        Retry retry = new Retry.Builder()
             .setCondition(maxAttempts(3))
             .setBackoffPolicy(fixedDelayInSeconds(10).plus(randomDelayInSeconds(0, 1)))
             .addFailureListener(logging())
             .build();
-        policy.execute(
+        retry.execute(
             () -> {
                 System.out.println("Hello world!");
             }
