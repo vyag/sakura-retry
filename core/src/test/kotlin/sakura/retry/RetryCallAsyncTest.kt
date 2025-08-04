@@ -26,7 +26,6 @@ import java.util.concurrent.*
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.seconds
 
 class RetryCallAsyncTest {

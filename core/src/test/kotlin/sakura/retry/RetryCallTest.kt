@@ -24,7 +24,6 @@ import java.io.IOException
 import java.time.Duration
 import java.util.concurrent.Callable
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

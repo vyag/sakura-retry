@@ -21,8 +21,8 @@ import sakura.retry.Retry;
 
 import static sakura.retry.BackoffPolicies.fixedDelayInSeconds;
 import static sakura.retry.BackoffPolicies.randomDelayInSeconds;
-import static sakura.retry.FailureListeners.logging;
 import static sakura.retry.Conditions.maxAttempts;
+import static sakura.retry.FailureListeners.logging;
 
 public class Simple {
 
