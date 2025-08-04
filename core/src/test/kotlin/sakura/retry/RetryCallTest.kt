@@ -34,9 +34,10 @@ class RetryCallTest {
     fun testNoError() {
         val retry = Retry.Builder().setCondition(Conditions.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.mock(Callable::class.java)
-        retry.call {
+        Mockito.doReturn("done").`when`(mock).call()
+        assertThat(retry.call {
             mock.call()
-        }
+        }).isEqualTo("done")
         Mockito.verify(mock, Mockito.times(1)).call()
     }
 

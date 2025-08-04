@@ -28,10 +28,10 @@ import static sakura.retry.Conditions.maxAttempts;
 public class Proxy {
 
     public static void main(String[] args) throws Exception {
-        Retry policy = new Retry.Builder()
+        Retry retry = new Retry.Builder()
             .setCondition(maxAttempts(99))
             .build();
-        Callable<?> call = policy.proxy(Callable.class, new Impl());
+        Callable<?> call = retry.proxy(Callable.class, new Impl());
         System.out.println(call.call());
     }
 

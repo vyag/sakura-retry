@@ -18,17 +18,17 @@ package sakura.retry.demo.kotlin
 
 import sakura.retry.BackoffPolicies.fixedDelayInSeconds
 import sakura.retry.BackoffPolicies.randomDelayInSeconds
-import sakura.retry.FailureListeners.logging
 import sakura.retry.Conditions.maxAttempts
+import sakura.retry.FailureListeners.logging
 import sakura.retry.Retry
 
 fun main() {
-    val template = Retry.Builder()
+    val retry = Retry.Builder()
         .setCondition(maxAttempts(3))
         .setBackoffPolicy(fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)) 
         .addFailureListener(logging())
         .build()
-    template.execute {
+    retry.execute {
         println("maybe fail")
     }
 }

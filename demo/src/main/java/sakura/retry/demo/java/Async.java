@@ -33,12 +33,12 @@ public class Async {
     public static void main(String[] args) {
         Random random = new Random(System.currentTimeMillis());
         try (ScheduledExecutorService executor = Executors.newScheduledThreadPool(4)) {
-            Retry policy = new Retry.Builder()
+            Retry retry = new Retry.Builder()
                 .setBackoffPolicy(fixedDelayInSeconds(1))
                 .addFailureListener((call, context, allowRetry, backOffDuration) ->
                     System.out.println("Call " + call + ", attempt " + context.getAttemptCount() + " failed: (" + context.getFailure().getMessage() + ")"))
                 .build();
-            IntStream.range(0, 3).mapToObj(value -> policy.call(executor, "call-" + value, () -> {
+            IntStream.range(0, 3).mapToObj(value -> retry.withName("call-" + value).callAsync(executor, () -> {
                 double d = random.nextDouble(10);
                 if (d < 8) throw new IOException("Too small");
                 return d;

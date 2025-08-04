@@ -23,10 +23,10 @@ import java.util.*
 import java.util.concurrent.Callable
 
 fun main() {
-    val policy = Retry.Builder()
+    val retry = Retry.Builder()
         .setCondition(maxAttempts(99))
         .build()
-    val call = policy.proxy(Callable::class.java, Impl())
+    val call = retry.proxy(Callable::class.java, Impl())
     println(call.call())
 }
 
