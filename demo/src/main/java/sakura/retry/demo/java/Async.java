@@ -28,6 +28,9 @@ import java.util.stream.IntStream;
 
 import static sakura.retry.BackoffPolicies.fixedDelayInSeconds;
 
+/**
+ * A demo of callAsync.
+ */
 public class Async {
 
     public static void main(String[] args) {

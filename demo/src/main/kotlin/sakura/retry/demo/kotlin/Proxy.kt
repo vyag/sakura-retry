@@ -22,6 +22,9 @@ import java.io.IOException
 import java.util.*
 import java.util.concurrent.Callable
 
+/**
+ * A demo of retry with proxy object.
+ */
 fun main() {
     val retry = Retry.Builder()
         .setCondition(maxAttempts(99))

@@ -24,6 +24,9 @@ import java.time.Duration
 import java.util.*
 import java.util.concurrent.Executors
 
+/**
+ * A demo of callAsync.
+ */
 fun main() {
     val random = Random(System.currentTimeMillis())
     Executors.newScheduledThreadPool(4).use { executor ->

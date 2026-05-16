@@ -22,6 +22,9 @@ import sakura.retry.Conditions.maxAttempts
 import sakura.retry.FailureListeners.logging
 import sakura.retry.Retry
 
+/**
+ * A very simple retry execution.
+ */
 fun main() {
     val retry = Retry.Builder()
         .setCondition(maxAttempts(3))
