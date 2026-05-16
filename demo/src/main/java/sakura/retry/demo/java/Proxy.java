@@ -25,6 +25,9 @@ import java.util.concurrent.Callable;
 
 import static sakura.retry.Conditions.maxAttempts;
 
+/**
+ * A demo of retry with proxy object.
+ */
 public class Proxy {
 
     public static void main(String[] args) throws Exception {

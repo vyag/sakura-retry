@@ -24,6 +24,9 @@ import static sakura.retry.BackoffPolicies.randomDelayInSeconds;
 import static sakura.retry.Conditions.maxAttempts;
 import static sakura.retry.FailureListeners.logging;
 
+/**
+ * A very simple retry execution.
+ */
 public class Simple {
 
     public static void main(String[] args) throws Exception {
