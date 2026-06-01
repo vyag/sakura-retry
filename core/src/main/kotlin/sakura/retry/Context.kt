@@ -30,16 +30,37 @@ import java.time.Instant
  * @property failure The failure that occurred during the retry operation.
  */
 @ConsistentCopyVisibility
-data class Context internal constructor(val startTime: Instant, val now: Instant, val attemptCount: Int, val failure: Throwable) {
+data class Context private constructor(val startTime: Instant, val now: Instant, val attemptCount: Int, val failure: Throwable) {
     
     init {
         require(attemptCount > 0) { "attemptCount must be greater than 0" }
     }
     
+    /**
+     * The duration between [startTime] and [now].
+     *
+     * @return the duration
+     */
     fun getDuration(): Duration = Duration.between(startTime, now)
     
     override fun toString(): String {
         val duration = Duration.between(startTime, now)
         return "(startTime=${startTime}, now=${now}, attemptCount=$attemptCount, duration=${duration.toReadableString()}, failure: $failure)"
+    }
+
+    companion object {
+        /**
+         * Create a new [Context] instance.
+         *
+         * @param startTime the start time of the retry operation
+         * @param now the current time
+         * @param attemptCount the number of attempts (must be greater than 0)
+         * @param failure the failure that occurred
+         * @return the context
+         */
+        @JvmStatic
+        fun of(startTime: Instant, now: Instant, attemptCount: Int, failure: Throwable): Context {
+            return Context(startTime, now, attemptCount, failure)
+        }
     }
 }

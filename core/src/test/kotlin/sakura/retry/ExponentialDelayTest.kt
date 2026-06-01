@@ -37,14 +37,14 @@ class ExponentialDelayTest {
             4 to 5,
             5 to 5)
         for (it in data) {
-            assertThat(backOff.backoff(Context(Instant.MIN, Instant.MIN, it.first, error)).toMillis().toInt()).isEqualTo(it.second)
+            assertThat(backOff.backoff(Context.of(Instant.MIN, Instant.MIN, it.first, error)).toMillis().toInt()).isEqualTo(it.second)
         }
     }
 
     @Test
     fun testOverflowProtection() {
         val backOff = ExponentialDelay(Duration.ofMillis(Long.MAX_VALUE / 2 + 1), Duration.ofMillis(Long.MAX_VALUE / 2 + 2))
-        assertThat(backOff.backoff(Context(Instant.MIN, Instant.MIN, 1,  error)).toMillis()).isEqualTo(Long.MAX_VALUE / 2 + 1)
-        assertThat(backOff.backoff(Context(Instant.MIN, Instant.MIN, 2,  error)).toMillis()).isEqualTo(Long.MAX_VALUE / 2 + 2)
+        assertThat(backOff.backoff(Context.of(Instant.MIN, Instant.MIN, 1,  error)).toMillis()).isEqualTo(Long.MAX_VALUE / 2 + 1)
+        assertThat(backOff.backoff(Context.of(Instant.MIN, Instant.MIN, 2,  error)).toMillis()).isEqualTo(Long.MAX_VALUE / 2 + 2)
     }
 }

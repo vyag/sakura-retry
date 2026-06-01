@@ -28,12 +28,12 @@ class MaxTimeElapsedTest {
     
     @Test
     fun testShouldMatchBeforeDeadline() {
-        assertThat(cond.check(Context(Instant.EPOCH, Instant.ofEpochMilli(999), Int.MAX_VALUE, RuntimeException()))).isTrue()
+        assertThat(cond.check(Context.of(Instant.EPOCH, Instant.ofEpochMilli(999), Int.MAX_VALUE, RuntimeException()))).isTrue()
     }
 
     @Test
     fun testShouldNotMatchAfterDeadline() {
-        assertThat(cond.check(Context(Instant.EPOCH, Instant.ofEpochMilli(1000), 1, RuntimeException()))).isFalse()
-        assertThat(cond.check(Context(Instant.EPOCH, Instant.ofEpochMilli(1001), 1, RuntimeException()))).isFalse()
+        assertThat(cond.check(Context.of(Instant.EPOCH, Instant.ofEpochMilli(1000), 1, RuntimeException()))).isFalse()
+        assertThat(cond.check(Context.of(Instant.EPOCH, Instant.ofEpochMilli(1001), 1, RuntimeException()))).isFalse()
     }
 }

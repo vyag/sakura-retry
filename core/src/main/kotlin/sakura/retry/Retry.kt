@@ -17,7 +17,6 @@
 package sakura.retry
 
 import org.slf4j.LoggerFactory
-import sakura.retry.internal.BackoffExecutor
 import sakura.retry.internal.DefaultBackoffExecutor
 import sakura.retry.internal.RetryHandler
 import java.lang.reflect.Proxy
@@ -39,10 +38,9 @@ class Retry private constructor(
     val retryPolicy: Condition,
     val backoffPolicy: BackoffPolicy,
     val failureListeners: List<FailureListener>,
-    val name : String?) {
-
-    @JvmSynthetic
-    internal var backoffExecutor: BackoffExecutor = DefaultBackoffExecutor()
+    val backoffExecutor: BackoffExecutor = DefaultBackoffExecutor(),
+    val name : String?
+) {
     
     /**
      * Copy the retry instance with a new name.
@@ -51,7 +49,7 @@ class Retry private constructor(
      * @return The new retry instance.
      */
     fun withName(newName: String) : Retry {
-        return Retry(retryPolicy, backoffPolicy, failureListeners, newName)
+        return Retry(retryPolicy, backoffPolicy, failureListeners, backoffExecutor, newName)
     }
 
     /**
@@ -71,7 +69,7 @@ class Retry private constructor(
                 LOG.debug("Finally {} success after {} attempts.", name, attemptCount)
                 return result
             } catch (t: Throwable) {
-                val context = Context(startTime, Instant.now(), attemptCount, t)
+                val context = Context.of(startTime, Instant.now(), attemptCount, t)
                 val allowRetry = retryPolicy.check(context)
                 val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                 for (failureListener in failureListeners) {
@@ -99,7 +97,7 @@ class Retry private constructor(
         call(runnable::run)
     }
 
-    fun <T> callAsyncWithSupplier(executor: ScheduledExecutorService, function: Supplier<CompletionStage<T>>): CompletableFuture<T> {
+    fun <T> wrapAsync(executor: ScheduledExecutorService, function: Supplier<CompletionStage<T>>): CompletableFuture<T> {
         val attemptCount = AtomicInteger(1)
         val startTime = Instant.now()
         val result = CompletableFuture<T>()
@@ -119,7 +117,7 @@ class Retry private constructor(
             }
 
             private fun handleFailure(u: Throwable) {
-                val context = Context(startTime, Instant.now(), attemptCount.get(), u)
+                val context = Context.of(startTime, Instant.now(), attemptCount.get(), u)
                 val allowRetry = retryPolicy.check(context)
                 val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                 for (failureListener in failureListeners) {
@@ -152,7 +150,7 @@ class Retry private constructor(
                 try {
                     result.complete(function.call())
                 } catch (t: Throwable) {
-                    val context = Context(startTime, Instant.now(), attemptCount.get(), t)
+                    val context = Context.of(startTime, Instant.now(), attemptCount.get(), t)
                     val allowRetry = retryPolicy.check(context)
                     val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                     for (failureListener in failureListeners) {
@@ -196,7 +194,21 @@ class Retry private constructor(
         private var backoffPolicy: BackoffPolicy = BackoffPolicies.NONE
 
         private val failureListeners: MutableList<FailureListener> = CopyOnWriteArrayList()
-        
+
+        private var name: String? = null
+
+        private var backoffExecutor: BackoffExecutor = DefaultBackoffExecutor()
+
+        /**
+         * Set the name.
+         *
+         * @param name the name
+         * @return the builder
+         */
+        fun setName(name: String?) = apply {
+            this.name = name
+        }
+
         /**
          * Set the condition.
          * 
@@ -228,12 +240,22 @@ class Retry private constructor(
         }
 
         /**
+         * Set the backoff executor.
+         *
+         * @param backoffExecutor the backoff executor
+         * @return the builder
+         */
+        fun setBackoffExecutor(backoffExecutor: BackoffExecutor) = apply {
+            this.backoffExecutor = backoffExecutor
+        }
+
+        /**
          * Builds the [Retry].
          *
          * @return the [Retry]
          */
         fun build() : Retry {
-            return Retry(retryPolicy = condition, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners), null)
+            return Retry(retryPolicy = condition, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners), backoffExecutor, name)
         }
     }
 

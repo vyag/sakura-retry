@@ -20,6 +20,12 @@ import java.time.Duration
 import kotlin.random.Random
 import kotlin.time.toJavaDuration
 
+/**
+ * Factory methods for creating common [BackoffPolicy] implementations.
+ *
+ * Provides convenience methods for [FixedDelay], [ExponentialDelay], [RandomDelay],
+ * and the constant [NONE] policy.
+ */
 object BackoffPolicies {
 
     /**
@@ -124,6 +130,9 @@ data class FixedDelay(val duration: Duration) : BackoffPolicy {
      */
     constructor(duration: kotlin.time.Duration) : this(duration.toJavaDuration())
 
+    /**
+     * Returns a fixed [duration] regardless of [context].
+     */
     override fun backoff(context: Context): Duration {
         return duration
     }
@@ -148,11 +157,18 @@ data class ExponentialDelay(
      */
     constructor(initDuration: kotlin.time.Duration, maxDuration: kotlin.time.Duration) : this(initDuration.toJavaDuration(), maxDuration.toJavaDuration())
 
+    /**
+     * Returns a duration that doubles for each retry attempt, starting from [initDuration]
+     * and capped at [maxDuration].
+     *
+     * For the first attempt (`context.attemptCount == 1`) the value is [initDuration].
+     * For each subsequent attempt the previous value is doubled.
+     */
     override fun backoff(context: Context): Duration {
         var value = initDuration.toMillis()
         
         repeat (context.attemptCount - 1) {
-            if (value < Long.MAX_VALUE / 2) {
+            if (value <= Long.MAX_VALUE / 2) {
                 value = value shl 1
             } else {
                 value = Long.MAX_VALUE
@@ -193,6 +209,9 @@ data class RandomDelay(val minDuration: Duration, val maxDuration: Duration) : B
         require(minDuration <= maxDuration) { "minDuration must be less than or equal to maxDuration" }
     }
 
+    /**
+     * Returns a uniformly random duration between [minDuration] and [maxDuration].
+     */
     override fun backoff(context: Context): Duration {
         val value = random.nextLong(minDuration.toMillis(), maxDuration.toMillis())
         return Duration.ofMillis(value)

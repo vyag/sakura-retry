@@ -16,11 +16,12 @@
  */
 package sakura.retry.internal
 
+import sakura.retry.BackoffExecutor
 import java.time.Duration
 
 class DefaultBackoffExecutor(
     private val executor: (Duration) -> Unit = {
-        Thread.sleep(it.toMillis(), (it.toNanos() % 1e6).toInt())
+        Thread.sleep(it.toMillis(), it.toNanosPart())
     }
 ) : BackoffExecutor {
 

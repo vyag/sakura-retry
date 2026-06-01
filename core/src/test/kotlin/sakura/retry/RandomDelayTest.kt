@@ -29,7 +29,7 @@ class RandomDelayTest {
     @RepeatedTest(1000)
     fun testBackoffDistribution() {
         val backoff = randomDelayInSeconds(-100, 100)
-        val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error)).toMillis()
+        val backoffDuration = backoff.backoff(Context.of(Instant.MIN, Instant.MIN, 1, error)).toMillis()
         assertThat(backoffDuration).isBetween(-100000, 100000)
     }
 }

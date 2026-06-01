@@ -19,6 +19,12 @@ package sakura.retry
 import java.time.Duration
 import kotlin.time.toJavaDuration
 
+/**
+ * Factory methods for creating common retry [Condition]s.
+ *
+ * Provides convenience methods for [MaxAttempts], [MaxTimeElapsed], [ExceptionType],
+ * as well as constant [TRUE] and [FALSE] conditions.
+ */
 object Conditions {
 
     /**
@@ -104,6 +110,13 @@ object Conditions {
         return ExceptionType(RuntimeException::class.java)
     }
     
+    /**
+     * Convenience method to create an ExceptionType condition.
+     *
+     * @param failure the class of the failure to match (subclasses are also matched via [Class.isInstance])
+     * @return the condition
+     * @see [ExceptionType]
+     */
     @JvmStatic
     fun exceptionType(failure: Class<out Throwable>): ExceptionType {
         return ExceptionType(failure)
@@ -143,6 +156,13 @@ data class MaxAttempts(val amount: Int) : Condition {
         require(amount > 1) { "amount must be greater than 1" }
     }
 
+    /**
+     * Returns `true` when [context.attemptCount] is less than [amount].
+     *
+     * This means the condition allows retry as long as the number of attempts
+     * so far is strictly less than the configured maximum. For example,
+     * `MaxAttempts(3)` allows up to 3 attempts (1 initial + 2 retries).
+     */
     override fun check(context: Context): Boolean {
         return context.attemptCount < amount
     }
@@ -174,6 +194,10 @@ data class MaxTimeElapsed(val duration: Duration) : Condition {
         require(duration > Duration.ZERO) { "duration must be greater than 0" }
     }
 
+    /**
+     * Returns `true` when the elapsed time since [startTime][Context.startTime]
+     * is less than [duration].
+     */
     override fun check(context: Context): Boolean {
         return context.getDuration() < duration
     }
@@ -201,6 +225,13 @@ data class ExceptionType(val failures: Set<Class<out Throwable>>) : Condition {
      */
     constructor(vararg failures: Class<out Throwable>) : this(failures.toSet())
 
+    /**
+     * Returns `true` when [context.failure] is an instance of one of the configured
+     * exception classes.
+     *
+     * Matching uses [Class.isInstance], so subclasses are also matched. For example,
+     * `ExceptionType(IOException::class)` will also match `FileNotFoundException`.
+     */
     override fun check(context: Context): Boolean {
         val failure = context.failure
         return failures.contains(failure.javaClass) || failures.any { it.isInstance(failure) }
