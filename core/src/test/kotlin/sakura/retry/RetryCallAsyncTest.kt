@@ -84,7 +84,7 @@ class RetryCallAsyncTest {
     fun testNoErrorWithSupplier() {
         val retry = Retry.Builder().setCondition(Conditions.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.spy(GetThreadGroup())
-        assertThat(retry.callAsyncWithSupplier(sakuraExecutor) {
+        assertThat(retry.wrapAsync(sakuraExecutor) {
             CompletableFuture.supplyAsync(mock::call, bizExecutor) 
         }).succeedsWithin(Duration.ofSeconds(1)).isSameAs(bizThreadGroup)
         Mockito.verify(mock, Mockito.times(1)).call()
@@ -107,7 +107,7 @@ class RetryCallAsyncTest {
         val retry = Retry.Builder().setCondition(MaxAttempts(3)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.spy(ThrowThreadGroupException(2))
 
-        assertThat(retry.callAsyncWithSupplier(sakuraExecutor) {
+        assertThat(retry.wrapAsync(sakuraExecutor) {
             CompletableFuture.supplyAsync(mock::call, bizExecutor)
         }).succeedsWithin(Duration.ofSeconds(1)).isSameAs(bizThreadGroup)
         Mockito.verify(mock, Mockito.times(3)).call()
@@ -132,7 +132,7 @@ class RetryCallAsyncTest {
         val retry = Retry.Builder().setCondition(MaxAttempts(3)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.spy(ThrowThreadGroupException(4))
 
-        assertThat(retry.callAsyncWithSupplier(sakuraExecutor) { CompletableFuture.supplyAsync(mock::call, bizExecutor) })
+        assertThat(retry.wrapAsync(sakuraExecutor) { CompletableFuture.supplyAsync(mock::call, bizExecutor) })
             .failsWithin(Duration.ofSeconds(1))
             .withThrowableOfType(ExecutionException::class.java)
             .withCause(ThreadGroupException(bizThreadGroup))
@@ -169,7 +169,7 @@ class RetryCallAsyncTest {
         }
 
         val results = Array(100) {
-            retry.withName("call-$it").callAsyncWithSupplier(sakuraExecutor) {
+            retry.withName("call-$it").wrapAsync(sakuraExecutor) {
                 CompletableFuture.supplyAsync(mocks[it]::call, bizExecutor)
             }
         }

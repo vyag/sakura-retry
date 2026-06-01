@@ -15,12 +15,12 @@
  * under the License.
  */
 
-package sakura.retry.internal
+package sakura.retry
 
 import java.time.Duration
 
-internal fun interface BackoffExecutor {
+fun interface BackoffExecutor {
 
     fun backoff(duration: Duration)
-    
+
 }

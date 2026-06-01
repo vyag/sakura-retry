@@ -19,7 +19,6 @@ package sakura.retry
 
 import org.assertj.core.api.Assertions.assertThat
 import org.mockito.Mockito
-import sakura.retry.internal.BackoffExecutor
 import java.io.IOException
 import java.time.Duration
 import java.util.concurrent.Callable
@@ -98,8 +97,11 @@ class RetryCallTest {
             backoffCount++
         }
 
-        val retry = Retry.Builder().setCondition(MaxAttempts(10)).setBackoffPolicy(FixedDelay(Duration.ofSeconds(1))).build()
-        retry.backoffExecutor = fakeSleeper
+        val retry = Retry.Builder()
+            .setCondition(MaxAttempts(10))
+            .setBackoffPolicy(FixedDelay(Duration.ofSeconds(1)))
+            .setBackoffExecutor(fakeSleeper)
+            .build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
         

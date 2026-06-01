@@ -31,7 +31,7 @@ class BackoffCombinationTest {
     @Test
     fun testBackoffCombination() {
         val backoff = fixedDelay(1.seconds) + FixedDelay(1.seconds)
-        val backoffDuration = backoff.backoff(Context(Instant.MIN, Instant.MIN, 1, error))
+        val backoffDuration = backoff.backoff(Context.of(Instant.MIN, Instant.MIN, 1, error))
         assertThat(backoffDuration).isEqualTo(Duration.ofSeconds(2))
     }
 }
