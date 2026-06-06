@@ -26,9 +26,10 @@ import java.util.*
 /**
  * Demonstrates the scoped name override using [Retry.withName].
  *
- * Inside the [withName] block, the name "hard-work" is passed to the
- * [Retry.call] invocation, so failure listeners and log output identify
- * the call by this name instead of the default (object identity).
+ * Inside the [withName] block, the retry instance is received as `it` (like
+ * [kotlin.runCatching]'s `also` style). The name "hard-work" is passed to
+ * [Retry.call] so failure listeners and log output identify the call by
+ * this name instead of the default (object identity).
  */
 fun main() {
     val retry = Retry.Builder()
@@ -36,8 +37,8 @@ fun main() {
         .setBackoffPolicy(fixedDelayInSeconds(1))
         .addFailureListener(logging())
         .build()
-    val result = retry.withName("hard-work") {
-        call {
+    val result = retry.withName("hard-work") { r ->
+        r.call {
             val v = Random().nextDouble(10.0)
             if (v < 7) throw IOException("Too small: $v")
             v

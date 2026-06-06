@@ -69,8 +69,8 @@ class RetryCallTest {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        assertEquals("done", retry.withName("foo") {
-            call {
+        assertEquals("done", retry.withName("foo") { r ->
+            r.call {
                 mock.call()
             }
         })
