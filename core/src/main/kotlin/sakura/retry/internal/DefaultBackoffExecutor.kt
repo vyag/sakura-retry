@@ -26,7 +26,7 @@ internal object DefaultBackoffExecutor : BackoffExecutor {
 
     override fun backoff(duration: Duration) {
         if (!duration.isNegative && !duration.isZero) {
-            Thread.sleep(duration.toMillis(), duration.nano)
+            Thread.sleep(duration.toMillis(), (duration.toNanos() % 1_000_000L).toInt())
         }
     }
 }
