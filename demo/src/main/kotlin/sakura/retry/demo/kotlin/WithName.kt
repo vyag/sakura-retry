@@ -17,26 +17,31 @@
 package sakura.retry.demo.kotlin
 
 import sakura.retry.BackoffPolicies.fixedDelayInSeconds
-import sakura.retry.BackoffPolicies.randomDelayInSeconds
 import sakura.retry.Conditions.maxAttempts
 import sakura.retry.FailureListeners.logging
 import sakura.retry.Retry
+import java.io.IOException
+import java.util.*
 
 /**
- * Demonstrates basic synchronous retry using [Retry.execute].
+ * Demonstrates the scoped name override using [Retry.withName].
  *
- * A simple task is retried up to 3 times with a combined fixed + random
- * back-off delay. The [logging] failure listener prints each failure to
- * the log (SLF4J).
+ * Inside the [withName] block, the name "hard-work" is passed to the
+ * [Retry.call] invocation, so failure listeners and log output identify
+ * the call by this name instead of the default (object identity).
  */
 fun main() {
     val retry = Retry.Builder()
-        .setCondition(maxAttempts(3))
-        .setBackoffPolicy(fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)) 
+        .setCondition(maxAttempts(5))
+        .setBackoffPolicy(fixedDelayInSeconds(1))
         .addFailureListener(logging())
         .build()
-    retry.execute {
-        println("maybe fail")
+    val result = retry.withName("hard-work") {
+        call {
+            val v = Random().nextDouble(10.0)
+            if (v < 7) throw IOException("Too small: $v")
+            v
+        }
     }
+    println(result)
 }
-

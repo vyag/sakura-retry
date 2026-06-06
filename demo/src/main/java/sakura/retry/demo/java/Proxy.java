@@ -26,7 +26,11 @@ import java.util.concurrent.Callable;
 import static sakura.retry.Conditions.maxAttempts;
 
 /**
- * A demo of retry with proxy object.
+ * Demonstrates the retry proxy pattern using {@link Retry#proxy}.
+ *
+ * A {@link java.util.concurrent.Callable} implementation is wrapped so that
+ * every call to {@link Callable#call} is automatically retried on failure.
+ * This allows transparent retry without modifying the original object.
  */
 public class Proxy {
 

@@ -25,7 +25,11 @@ import java.util.*
 import java.util.concurrent.Executors
 
 /**
- * A demo of callAsync.
+ * Demonstrates asynchronous retry using [Retry.callAsync].
+ *
+ * Multiple async tasks are submitted concurrently via
+ * [java.util.concurrent.ExecutorService]. Each task is retried on failure.
+ * Results are collected and printed as they complete.
  */
 fun main() {
     val random = Random(System.currentTimeMillis())
@@ -35,13 +39,11 @@ fun main() {
             .addFailureListener { call: String?, context: Context, _: Boolean, _: Duration ->
                 println("Call $call, attempt ${context.attemptCount} failed: (${context.failure.message})")
             }.build()
-        (0 until 3).map { i ->
-            retry.withName("call-$i") {
-                callAsync(executor) {
-                    random.nextDouble(10.0).takeUnless { it < 7 } ?: throw IOException("Too small")
-                }
+        (0 until 3).map {
+            retry.callAsync(executor) {
+                random.nextDouble(10.0).takeUnless { it < 7 } ?: throw IOException("Too small")
             }
-        }.map { 
+        }.map {
             it.thenAccept(::println)
         }.forEach {
             it.join()

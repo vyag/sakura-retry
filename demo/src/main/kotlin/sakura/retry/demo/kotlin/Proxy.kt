@@ -23,7 +23,11 @@ import java.util.*
 import java.util.concurrent.Callable
 
 /**
- * A demo of retry with proxy object.
+ * Demonstrates the retry proxy pattern using [Retry.proxy].
+ *
+ * A [java.util.concurrent.Callable] implementation is wrapped so that every
+ * call to [Callable.call] is automatically retried on failure. This allows
+ * transparent retry without modifying the original object.
  */
 fun main() {
     val retry = Retry.Builder()
