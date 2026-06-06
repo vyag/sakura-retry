@@ -36,7 +36,7 @@ import java.util.function.Supplier
  * @param backoffPolicy The back off strategy.
  * @param failureListeners The error handler.
  */
-open class Retry private constructor(
+class Retry private constructor(
     val condition: Condition,
     val backoffPolicy: BackoffPolicy,
     val failureListeners: List<FailureListener>,
@@ -46,6 +46,17 @@ open class Retry private constructor(
 
     private val names = ConcurrentHashMap<Thread, String?>()
 
+    /**
+     * Execute the given block with a scoped name override.
+     *
+     * Inside the block, [call], [callAsync] and [wrapAsync] will use this name
+     * for logging and failure listeners. The previous name (if any) is restored
+     * when the block returns.
+     *
+     * @param name  The name to use within the block.
+     * @param block The operations to execute with this name.
+     * @return The result of the block.
+     */
     fun <T> withName(name: String, block: Retry.() -> T): T {
         val thread = Thread.currentThread()
         val previous = names.put(thread, name)
@@ -56,8 +67,13 @@ open class Retry private constructor(
         }
     }
 
-    private fun currentName(): String? = names[Thread.currentThread()]
-
+    /**
+     * Call the given function with retry.
+     *
+     * @param function The function to call.
+     * @return The result of the function.
+     * @throws Exception The original exception if all retry attempts fail.
+     */
     @Throws(Exception::class)
     fun <T> call(function: Callable<T>): T {
         var attemptCount = 1
@@ -87,11 +103,27 @@ open class Retry private constructor(
         }
     }
 
+    /**
+     * Execute the given runnable with retry.
+     *
+     * @param runnable The runnable to execute.
+     */
     @Throws(Exception::class)
     fun execute(runnable: Runnable) {
         call(runnable::run)
     }
 
+    /**
+     * Submit the given supplier and retry on failure.
+     *
+     * The supplier returns a [CompletionStage]. If the stage completes
+     * exceptionally, the retry logic is triggered. Upon success the future
+     * is completed with the stage's result.
+     *
+     * @param executor The executor to schedule retries on.
+     * @param function The supplier returning a [CompletionStage].
+     * @return A [CompletableFuture] that completes with the result.
+     */
     fun <T> wrapAsync(executor: ScheduledExecutorService, function: Supplier<CompletionStage<T>>): CompletableFuture<T> {
         val attemptCount = AtomicInteger(1)
         val startTime = Instant.now()
@@ -130,6 +162,16 @@ open class Retry private constructor(
         return result
     }
 
+    /**
+     * Submit the given function with retry.
+     *
+     * If the function throws, it will be retried according to the
+     * configured policy. The retry is scheduled on the given executor.
+     *
+     * @param executor The executor to schedule retries on.
+     * @param function The function to submit.
+     * @return A [CompletableFuture] that completes with the result.
+     */
     fun <T> callAsync(executor: ScheduledExecutorService, function: Callable<T>): CompletableFuture<T> {
         val attemptCount = AtomicInteger(1)
         val startTime = Instant.now()
@@ -159,12 +201,11 @@ open class Retry private constructor(
     }
 
     /**
-     * Creates a proxy for the given target object with retry.
+     * Creates a proxy for the given target with retry behavior.
      *
-     * @param clazz The interface class of the target object.
+     * @param clazz  The interface class of the target.
      * @param target The target object.
-     * @param name The optional name of the target object.
-     * @return The proxy object.
+     * @return A proxy that wraps every method call with retry.
      */
     fun <T> proxy(clazz: Class<T>, target: T): T {
         @Suppress("UNCHECKED_CAST")
@@ -174,8 +215,12 @@ open class Retry private constructor(
         ) as T)
     }
 
+    // -- private helpers ---------------------------------------------------
+
+    private fun currentName(): String? = names[Thread.currentThread()]
+
     /**
-     * The Java-style builder for [Retry].
+     * The builder for [Retry].
      */
     class Builder {
 
@@ -189,26 +234,61 @@ open class Retry private constructor(
         
         private var delaySubmitter: DelaySubmitter = DefaultDelaySubmitter
 
+        /**
+         * Set the retry condition.
+         *
+         * @param condition the retry condition
+         * @return this builder
+         */
         fun setCondition(condition: Condition) = apply {
             this.condition = condition
         }
         
+        /**
+         * Set the backoff policy.
+         *
+         * @param backoffPolicy the backoff policy
+         * @return this builder
+         */
         fun setBackoffPolicy(backoffPolicy: BackoffPolicy) = apply {
             this.backoffPolicy = backoffPolicy
         }
 
+        /**
+         * Add a failure listener.
+         *
+         * @param failureListener the failure listener
+         * @return this builder
+         */
         fun addFailureListener(failureListener: FailureListener) = apply {
             this.failureListeners.add(failureListener)
         }
 
+        /**
+         * Set the backoff executor.
+         *
+         * @param backoffExecutor the backoff executor
+         * @return this builder
+         */
         fun setBackoffExecutor(backoffExecutor: BackoffExecutor) = apply {
             this.backoffExecutor = backoffExecutor
         }
 
+        /**
+         * Set the delay submitter (internal).
+         *
+         * @param delaySubmitter the delay submitter
+         * @return this builder
+         */
         internal fun setDelaySubmitter(delaySubmitter: DelaySubmitter) = apply {
             this.delaySubmitter = delaySubmitter
         }
 
+        /**
+         * Build the [Retry] instance.
+         *
+         * @return the new [Retry]
+         */
         fun build() : Retry {
             return Retry(
                 condition = condition,
