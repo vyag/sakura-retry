@@ -35,10 +35,12 @@ fun main() {
             .addFailureListener { call: String?, context: Context, _: Boolean, _: Duration ->
                 println("Call $call, attempt ${context.attemptCount} failed: (${context.failure.message})")
             }.build()
-        (0 until 3).map { 
-            retry.withName("call-$it").callAsync(executor) {
-                random.nextDouble(10.0).takeUnless { it < 7 } ?: throw IOException("Too small")    
-            } 
+        (0 until 3).map { i ->
+            retry.withName("call-$i") {
+                callAsync(executor) {
+                    random.nextDouble(10.0).takeUnless { it < 7 } ?: throw IOException("Too small")
+                }
+            }
         }.map { 
             it.thenAccept(::println)
         }.forEach {

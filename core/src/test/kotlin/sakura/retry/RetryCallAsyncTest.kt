@@ -132,12 +132,11 @@ class RetryCallAsyncTest {
                 }
                 LOG.info("string: $string, duration: $duration")
             }
-            .setName("foo")
             .build()
         val mock = Mockito.spy(ThrowThreadGroupException(2))
         
         try {
-            assertThat(retry.callAsync(sakuraExecutor, mock::call))
+            assertThat(retry.withName("foo") { callAsync(sakuraExecutor, mock::call) })
                 .succeedsWithin(Duration.ofSeconds(1)).isSameAs(sakuraThreadGroup)
             Mockito.verify(mock, Mockito.times(3)).call()
         } catch (e: Throwable) {
@@ -189,13 +188,14 @@ class RetryCallAsyncTest {
                 }
                 LOG.info("string: $string, duration: $duration")
             }
-            .setName("foo")
             .build()
         val mock = Mockito.spy(ThrowThreadGroupException(2))
 
         try {
-            assertThat(retry.wrapAsync(sakuraExecutor) {
-                CompletableFuture.supplyAsync(mock::call, bizExecutor)
+            assertThat(retry.withName("foo") {
+                wrapAsync(sakuraExecutor) {
+                    CompletableFuture.supplyAsync(mock::call, bizExecutor)
+                }
             }).succeedsWithin(Duration.ofSeconds(1)).isSameAs(bizThreadGroup)
             Mockito.verify(mock, Mockito.times(3)).call()
         } catch (e: Throwable) {

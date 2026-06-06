@@ -63,15 +63,16 @@ class RetryCallTest {
                 assertThat(context.attemptCount).isEqualTo(failureCount)
                 assertThat(duration).isEqualTo(Duration.ofSeconds(1))
             }
-            .setName("foo")
             .build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(9) {
             IOException()
         }).doReturn("done").`when`(mock).call()
 
-        assertEquals("done", retry.call {
-            mock.call()
+        assertEquals("done", retry.withName("foo") {
+            call {
+                mock.call()
+            }
         })
         Mockito.verify(mock, Mockito.times(10)).call()
         assertThat(duration).isEqualTo(Duration.ofSeconds(9))
