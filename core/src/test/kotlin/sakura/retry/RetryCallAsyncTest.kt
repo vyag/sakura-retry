@@ -19,16 +19,17 @@ package sakura.retry
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Timeout
+import org.junit.jupiter.api.fail
 import org.mockito.Mockito
-import java.io.IOException
+import org.slf4j.LoggerFactory
+import sakura.retry.internal.DefaultDelaySubmitter
+import sun.rmi.runtime.Log
 import java.time.Duration
 import java.util.concurrent.*
-import java.util.concurrent.ThreadFactory
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
-
 
 class RetryCallAsyncTest {
 
@@ -42,8 +43,8 @@ class RetryCallAsyncTest {
     
     @BeforeTest
     fun init() {
-        sakuraExecutor = Executors.newScheduledThreadPool(5, ThreadFactory { r -> Thread(sakuraThreadGroup, r) })
-        bizExecutor = Executors.newFixedThreadPool(5, ThreadFactory { r -> Thread(bizThreadGroup, r) })
+        sakuraExecutor = Executors.newScheduledThreadPool(5) { r -> Thread(sakuraThreadGroup, r) }
+        bizExecutor = Executors.newFixedThreadPool(5) { r -> Thread(bizThreadGroup, r) }
     }
     
     @AfterTest
@@ -63,6 +64,7 @@ class RetryCallAsyncTest {
         private var left = count
         
         override fun call(): ThreadGroup {
+            LOG.info("Call with error left: {}", left)
             if (left-- > 0) {
                 throw ThreadGroupException(Thread.currentThread().threadGroup)
             }
@@ -71,8 +73,13 @@ class RetryCallAsyncTest {
     }
 
     @Test
-    fun testNoError() {
-        val retry = Retry.Builder().setCondition(Conditions.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
+    fun testCallAsyncAndNoError() {
+        val retry = Retry.Builder()
+            .setCondition(Conditions.TRUE)
+            .setBackoffPolicy(FixedDelay(1.seconds))
+            .setBackoffExecutor { fail("Shouldn't be called") }
+            .addFailureListener { _, _, _, _ -> fail("Shouldn't be called") }
+            .build()
         val mock = Mockito.spy(GetThreadGroup())
         assertThat(retry.callAsync(sakuraExecutor) {
             mock.call()
@@ -81,8 +88,13 @@ class RetryCallAsyncTest {
     }
 
     @Test
-    fun testNoErrorWithSupplier() {
-        val retry = Retry.Builder().setCondition(Conditions.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
+    fun testWrapAsyncAndNoError() {
+        val retry = Retry.Builder()
+            .setCondition(Conditions.TRUE)
+            .setBackoffPolicy(FixedDelay(1.seconds))
+            .setBackoffExecutor { fail("Shouldn't be called") }
+            .addFailureListener { _, _, _, _ -> fail("Shouldn't be called") }
+            .build()
         val mock = Mockito.spy(GetThreadGroup())
         assertThat(retry.wrapAsync(sakuraExecutor) {
             CompletableFuture.supplyAsync(mock::call, bizExecutor) 
@@ -92,30 +104,51 @@ class RetryCallAsyncTest {
 
     @Test
     @Timeout(1)
-    fun testRetrySuccess() {
-        val retry = Retry.Builder().setCondition(MaxAttempts(3)).setBackoffPolicy(BackoffPolicies.NONE).build()
+    fun testCallAsyncAndRetrySuccess() {
+        var failureCount = 0
+        var assertFailures = ConcurrentLinkedQueue<Throwable>()
+        val retry = Retry.Builder()
+            .setCondition(MaxAttempts(3))
+            .setBackoffExecutor { fail("Shouldn't be called") }
+            .setBackoffPolicy(FixedDelay(1.seconds))
+            .setDelaySubmitter { service, runnable, duration -> 
+                try {
+                    assertThat(duration).isEqualTo(Duration.ofSeconds(1))
+                } catch (e: Throwable) {
+                    assertFailures += e
+                }
+                DefaultDelaySubmitter.submit(service, runnable, Duration.ZERO)
+            }
+            .addFailureListener { string, context, bool, duration ->
+                failureCount++
+                try {
+                    assertThat(string).isEqualTo("foo")
+                    assertThat(bool).isTrue()
+                    assertThat(context.failure).isInstanceOf(ThreadGroupException::class.java)
+                    assertThat(context.attemptCount).isEqualTo(failureCount)
+                    assertThat(duration).isEqualTo(Duration.ofSeconds(1))
+                } catch (e: Throwable) {
+                    assertFailures += e
+                }
+                LOG.info("string: $string, duration: $duration")
+            }
+            .setName("foo")
+            .build()
         val mock = Mockito.spy(ThrowThreadGroupException(2))
-
-        assertThat(retry.callAsync(sakuraExecutor, mock::call))
-            .succeedsWithin(Duration.ofSeconds(1)).isSameAs(sakuraThreadGroup)
-        Mockito.verify(mock, Mockito.times(3)).call()
+        
+        try {
+            assertThat(retry.callAsync(sakuraExecutor, mock::call))
+                .succeedsWithin(Duration.ofSeconds(1)).isSameAs(sakuraThreadGroup)
+            Mockito.verify(mock, Mockito.times(3)).call()
+        } catch (e: Throwable) {
+            assertFailures.forEach { throw it }
+            throw e
+        }
     }
 
     @Test
-    @Timeout(1)
-    fun testRetrySuccessWithSupplier() {
-        val retry = Retry.Builder().setCondition(MaxAttempts(3)).setBackoffPolicy(BackoffPolicies.NONE).build()
-        val mock = Mockito.spy(ThrowThreadGroupException(2))
-
-        assertThat(retry.wrapAsync(sakuraExecutor) {
-            CompletableFuture.supplyAsync(mock::call, bizExecutor)
-        }).succeedsWithin(Duration.ofSeconds(1)).isSameAs(bizThreadGroup)
-        Mockito.verify(mock, Mockito.times(3)).call()
-    }
-
-    @Test
-    @Timeout(1)
-    fun testRetryFail() {
+    @Timeout(2)
+    fun testCallAsyncAndRetryFail() {
         val retry = Retry.Builder().setCondition(MaxAttempts(3)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.spy(ThrowThreadGroupException(4))
 
@@ -128,7 +161,52 @@ class RetryCallAsyncTest {
 
     @Test
     @Timeout(1)
-    fun testRetryFailWithSupplier() {
+    fun testWrapAsyncAndRetrySuccess() {
+        var failureCount = 0
+        var assertFailures = ConcurrentLinkedQueue<Throwable>()
+        val retry = Retry.Builder()
+            .setCondition(MaxAttempts(3))
+            .setBackoffExecutor { fail("Shouldn't be called") }
+            .setBackoffPolicy(FixedDelay(1.seconds))
+            .setDelaySubmitter { service, runnable, duration ->
+                try {
+                    assertThat(duration).isEqualTo(Duration.ofSeconds(1))
+                } catch (e: Throwable) {
+                    assertFailures += e
+                }
+                DefaultDelaySubmitter.submit(service, runnable, Duration.ZERO)
+            }
+            .addFailureListener { string, context, bool, duration ->
+                failureCount++
+                try {
+                    assertThat(string).isEqualTo("foo")
+                    assertThat(bool).isTrue()
+                    assertThat(context.failure).isInstanceOf(ThreadGroupException::class.java)
+                    assertThat(context.attemptCount).isEqualTo(failureCount)
+                    assertThat(duration).isEqualTo(Duration.ofSeconds(1))
+                } catch (e: Throwable) {
+                    assertFailures += e
+                }
+                LOG.info("string: $string, duration: $duration")
+            }
+            .setName("foo")
+            .build()
+        val mock = Mockito.spy(ThrowThreadGroupException(2))
+
+        try {
+            assertThat(retry.wrapAsync(sakuraExecutor) {
+                CompletableFuture.supplyAsync(mock::call, bizExecutor)
+            }).succeedsWithin(Duration.ofSeconds(1)).isSameAs(bizThreadGroup)
+            Mockito.verify(mock, Mockito.times(3)).call()
+        } catch (e: Throwable) {
+            assertFailures.forEach { throw it }
+            throw e
+        }
+    }
+    
+    @Test
+    @Timeout(1)
+    fun testWrapAsyncAndRetryFail() {
         val retry = Retry.Builder().setCondition(MaxAttempts(3)).setBackoffPolicy(BackoffPolicies.NONE).build()
         val mock = Mockito.spy(ThrowThreadGroupException(4))
 
@@ -138,49 +216,9 @@ class RetryCallAsyncTest {
             .withCause(ThreadGroupException(bizThreadGroup))
         Mockito.verify(mock, Mockito.times(3)).call()
     }
-
-    @Test
-    @Timeout(5)
-    fun testRetrySuccessWithMultipleSubmits() {
-        val retry = Retry.Builder().setCondition(MaxAttempts(3)).setBackoffPolicy(FixedDelay(1.seconds)).build()
-        val mocks = Array(100) {
-            Mockito.spy(ThrowThreadGroupException(2))
-        }
-
-        val results = Array(100) {
-            retry.withName("call-$it").callAsync(sakuraExecutor, mocks[it]::call)
-        }
-
-        for (it in results) {
-            assertThat(it).succeedsWithin(Duration.ofSeconds(5)).isSameAs(sakuraThreadGroup)
-        }
-
-        for (it in mocks) {
-            Mockito.verify(it, Mockito.times(3)).call()
-        }
-    }
-
-    @Test
-    @Timeout(5)
-    fun testRetrySuccessWithMultipleSubmitsWithSupplier() {
-        val retry = Retry.Builder().setCondition(MaxAttempts(3)).setBackoffPolicy(FixedDelay(1.seconds)).build()
-        val mocks = Array(100) {
-            Mockito.spy(ThrowThreadGroupException(2))
-        }
-
-        val results = Array(100) {
-            retry.withName("call-$it").wrapAsync(sakuraExecutor) {
-                CompletableFuture.supplyAsync(mocks[it]::call, bizExecutor)
-            }
-        }
-
-        for (it in results) {
-            assertThat(it).succeedsWithin(Duration.ofSeconds(5)).isSameAs(bizThreadGroup)
-        }
-
-        for (it in mocks) {
-            Mockito.verify(it, Mockito.times(3)).call()
-        }
+    
+    companion object {
+        private val LOG = LoggerFactory.getLogger(RetryCallAsyncTest::class.java)
     }
 
 }

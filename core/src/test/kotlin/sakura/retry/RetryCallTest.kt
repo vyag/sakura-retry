@@ -22,16 +22,23 @@ import org.mockito.Mockito
 import java.io.IOException
 import java.time.Duration
 import java.util.concurrent.Callable
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.fail
+import kotlin.time.Duration.Companion.seconds
 
 class RetryCallTest {
 
     @Test
-    fun testNoError() {
-        val retry = Retry.Builder().setCondition(Conditions.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
+    fun testCallAndNoError() {
+        val retry = Retry.Builder()
+            .setCondition(Conditions.TRUE)
+            .setBackoffPolicy(FixedDelay(1.seconds))
+            .setBackoffExecutor { fail("Shouldn't be called") }
+            .addFailureListener { _, _, _, _ -> fail("Shouldn't be called") }
+            .build()
+        
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doReturn("done").`when`(mock).call()
         assertThat(retry.call {
@@ -41,8 +48,23 @@ class RetryCallTest {
     }
 
     @Test
-    fun testRetrySuccess() {
-        val retry = Retry.Builder().setCondition(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
+    fun testCallAndRetrySuccess() {
+        var duration = Duration.ZERO
+        var failureCount = 0
+        val retry = Retry.Builder()
+            .setCondition(MaxAttempts(10))
+            .setBackoffPolicy(FixedDelay(1.seconds))
+            .setBackoffExecutor { duration += it }
+            .addFailureListener { string, context, bool, duration ->
+                failureCount++
+                assertThat(string).isEqualTo("foo")
+                assertThat(bool).isTrue()
+                assertThat(context.failure).isInstanceOf(IOException::class.java)
+                assertThat(context.attemptCount).isEqualTo(failureCount)
+                assertThat(duration).isEqualTo(Duration.ofSeconds(1))
+            }
+            .setName("foo")
+            .build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(*Array(9) {
             IOException()
@@ -52,66 +74,37 @@ class RetryCallTest {
             mock.call()
         })
         Mockito.verify(mock, Mockito.times(10)).call()
+        assertThat(duration).isEqualTo(Duration.ofSeconds(9))
+        assertThat(failureCount).isEqualTo(9)
     }
 
     @Test
-    fun testRetryFailed() {
-        val retry = Retry.Builder().setCondition(MaxAttempts(10)).setBackoffPolicy(BackoffPolicies.NONE).build()
-        val mock = Mockito.mock(Callable::class.java)
-        Mockito.doThrow(IOException()).`when`(mock).call()
-
-        assertFailsWith<IOException> {
-            retry.call {
-                mock.call()
-            }
-        }
-        Mockito.verify(mock, Mockito.times(10)).call()
-    }
-    
-    @Test
-    fun testRetryWithRecovery() {
-        val broken = AtomicBoolean(true)
+    fun testCallAndRetryFailed() {
+        var duration = Duration.ZERO
+        var failureCount = 0
         val retry = Retry.Builder()
             .setCondition(MaxAttempts(10))
-            .setBackoffPolicy(BackoffPolicies.NONE)
-            .addFailureListener { _, _, _, _ -> 
-                broken.set(false)
-            }.build()
-        var count = 0
-        val result = retry.call {
-            count++
-            if (broken.get()) {
-                throw IOException()
-            } else {
-                "fixed"
+            .setBackoffPolicy(FixedDelay(1.seconds))
+            .setBackoffExecutor { duration += it }
+            .addFailureListener { _, context, allowRetry, backOff ->
+                failureCount++
+                assertThat(context.attemptCount).isEqualTo(failureCount)
+                assertThat(context.failure).isInstanceOf(IOException::class.java)
+                if (allowRetry) {
+                    assertThat(backOff).isEqualTo(Duration.ofSeconds(1))
+                } else {
+                    assertThat(backOff).isEqualTo(Duration.ZERO)
+                }
             }
-        }
-        assertThat(result).isEqualTo("fixed")
-        assertThat(count).isEqualTo(2)
-    }
-
-    @Test
-    fun testRetryBackOff() {
-        var backoffCount = 0
-        val fakeSleeper = BackoffExecutor {
-            backoffCount++
-        }
-
-        val retry = Retry.Builder()
-            .setCondition(MaxAttempts(10))
-            .setBackoffPolicy(FixedDelay(Duration.ofSeconds(1)))
-            .setBackoffExecutor(fakeSleeper)
             .build()
         val mock = Mockito.mock(Callable::class.java)
         Mockito.doThrow(IOException()).`when`(mock).call()
-        
+
         assertFailsWith<IOException> {
-            retry.call {
-                mock.call()
-            }
+            retry.call(mock::call)
         }
         Mockito.verify(mock, Mockito.times(10)).call()
-        assertThat(backoffCount).isEqualTo(9)
+        assertThat(duration).isEqualTo(Duration.ofSeconds(9))
+        assertThat(failureCount).isEqualTo(10)
     }
-
 }

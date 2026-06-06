@@ -18,6 +18,8 @@ package sakura.retry
 
 import org.slf4j.LoggerFactory
 import sakura.retry.internal.DefaultBackoffExecutor
+import sakura.retry.internal.DefaultDelaySubmitter
+import sakura.retry.internal.DelaySubmitter
 import sakura.retry.internal.RetryHandler
 import java.lang.reflect.Proxy
 import java.time.Duration
@@ -30,15 +32,16 @@ import java.util.function.Supplier
 /**
  * The retry class.
  *
- * @param retryPolicy The policy to retry.
+ * @param condition The policy to retry.
  * @param backoffPolicy The back off strategy.
  * @param failureListeners The error handler.
  */
-class Retry private constructor(
-    val retryPolicy: Condition,
+open class Retry private constructor(
+    val condition: Condition,
     val backoffPolicy: BackoffPolicy,
     val failureListeners: List<FailureListener>,
-    val backoffExecutor: BackoffExecutor = DefaultBackoffExecutor(),
+    val backoffExecutor: BackoffExecutor,
+    internal val delaySubmitter: DelaySubmitter,
     val name : String?
 ) {
     
@@ -49,7 +52,14 @@ class Retry private constructor(
      * @return The new retry instance.
      */
     fun withName(newName: String) : Retry {
-        return Retry(retryPolicy, backoffPolicy, failureListeners, backoffExecutor, newName)
+        return Retry(
+            condition = condition,
+            backoffPolicy = backoffPolicy, 
+            failureListeners = failureListeners, 
+            backoffExecutor = backoffExecutor,
+            delaySubmitter = delaySubmitter,
+            name = newName
+        )
     }
 
     /**
@@ -70,14 +80,14 @@ class Retry private constructor(
                 return result
             } catch (t: Throwable) {
                 val context = Context.of(startTime, Instant.now(), attemptCount, t)
-                val allowRetry = retryPolicy.check(context)
+                val allowRetry = condition.check(context)
                 val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                 for (failureListener in failureListeners) {
                     failureListener.onFailure(name, context, allowRetry, backOff)
                 }
                 if (allowRetry) {
                     backoffExecutor.backoff(backOff)
-                    if (retryPolicy.check(context)) {
+                    if (condition.check(context)) {
                         attemptCount++
                         continue
                     }
@@ -118,14 +128,14 @@ class Retry private constructor(
 
             private fun handleFailure(u: Throwable) {
                 val context = Context.of(startTime, Instant.now(), attemptCount.get(), u)
-                val allowRetry = retryPolicy.check(context)
+                val allowRetry = condition.check(context)
                 val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                 for (failureListener in failureListeners) {
                     failureListener.onFailure(name, context, allowRetry, backOff)
                 }
                 if (allowRetry) {
                     attemptCount.incrementAndGet()
-                    executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
+                    delaySubmitter.submit(executor, this, backOff)
                 } else {
                     result.completeExceptionally(u)
                 }
@@ -151,14 +161,14 @@ class Retry private constructor(
                     result.complete(function.call())
                 } catch (t: Throwable) {
                     val context = Context.of(startTime, Instant.now(), attemptCount.get(), t)
-                    val allowRetry = retryPolicy.check(context)
+                    val allowRetry = condition.check(context)
                     val backOff = if (allowRetry) backoffPolicy.backoff(context) else Duration.ZERO
                     for (failureListener in failureListeners) {
                         failureListener.onFailure(name, context, allowRetry, backOff)
                     }
                     if (allowRetry) {
                         attemptCount.incrementAndGet()
-                        executor.schedule(this, backOff.toMillis(), TimeUnit.MILLISECONDS)
+                        delaySubmitter.submit(executor, this, backOff)
                     } else {
                         result.completeExceptionally(t)
                     }
@@ -197,7 +207,9 @@ class Retry private constructor(
 
         private var name: String? = null
 
-        private var backoffExecutor: BackoffExecutor = DefaultBackoffExecutor()
+        private var backoffExecutor: BackoffExecutor = DefaultBackoffExecutor
+        
+        private var delaySubmitter: DelaySubmitter = DefaultDelaySubmitter
 
         /**
          * Set the name.
@@ -250,12 +262,29 @@ class Retry private constructor(
         }
 
         /**
+         * Set the delay submitter
+         * 
+         * @param delaySubmitter the delay submitter
+         * @return the builder
+         */
+        internal fun setDelaySubmitter(delaySubmitter: DelaySubmitter) = apply {
+            this.delaySubmitter = delaySubmitter
+        }
+
+        /**
          * Builds the [Retry].
          *
          * @return the [Retry]
          */
         fun build() : Retry {
-            return Retry(retryPolicy = condition, backoffPolicy = backoffPolicy, Collections.unmodifiableList(failureListeners), backoffExecutor, name)
+            return Retry(
+                condition = condition,
+                backoffPolicy = backoffPolicy,
+                failureListeners = Collections.unmodifiableList(failureListeners),
+                backoffExecutor = backoffExecutor,
+                delaySubmitter = delaySubmitter,
+                name = name
+            )
         }
     }
 
