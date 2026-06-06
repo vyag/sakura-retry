@@ -41,11 +41,11 @@ public class Async {
                 .addFailureListener((call, context, allowRetry, backOffDuration) ->
                     System.out.println("Call " + call + ", attempt " + context.getAttemptCount() + " failed: (" + context.getFailure().getMessage() + ")"))
                 .build();
-            IntStream.range(0, 3).mapToObj(value -> retry.<Double>callAsync(executor, () -> {
+            IntStream.range(0, 3).mapToObj(value -> retry.withName("call-" + value, r -> r.callAsync(executor, () -> {
                 double d = random.nextDouble(10);
                 if (d < 8) throw new IOException("Too small");
                 return d;
-            })).map(i -> i.thenAccept(System.out::println))
+            }))).map(i -> i.thenAccept(System.out::println))
                 .toList()
                 .forEach(CompletableFuture::join);
         }

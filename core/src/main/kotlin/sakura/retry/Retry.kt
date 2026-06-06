@@ -27,6 +27,7 @@ import java.time.Instant
 import java.util.*
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Function
 import java.util.function.Supplier
 
 /**
@@ -57,6 +58,7 @@ class Retry private constructor(
      * @param block The operations to execute with this name.
      * @return The result of the block.
      */
+    @JvmSynthetic
     fun <T> withName(name: String, block: Retry.() -> T): T {
         val thread = Thread.currentThread()
         val previous = names.put(thread, name)
@@ -65,6 +67,16 @@ class Retry private constructor(
         } finally {
             if (previous != null) names[thread] = previous else names.remove(thread)
         }
+    }
+
+    /**
+     * Set a scoped name override (Java-friendly).
+     *
+     * In Java, the lambda receives the [Retry] instance as parameter:
+     * `retry.withName("foo", r -> r.callAsync(executor, () -> ...))`
+     */
+    fun <T> withName(name: String, block: Function<Retry, T>): T {
+        return withName(name) { block.apply(this) }
     }
 
     /**
