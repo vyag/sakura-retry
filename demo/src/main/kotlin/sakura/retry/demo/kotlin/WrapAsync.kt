@@ -17,26 +17,34 @@
 package sakura.retry.demo.kotlin
 
 import sakura.retry.BackoffPolicies.fixedDelayInSeconds
-import sakura.retry.BackoffPolicies.randomDelayInSeconds
 import sakura.retry.Conditions.maxAttempts
 import sakura.retry.FailureListeners.logging
 import sakura.retry.Retry
+import java.io.IOException
+import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 
 /**
- * Demonstrates basic synchronous retry using [Retry.execute].
+ * Demonstrates asynchronous retry with a [java.util.concurrent.CompletionStage]
+ * supplier using [Retry.wrapAsync].
  *
- * A simple task is retried up to 3 times with a combined fixed + random
- * back-off delay. The [logging] failure listener prints each failure to
- * the log (SLF4J).
+ * The supplier returns a [CompletableFuture] that may complete exceptionally.
+ * On failure the operation is retried according to the configured policy.
+ * This is useful when integrating with APIs that already return futures.
  */
 fun main() {
+    val executor = Executors.newScheduledThreadPool(2)
     val retry = Retry.Builder()
-        .setCondition(maxAttempts(3))
-        .setBackoffPolicy(fixedDelayInSeconds(10) + randomDelayInSeconds(0, 1)) 
+        .setCondition(maxAttempts(5))
+        .setBackoffPolicy(fixedDelayInSeconds(1))
         .addFailureListener(logging())
         .build()
-    retry.execute {
-        println("maybe fail")
+    val future = retry.wrapAsync(executor) {
+        val v = Random().nextDouble(10.0)
+        if (v < 7) throw IOException("Too small: $v")
+        CompletableFuture.completedFuture(v)
     }
+    println(future.get())
+    executor.shutdown()
 }
-

@@ -19,30 +19,39 @@ package sakura.retry.demo.java;
 
 import sakura.retry.Retry;
 
+import java.io.IOException;
+import java.util.Random;
+
 import static sakura.retry.BackoffPolicies.fixedDelayInSeconds;
-import static sakura.retry.BackoffPolicies.randomDelayInSeconds;
 import static sakura.retry.Conditions.maxAttempts;
 import static sakura.retry.FailureListeners.logging;
 
 /**
- * Demonstrates basic synchronous retry using {@link Retry#execute}.
+ * Demonstrates the scoped name override using {@link Retry#withName}.
  *
- * A simple task is retried up to 3 times with a combined fixed + random
- * back-off delay. The {@code logging} failure listener prints each failure
- * to the log (SLF4J).
+ * Inside the {@code withName} block, the name "hard-work" is passed to the
+ * {@link Retry#call} invocation, so failure listeners and log output identify
+ * the call by this name instead of the default (object identity).
  */
-public class Simple {
+public class WithName {
 
     public static void main(String[] args) throws Exception {
         Retry retry = new Retry.Builder()
-            .setCondition(maxAttempts(3))
-            .setBackoffPolicy(fixedDelayInSeconds(10).plus(randomDelayInSeconds(0, 1)))
+            .setCondition(maxAttempts(5))
+            .setBackoffPolicy(fixedDelayInSeconds(1))
             .addFailureListener(logging())
             .build();
-        retry.execute(
-            () -> {
-                System.out.println("Hello world!");
+        double result = retry.withName("hard-work", r -> {
+            try {
+                return r.call(() -> {
+                    double v = new Random().nextDouble(10);
+                    if (v < 7) throw new IOException("Too small: " + v);
+                    return v;
+                });
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        );
+        });
+        System.out.println(result);
     }
 }

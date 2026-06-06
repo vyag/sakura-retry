@@ -28,7 +28,7 @@ class RetryBuilderTest {
     @Test
     fun testDefault() {
         val retry = Retry.Builder().setCondition(Conditions.TRUE).setBackoffPolicy(BackoffPolicies.NONE).build()
-        assertThat(retry.retryPolicy).isEqualTo(default.retryPolicy)
+        assertThat(retry.condition).isEqualTo(default.condition)
         assertThat(retry.backoffPolicy).isEqualTo(default.backoffPolicy)
         assertThat(retry.failureListeners).isEqualTo(default.failureListeners)
         assertThat(retry).isNotSameAs(default)
@@ -43,7 +43,7 @@ class RetryBuilderTest {
         val retry = Retry.Builder().setCondition(retryPolicy).setBackoffPolicy(backoff)
             .addFailureListener(failureListener)
             .build()
-        assertThat(retry.retryPolicy).isSameAs(retryPolicy)
+        assertThat(retry.condition).isSameAs(retryPolicy)
         assertThat(retry.backoffPolicy).isSameAs(backoff)
         assertThat(retry.failureListeners).containsAll(default.failureListeners)
         assertThat(retry.failureListeners).contains(failureListener)

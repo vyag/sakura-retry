@@ -25,15 +25,17 @@ import java.lang.reflect.Method
 internal class RetryHandler<T>(private val retry: Retry, private val target: T) : InvocationHandler {
 
     override fun invoke(proxy: Any, method: Method, args: Array<out Any?>?): Any? {
-        return retry.withName("$target.${method.name}").call {
-            try {
-                if (args == null) {
-                    method.invoke(target)
-                } else {
-                    method.invoke(target, *args)
+        return retry.withName("$target.${method.name}") {
+            call {
+                try {
+                    if (args == null) {
+                        method.invoke(target)
+                    } else {
+                        method.invoke(target, *args)
+                    }
+                } catch (e: InvocationTargetException) {
+                    throw e.cause ?: e
                 }
-            } catch (e: InvocationTargetException) {
-                throw e.cause ?: e
             }
         }
     }

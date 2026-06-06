@@ -1,5 +1,5 @@
 /*
- * Copyright 2025-2025 marks.yag@gmail.com
+ * Copyright 2026-2026 marks.yag@gmail.com
  *
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
@@ -16,17 +16,17 @@
  */
 package sakura.retry.internal
 
-import sakura.retry.BackoffExecutor
 import java.time.Duration
-import java.util.concurrent.Callable
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
-internal object DefaultBackoffExecutor : BackoffExecutor {
+internal object DefaultDelaySubmitter : DelaySubmitter {
 
-    override fun backoff(duration: Duration) {
-        if (!duration.isNegative && !duration.isZero) {
-            Thread.sleep(duration.toMillis(), (duration.toNanos() % 1_000_000L).toInt())
-        }
+    override fun submit(
+        executor: ScheduledExecutorService,
+        task: Runnable,
+        duration: Duration
+    ) {
+        executor.schedule(task, duration.toMillis(), TimeUnit.MILLISECONDS)
     }
 }
