@@ -54,29 +54,23 @@ class Retry private constructor(
      * for logging and failure listeners. The previous name (if any) is restored
      * when the block returns.
      *
+     * Kotlin callers receive the [Retry] instance as `it` via SAM conversion:
+     * `retry.withName("foo") { it.call { ... } }`.
+     * Java callers receive it as a parameter:
+     * `retry.withName("foo", r -> r.call(() -> ...))`.
+     *
      * @param name  The name to use within the block.
      * @param block The operations to execute with this name.
      * @return The result of the block.
      */
-    @JvmSynthetic
-    fun <T> withName(name: String, block: Retry.() -> T): T {
+    fun <T> withName(name: String, block: Function<Retry, T>): T {
         val thread = Thread.currentThread()
         val previous = names.put(thread, name)
         try {
-            return block()
+            return block.apply(this)
         } finally {
             if (previous != null) names[thread] = previous else names.remove(thread)
         }
-    }
-
-    /**
-     * Set a scoped name override (Java-friendly).
-     *
-     * In Java, the lambda receives the [Retry] instance as parameter:
-     * `retry.withName("foo", r -> r.callAsync(executor, () -> ...))`
-     */
-    fun <T> withName(name: String, block: Function<Retry, T>): T {
-        return withName(name) { block.apply(this) }
     }
 
     /**
