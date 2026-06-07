@@ -60,14 +60,6 @@
         <site>
             <url>https://github.com/vyag/sakura-retry</url>
         </site>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
     </distributionManagement>
 
     <developers>
@@ -81,11 +73,11 @@
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
-    
+
     <modules>
         <module>core</module>
         <module>demo</module>
@@ -135,69 +127,15 @@
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>3.4.0</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>jar-no-fork</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-
-                <plugin>
-                    <groupId>org.jetbrains.dokka</groupId>
-                    <artifactId>dokka-maven-plugin</artifactId>
-                    <version>2.2.0</version>
-                    <executions>
-                        <execution>
-                            <phase>pre-site</phase>
-                            <goals>
-                                <goal>dokka</goal>
-                                <goal>javadoc</goal>
-                                <goal>javadocJar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <jdkVersion>8</jdkVersion>
-                        <skipEmptyPackages>true</skipEmptyPackages>
-                        <perPackageOptions>
-                            <packageOptions>
-                                <skipDeprecated>true</skipDeprecated>
-                                <reportUndocumented>true</reportUndocumented>
-                                <includeNonPublic>false</includeNonPublic>
-                            </packageOptions>
-                        </perPackageOptions>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.2.8</version>
-                    <executions>
-                        <execution>
-                            <phase>deploy</phase>
-                            <goals>
-                                <goal>sign</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.sonatype.central</groupId>
-                    <artifactId>central-publishing-maven-plugin</artifactId>
-                    <version>0.10.0</version>
-                    <extensions>true</extensions>
-                    <configuration>
-                        <publishingServerId>central</publishingServerId>
-                    </configuration>
-                </plugin>
             </plugins>
         </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 
     <profiles>
@@ -235,13 +173,6 @@
                         <configuration>
                             <jdkVersion>8</jdkVersion>
                             <skipEmptyPackages>true</skipEmptyPackages>
-                            <perPackageOptions>
-                                <packageOptions>
-                                    <skipDeprecated>true</skipDeprecated>
-                                    <reportUndocumented>true</reportUndocumented>
-                                    <includeNonPublic>false</includeNonPublic>
-                                </packageOptions>
-                            </perPackageOptions>
                         </configuration>
                     </plugin>
 
@@ -251,7 +182,7 @@
                         <version>3.2.8</version>
                         <executions>
                             <execution>
-                                <phase>deploy</phase>
+                                <phase>verify</phase>
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
@@ -266,6 +197,15 @@
                         <extensions>true</extensions>
                         <configuration>
                             <publishingServerId>central</publishingServerId>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>3.1.1</version>
+                        <configuration>
+                            <skip>true</skip>
                         </configuration>
                     </plugin>
                 </plugins>
